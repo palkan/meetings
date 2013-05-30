@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renderers:DefaultRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                           xmlns:s="library://ns.adobe.com/flex/spark"
+                           xmlns:renderers="ru.teachbase.module.documents.renderers.*">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElementContainer;
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.components.VideoPlayerControls;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        private var loader:Loader = new Loader();
+
+        [Bindable]
+        protected var player:Object;
+
+        private var _videoSoure:String;
+        private var _videoPlayerControls:VideoPlayerControls;
+        private var _timer:Timer = new Timer(100, 0);
+        private var _duration:Number = 0;
+
+
+        override protected function completeHandler(event:FlexEvent):void {
+
+        }
+
+        private function set mouseOver(value:Boolean):void {
+            trace("on on " + value);
+            if (_videoPlayerControls)
+                _videoPlayerControls.visible = true == value == super.editable;
+        }
+
+        override public function set data(value:Object):void {
+            if (!value.hasOwnProperty("url"))
+                return;
+
+            _videoSoure = value.url as String;
+
+            _duration = value.hasOwnProperty("duration") ? value.duration : 0;
+
+            _timer.addEventListener(TimerEvent.TIMER, onTimer);
+
+            Security.loadPolicyFile("http://www.youtube.com/crossdomain.xml");
+
+            var req:URLRequest = new URLRequest('http://www.youtube.com/apiplayer?version=3&controls=1');
+
+            loader.contentLoaderInfo.addEventListener(Event.INIT, onLoaderInit);
+            loader.load(req);
+        }
+
+        override public function initControls(container:IVisualElementContainer):Boolean {
+            _videoPlayerControls = new VideoPlayerControls();
+
+            _videoPlayerControls.horizontalCenter = 0;
+            _videoPlayerControls.visible = false;
+            _videoPlayerControls.max = _duration;
+            container.addElement(_videoPlayerControls);
+
+            if (player) {
+                _videoPlayerControls.visible = _editable;
+                positionBottomMenu(player.width, player.height);
+            }
+            return true;
+        }
+
+        private function onMouseClick(evt:Event):void {
+            if (getQualifiedClassName(evt.target) == 'com.google.youtube.ui::LargePlayButton') {
+                dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.PLAY_VIDEO, [], true, ControlHost.RENDERER, true))
+            }
+        }
+
+        public function playVideo():void {
+            if (player)
+                player.playVideo();
+        }
+
+        public function stopVideo():void {
+            if (player)
+                player.pauseVideo();
+        }
+
+        public function gotoVideo(val:int):void {
+            if (player)
+                player.seekTo(val, true);
+        }
+
+        public function muteVideo():void {
+            if (player)
+                player.mute()
+        }
+
+        public function unmuteVideo():void {
+            if (player)
+                player.unMute()
+        }
+
+        override public function set editable(value:Boolean):void {
+            super.editable = value;
+            if (_videoPlayerControls)
+                _videoPlayerControls.visible = value;
+        }
+
+        override public function get ratio():Number {
+            return 4 / 3;
+        }
+
+        override public function get hasControls():Boolean {
+            return true;
+        }
+
+        private function onLoaderInit(event:Event):void {
+            loader.content.addEventListener("onReady", onPlayerReady);
+            loader.content.addEventListener("onError", onPlayerError);
+            loader.content.addEventListener("onStateChange", onPlayerStateChange);
+        }
+
+        private function onPlayerStateChange(evt:Event):void {
+            if (Object(evt).data == 1) {
+                _timer.start();
+                _videoPlayerControls.playing = true;
+            }
+        }
+
+        override public function resize(width:Number, height:Number):void {
+            super.resize(width, height);
+
+            if (!player)
+                return;
+
+            const r:Number = width / height;
+            var h:Number;
+            var w:Number;
+            if (r > ratio) {
+                h = height;
+                w = h * ratio;
+            } else {
+                w = width;
+                h = w / ratio;
+            }
+
+            player.setSize(w, h);
+
+            swfLoader.x = (width - w) / 2;
+            swfLoader.y = (height - h) / 2;
+
+            positionBottomMenu(w, h);
+
+            /*The list below shows the playback quality levels that correspond to different standard player sizes. We recommend that you set the height of your video player to
+             one of the values listed below and that you size your player to use 16:9 aspect ratio. As stated above, even if you choose a standard player size, we also recommend
+             that you set the suggestedQuality parameter value to default to enable YouTube to select the most appropriate playback quality.
+
+             Quality level small: Player height is 240px, and player dimensions are at least 320px by 240px for 4:3 aspect ratio.
+             Quality level medium: Player height is 360px, and player dimensions are 640px by 360px (for 16:9 aspect ratio) or 480px by 360px (for 4:3 aspect ratio).
+             Quality level large: Player height is 480px, and player dimensions are 853px by 480px (for 16:9 aspect ratio) or 640px by 480px (for 4:3 aspect ratio).
+             Quality level hd720: Player height is 720px, and player dimensions are 1280px by 720px (for 16:9 aspect ratio) or 960px by 720px (for 4:3 aspect ratio).
+             Quality level hd1080: Player height is 1080px, and player dimensions are 1920px by 1080px (for 16:9 aspect ratio) or 1440px by 1080px (for 4:3 aspect ratio).
+             Quality level highres: Player height is greater than 1080px, which means that the player's aspect ratio is greater than 1920px by 1080px.
+             Quality level default: YouTube selects the appropriate playback quality. This setting effectively reverts the quality level to the default state and nullifies any */
+        }
+
+        private function positionBottomMenu(w:Number, h:Number):void {
+            if (!_videoPlayerControls || !player)
+                return;
+
+            _videoPlayerControls.width = w * .95;
+            _videoPlayerControls.y = swfLoader.y + h - 23;
+        }
+
+        private function onPlayerReady(event:Event):void {
+            player = loader.content;
+            if (player) {
+                player.addEventListener(MouseEvent.CLICK, onMouseClick)
+            }
+            if (_videoPlayerControls)
+                _videoPlayerControls.visible = _editable;
+            swfLoader.autoLoad = true;
+            swfLoader.scaleContent = true;
+            swfLoader.maintainAspectRatio = true;
+            swfLoader.load(player);
+            loadVideo(String(_videoSoure));
+            inited = true;
+        }
+
+        private function loadVideo(id:String):void {
+            player.cueVideoByUrl(id);
+            player.setPlaybackQuality('default');
+        }
+
+        private function onTimer(evt:Event):void {
+            if (_duration == 0 || isNaN(_duration)) {
+                _duration = player.getDuration();
+            }
+
+            _videoPlayerControls.buffered = player.getVideoLoadedFraction();
+
+            if (_duration > 0) {
+                _videoPlayerControls.max = _duration;
+                _videoPlayerControls.curTume = player.getCurrentTime();
+            }
+        }
+
+        protected function onPlayerError(event:Event):void {
+            Logger.log("error wile loading library json " + Object(event).data, "YouTube");
+
+            if (Object(event).data == 150 || Object(event).data == 101) {
+                _timer.stop();
+                player = null;
+                swfLoader.unloadAndStop();
+                infoLabel.visible = true;
+                infoLabel.text = "Политика безопастности YouTube запрещает\n просмотр данного видео";
+            } else if (Object(event).data == 100) {
+                _timer.stop();
+                player = null;
+                swfLoader.unloadAndStop();
+                infoLabel.visible = true;
+                infoLabel.text = "Данное видео удалено с YouTube";
+            }
+            /*
+             2 – The request contains an invalid parameter value. For example, this error occurs if you specify a video ID that does not have 11 characters, or if the video ID contains invalid characters, such as exclamation points or asterisks.
+             100 – The video requested was not found. This error occurs when a video has been removed (for any reason) or has been marked as private.
+             101 – The owner of the requested video does not allow it to be played in embedded players.
+             150 – This error is the same as 101. It's just a 101 error in disguise!
+             */
+        }
+
+        override public function dispose():void {
+            super.dispose();
+            _timer.stop();
+            if (player) {
+                player.destroy();
+                player = null;
+            }
+            swfLoader.unloadAndStop();
+        }
+        ]]>
+	</fx:Script>
+	<s:SWFLoader id="swfLoader"/>
+	<s:Label id="infoLabel" fontSize="20" color="0x000000" visible="false" verticalAlign="middle" textAlign="center"/>
+</renderers:DefaultRenderer>

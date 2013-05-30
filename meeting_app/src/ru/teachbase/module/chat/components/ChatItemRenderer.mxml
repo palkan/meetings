@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                mouseChildren="false"
+                click="onMouseClick(event)"
+                autoDrawBackground="false" width="100%" height="32">
+
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.model.PrivateChatElement;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+        }
+
+        protected function onMouseClick(event:MouseEvent):void {
+            dispatchEvent(new ChatElementEvent(ChatElementEvent.CHAT_ELEMET_CLICK, data as PrivateChatElement, true));
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+	</s:states> 
+	
+	<s:Group width="100%" height="100%">
+		<s:BitmapImage source="{style('users','background')}" fillMode="repeat" width="100%" height="100%"  includeIn="normal"/>
+		<s:BitmapImage source="{style('users','backgroundHover')}" fillMode="repeat" width="100%" height="100%"  includeIn="hovered"/>
+	</s:Group>
+	
+	<s:Group width="100%" height="100%">
+		<s:Label text="{data.userName}" fontSize="13" left="10" verticalCenter="0" verticalAlign="middle"/>
+		<s:Group right="5" verticalCenter="0" visible="{data.unreadMessages &gt; 0}"> 
+			<s:BitmapImage id="redCircle" source="{style('chat','redCircle')}" right="0"/>
+			<s:Label id="newEventsField" text="{data.unreadMessages}" fontSize="11" top="2" color="0xFFFFFF" right="3" />
+		</s:Group>
+	</s:Group>
+	<!--s:BitmapImage source="{s('chat','bottomLine')}" width="100%" fillMode="repeat" bottom="0" left="0" right="0"/-->
+</s:ItemRenderer>

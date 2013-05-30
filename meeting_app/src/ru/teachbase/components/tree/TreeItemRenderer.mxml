@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                width="100%" height="25"
+                addedToStage="addedToStage(event)"
+                click="onItemClick(event)"
+                autoDrawBackground="false">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.events.TreeEvent;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+
+        private var tree:Tree;
+
+        [Bindable]
+        protected var _isOpen:Boolean = false;
+
+        [Bindable]
+        private var elementLabel:String = "";
+
+        [Bindable]
+        private var _depth:Number = 0;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            if (data == null) return;
+            elementLabel = value.title;
+            _isOpen = value.opened;
+            _depth = value.level ? value.level * 10 : 0;
+        }
+
+        private function addedToStage(evt:Event):void {
+            var container:DisplayObjectContainer = owner;
+
+            while (!(container is Tree) && container) {
+                container = container.parent;
+            }
+
+            tree = Tree(container);
+        }
+
+        private function onItemClick(event:Event):void {
+            tree && tree.expandItem(data, !_isOpen);
+            dispatchEvent(new TreeEvent(TreeEvent.ITEM_OPEN, true, data));
+            _isOpen = !_isOpen;
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+	</s:states> 
+	<s:Rect includeIn="hovered" width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0x5AB6FF" alpha=".5"/>
+		</s:fill>
+	</s:Rect>
+	<s:HGroup left="{_depth}" verticalAlign="middle" verticalCenter="0">
+		<s:Group>
+			<s:Image id="triangleNomal" 
+					 visible="{!_isOpen}" initialize="triangleNomal.source =style('docs','treeTriangleNormal')"/>
+			<s:Image id="triangleExpanded" 
+					 visible="{_isOpen}" initialize="triangleExpanded.source = style('docs','treeTriangleExpanded')"/>
+		</s:Group>
+		<s:Group>
+			<s:Image id="folderNomal"
+					 visible="{!_isOpen}" initialize="folderNomal.source = style('docs','treeFolderNormal')"/>
+			<s:Image id="folderExpanded"
+					 visible="{_isOpen}" initialize="folderExpanded.source=style('docs','treeFolderExpanded')"/>
+		</s:Group>
+		<s:Label id="rendererLabel" text="{elementLabel}" />
+	</s:HGroup>
+</s:ItemRenderer>

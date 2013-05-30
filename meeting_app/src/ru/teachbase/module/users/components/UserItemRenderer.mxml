@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                xmlns:ns1="*"
+                autoDrawBackground="false" width="100%" height="32">
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.core.App;
+        import ru.teachbase.model.User;
+        import ru.teachbase.utils.Permissions;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.helpers.skin;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        import spark.filters.GlowFilter;
+
+        CONFIG::LIVE{
+            private var _callout1:CalloutOne;
+            private var _callout2:CalloutTwo;
+        }
+        private var bitmaskSize:uint = 1;
+
+        [Bindable]
+        private var _userName:String = "";
+
+        [Bindable]
+        private var _isViewerOrAdmin:Boolean;
+
+        [Bindable]
+        private var _user:User;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            if (!(value is User)) {
+                return;
+            }
+
+            _user = value as User;
+            _userName = _user.fullName;
+            _user.suffix && (_userName += " " + (_user.suffix + 1).toString());
+            CONFIG::LIVE{
+                _callout1 = new CalloutOne();
+                _callout1.user = value as User;
+
+                _user.iam && nameLabel.setStyle("fontStyle", "italic");
+                !_user.iam && nameLabel.setStyle("fontStyle", "normal");
+            }
+            _isViewerOrAdmin = (value as User).sid === App.room.user.sid || Permissions.isAdmin((value as User).permissions);
+        }
+
+        private function getShareStatusValue(pos:uint, status:uint):Boolean {
+            return Boolean(status & (bitmaskSize << pos));
+        }
+
+
+        private function confirmCalloutAllow(type:int, flag:Boolean, cont:DisplayObjectContainer, dialogType:String, str:String = ""):void {
+            CONFIG::LIVE{
+                _callout2 = new CalloutTwo();
+                _callout2.type = type;
+                _callout2.sid = (super.data as User).sid;
+                _callout2.flag = flag;
+                _callout2.confirmText = str;
+                _callout2.dialogType = dialogType;
+                _callout2.open(cont);
+            }
+        }
+
+        private function applyFilter(evt:Event):void {
+            const obj:DisplayObject = evt.target as DisplayObject;
+            obj.filters = [new GlowFilter(0xFFFFFF, 1, 2, 2, 10, 1)];
+        }
+
+        private function removeFilter(evt:Event):void {
+            const obj:DisplayObject = evt.target as DisplayObject;
+            obj.filters = [];
+        }
+        ]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+	</s:states> 
+	<s:Group  width="100%" height="100%">
+		<s:BitmapImage source="{style('users','background')}" fillMode="repeat" width="100%" height="100%"  includeIn="normal"/>
+		<s:BitmapImage source="{style('users','backgroundHover')}" fillMode="repeat" width="100%" height="100%"  includeIn="hovered"/>
+		<s:click>
+			<![CDATA[
+			CONFIG::LIVE{
+				_user.sid != App.room.user.sid && _callout1.open(calloutGroup);
+			}
+			]]>
+		</s:click>
+	 </s:Group>
+	<s:Group id="calloutGroup" width="100" mouseChildren="false" mouseEnabled="false">
+		<s:Label text="{_userName}" id="nameLabel" fontSize="13" mouseEnabled="false" left="28" top="10"/>
+	</s:Group>
+	<s:HGroup right="12" top="0" bottom="0" height="100%" >
+		<s:Group  height="100%" >
+			<s:Group id="screenImageEnabled" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.DOCS,false,screenImageEnabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_doc','users',translate('turn_off')))"
+					 visible="{getShareStatusValue(0,_user.shareStatus)}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage  source="{style('users','screenEnabled')}" verticalCenter="0"/>
+			</s:Group>
+			<s:Group id="screenImageDisabled" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp;  confirmCalloutAllow(Permissions.DOCS,true,screenImageDisabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_doc','users',translate('turn_on')))"
+					 visible="{!getShareStatusValue(0,_user.shareStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; App.room.user.role == 'admin'}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage source="{style('users','screenDisabled')}"/>
+			</s:Group>
+			<s:Group  id="screenImageAttempted" verticalCenter="0"
+					  click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.DOCS,false,screenImageAttempted, CalloutTwo.CONFIRM2,translate('sure_to_change_right_doc','users',translate('turn_off')))"
+					  visible="{getShareStatusValue(0,_user.shareRights) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(0,_user.shareStatus)}"
+					  mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage source="{style('users','screenAttempt')}"/>
+			</s:Group>
+		</s:Group>
+		<s:Group height="100%">
+			<s:Group id="micImageEnabled" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.MIC,false,micImageEnabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_mic','users',translate('turn_off')))"
+					 visible="{getShareStatusValue(1,_user.shareStatus)}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage  source="{style('users','micEnabled')}" />
+			</s:Group>
+			<s:Group id="micImageDisabled" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.MIC,true,micImageDisabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_mic','users',translate('turn_on')))"
+					 visible="{!getShareStatusValue(1,_user.shareStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(1,_user.requestStatus) &amp;&amp; App.room.user.role == 'admin'}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage source="{style('users','micDisabled')}" />
+			</s:Group>
+			<s:Group id="micImageAttempted" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.MIC,false,micImageAttempted, CalloutTwo.CONFIRM2,translate('sure_to_change_right_mic','users',translate('turn_off')))"
+					 visible="{getShareStatusValue(1,_user.shareRights) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(1,_user.shareStatus)}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage source="{style('users','micAttempt')}" />
+			</s:Group>
+			<s:Group id="micImageAttempt" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.MIC,true,micImageAttempt, CalloutTwo.CONFIRM, translate('request_mic','users'))"
+					 visible="{getShareStatusValue(1,_user.requestStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; App.room.user.role == 'admin'}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<ns1:Blinker id="mic_blnk" blinkingElement = "{style('users','micAttempt')}"/>
+			</s:Group>
+		</s:Group>
+		<s:Group id="camImageButton" height="100%" >
+			<s:Group id="camImageEnabled" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,false,camImageEnabled, CalloutTwo.CONFIRM2, translate('sure_to_change_right_cam','users',translate('turn_off')))"
+					 visible="{getShareStatusValue(2,_user.shareStatus)}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage source="{style('users','camEnabled')}" />
+			</s:Group>
+			<s:Group id="camImageDisabled" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,true,camImageDisabled,CalloutTwo.CONFIRM2, translate('sure_to_change_right_cam','users',translate('turn_on')))"
+					 visible="{!getShareStatusValue(2,_user.shareStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(2,_user.requestStatus) &amp;&amp; App.room.user.role == 'admin' }"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage  source="{style('users','camDisabled')}" />
+			</s:Group>
+			<s:Group id="camImageAttempted" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,false,camImageAttempted, CalloutTwo.CONFIRM2, translate('sure_to_change_right_cam','users',translate('turn_off')))"
+					 visible="{getShareStatusValue(2,_user.shareRights) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(2,_user.shareStatus)}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<s:BitmapImage  source="{style('users','camAttempt')}"/>
+			</s:Group>
+			<s:Group id="camImageAttempt" verticalCenter="0"
+					 click="App.room.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,true,camImageAttempt, CalloutTwo.CONFIRM, translate('request_cam','users'))"
+					 visible="{getShareStatusValue(2,_user.requestStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; App.room.user.role == 'admin'}"
+					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+				<ns1:Blinker id="cam_blnk" blinkingElement="{style('users','camAttempt')}"/>
+			</s:Group>
+		</s:Group>
+	</s:HGroup>
+
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+</s:ItemRenderer>

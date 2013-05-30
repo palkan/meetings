@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			  xmlns:s="library://ns.adobe.com/flex/spark" 
+			  xmlns:mx="library://ns.adobe.com/flex/mx" 
+			  minWidth="80"
+			  minHeight="48"
+			  implements="ru.teachbase.module.video.components.IVideoContainer"
+			  rollOver="_mouseOver = true" 
+			  rollOut="_mouseOver = false">
+	
+	<fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.core.App;
+
+        private var video:Video = null;
+
+        [Bindable]
+        public var stream:NetStream = null;
+
+        [Bindable]
+        private var userName:String;
+
+        public var userId:Number;
+
+        [Bindable]
+        private var _paused:Boolean;
+
+        [Bindable]
+        private var _mouseOver:Boolean;
+
+        private var _isAdmin:Boolean;
+
+        private var _rotated:Boolean = false;
+
+
+        public function set from(userId:Number):void {
+            userName = App.room.getUserNameById(userId);
+            this.userId = userId;
+        }
+
+        public function get from():Number {
+            return this.userId;
+        }
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+            video = new Video();
+            uic.width = this.width;
+            uic.height = this.height;
+            video.smoothing = true;
+            video.deblocking = 5;
+            if (stream)
+                video.attachNetStream(stream);
+
+
+            if (camera)
+                video.attachCamera(camera);
+
+            uic.addChild(video);
+            /*if (stream != null) {
+             stream.addEventListener(NetStatusEvent.NET_STATUS, statusHandler,false,EventPriority.CURSOR_MANAGEMENT);
+             }*/
+        }
+
+        private function statusHandler(e:NetStatusEvent):void {
+            switch (e.info.code) {
+                case('NetConnection.Connect.Closed'):
+                case('NetStream.Connect.Closed'):
+                case('NetStream.Play.Failed'):
+                case('NetStream.Play.Stop'):
+                {
+                    //removeThis();
+                    break;
+                }
+                /*case('NetStream.Share.Audio'):
+                 {
+                 removeThis();
+                 break;
+                 }
+                 case('NetStream.Share.Video'):
+                 {
+                 //removeThis();
+                 break;
+                 }*/
+            }
+        }
+
+
+        public function setRect(x:int, y:int, width:int, height:int):void {
+
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+
+            uic.height = height;
+            uic.width = width;
+
+            sizeVideo(width, height);
+        }
+
+        override public function setActualSize(w:Number, h:Number):void {
+
+            super.setActualSize(w, h);
+            uic.height = h;
+            uic.width = w;
+            sizeVideo(w, h);
+        }
+
+        [Bindable]
+        public function get camera():Camera {
+            return null;
+        }
+
+        public function set camera(value:Camera):void {
+
+        }
+
+        [Bindable]
+        public function get isAdmin():Boolean {
+            return _isAdmin;
+        }
+
+        public function set isAdmin(value:Boolean):void {
+            _isAdmin = value;
+        }
+
+        public function rotateVideo(rotation:int):void {
+            if (!video) return;
+
+            var _oldRotation:int = video.rotation;
+
+            var _m:Matrix = video.transform.matrix.clone();
+            _m.rotate(-(Math.PI / 180) * _oldRotation);
+            _m.tx = 0;
+            _m.ty = 0;
+
+            rotation && _m.rotate(rotation * Math.PI / 2);
+
+            video.transform.matrix = _m;
+
+            _rotated = (rotation !== 0);
+
+            sizeVideo(this.width, this.height);
+        }
+
+
+        protected function sizeVideo(w:int, h:int):void {
+
+            if (!video) return;
+
+
+            if (_rotated) {
+
+                var _m:Matrix = video.transform.matrix.clone();
+
+                var _scale:Number = h / video.height;
+
+                _m.scale(_scale, _scale);
+
+                video.transform.matrix = _m;
+
+                var _nullPoint:Point = new Point(10, 0);
+
+                var _videoCenter:Point = video.localToGlobal(new Point((video.height / 2) / video.scaleY, (video.width / 2) / video.scaleX));
+                var _contLeft:Point = this.localToGlobal(new Point(w / 2, h / 2));
+
+                var _delta:Point = _videoCenter.subtract(_contLeft);
+
+
+                video.x = -_delta.x;
+                video.y = -_delta.y;
+
+            } else {
+
+                var _m:Matrix = video.transform.matrix.clone();
+
+                var _scale:Number = w / video.width;
+
+                _m.scale(_scale, _scale);
+
+                video.transform.matrix = _m;
+
+                video.x = 0;
+                video.y = 0;
+            }
+        }
+        ]]>
+	</fx:Script>
+	
+	<mx:UIComponent id="uic" initialize="creationCompleteHandler(event)" />
+	<s:Rect width="{this.width}" height="24" left="0" right="0" bottom="0">
+		<s:fill>
+			<s:SolidColor color="0x000000" alpha="0.6"/>
+		</s:fill>
+	</s:Rect>
+	<s:Label width="90%" text="{userName}" left="10" bottom="3" color="0xFFFFFF"/>
+</s:Group>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         width="237" height="1" clipAndEnableScrolling="true">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import mx.collections.ArrayList;
+        import mx.events.CollectionEvent;
+
+        import ru.teachbase.core.Core;
+
+        [Bindable]
+        private var _dataProvider:ArrayList;
+
+        public function set dataprovider(value:ArrayList):void {
+            _dataProvider = value;
+            if (_dataProvider.length == 0) {
+                this.height = 1;
+                Core.removeFromTop(this);
+                return;
+            }
+            _dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE, onChange);
+            resizeContainer()
+        }
+
+        private function onChange(evt:Event):void {
+            resizeContainer()
+        }
+
+        private function resizeContainer():void {
+            Tweener.addTween(this, {height: _dataProvider.length * 64, time: .3});
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:List id="itemsList" height="100%" itemRenderer="ru.teachbase.module.notification.NotificationItemRenderer"  contentBackgroundAlpha="0" dataProvider="{_dataProvider}"  useVirtualLayout="false"/>
+	
+</s:Group>

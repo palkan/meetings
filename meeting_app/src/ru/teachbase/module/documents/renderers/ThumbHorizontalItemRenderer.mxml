@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" 
+				height="37" width="53" 
+				click="onItemClick(event)" 
+				implements="ru.teachbase.module.documents.components.IThumbRenderer"
+				mouseOver="onMouseOver(event); clearBorder()"
+				mouseOut="onMouseOut(event)" contentBackgroundAlpha="0">
+	
+	<fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.model.SlideAsset;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        import spark.filters.GlowFilter;
+
+        private var _loader:Loader;
+        private var urlRequest:URLRequest;
+        private const filter:GlowFilter = new GlowFilter(0x000000, 1, 2, 2, 1000);
+        private const filter2:GlowFilter = new GlowFilter(0x000000, 1, 2, 2, 1);
+        private var _itemId:int;
+        public var handler:Function;
+        public var lodedHandler:Function;
+
+        private function drawBorder():void {
+            thumbImage.filters = [filter];
+        }
+
+        private function clearBorder():void {
+            thumbImage.filters = [filter2];
+        }
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            if (data == null) {
+                return
+            }
+            ;
+            itemId = value.id;
+            slideNumber.text = value.id;
+            _loader = new Loader()
+            urlRequest = new URLRequest(value.thumbURL)
+            handler(this);
+        }
+
+        public function load():void {
+            _loader.contentLoaderInfo.addEventListener(Event.COMPLETE, imageLoadingComplete)
+            _loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function (e:*):void {
+                Logger.log("IO_ERROR error caught " + _itemId, "THUMB");
+                lodedHandler();
+            });
+            _loader.contentLoaderInfo.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function (e:*):void {
+                Logger.log("SECURITY_ERROR error caught " + _itemId, "THUMB");
+                lodedHandler();
+            });
+            try {
+                _loader.load(urlRequest);
+            } catch (e:*) {
+                Logger.log("error cathes while loading thumbnail " + _itemId, "THUMB");
+                lodedHandler();
+            }
+        }
+
+        public function imageLoadingComplete(evt:Event):void {
+            _loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, imageLoadingComplete)
+            var bitmap:Bitmap = _loader.content as Bitmap;
+            bitmap.width = 39;
+            bitmap.height = 27;
+            bitmap.x = 7;
+            bitmap.y = 10;
+            thumbImage.addChild(bitmap);
+            lodedHandler();
+        }
+
+
+        private function onItemClick(evt:Event):void {
+            dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.CHANGE_SLIDE, [(data as SlideAsset).id], true, ControlHost.BOTH, true));
+        }
+
+        private function onMouseOver(evt:Event):void {
+            Tweener.addTween(resizebleElement, {x: 0, time: 0.3, transition: "linear"});
+            Tweener.addTween(resizebleElement, {y: 0, time: 0.3, transition: "linear", onComplete: drawBorder});
+
+            Tweener.addTween(resizebleElement, {width: 53, time: 0.3, transition: "linear"});
+            Tweener.addTween(resizebleElement, {height: 37, time: 0.3, transition: "linear"});
+
+            Tweener.addTween(slideNumber, {x: 3, time: 0.3, transition: "linear"});
+            Tweener.addTween(slideNumber, {y: 3, time: 0.3, transition: "linear"});
+        }
+
+        private function onMouseOut(evt:Event):void {
+            Tweener.addTween(resizebleElement, {x: 7, time: 0.3, transition: "linear"});
+            Tweener.addTween(resizebleElement, {y: 10, time: 0.3, transition: "linear"});
+
+            Tweener.addTween(resizebleElement, {width: 39, time: 0.3, transition: "linear"});
+            Tweener.addTween(resizebleElement, {height: 27, time: 0.3, transition: "linear"});
+
+            Tweener.addTween(slideNumber, {x: 10, time: 0.3, transition: "linear"});
+            Tweener.addTween(slideNumber, {y: 13, time: 0.3, transition: "linear"});
+        }
+
+        private function get resizebleElement():DisplayObject {
+            if (thumbImage.numChildren > 0)
+                return thumbImage.getChildAt(0);
+            else
+                return null;
+        }
+
+        public function get itemId():int {
+            return _itemId;
+        }
+
+        public function set itemId(value:int):void {
+            _itemId = value;
+        }
+        ]]>
+	</fx:Script>
+
+	<mx:UIComponent id="thumbImage" width="39" height="27"/>
+	
+	<s:Label id="slideNumber" x="13" y="10" fontSize="10" color="0x000000"/>
+	
+</s:ItemRenderer>

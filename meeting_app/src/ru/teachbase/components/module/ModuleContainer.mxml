@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:layout="ru.teachbase.layout.*"
+         xmlns:ns1="*"
+         width="100%" height="100%" creationComplete="creationCompleteHandler(event)"
+         implements="ru.teachbase.behaviours.interfaces.IDropContainer,
+					ru.teachbase.behaviours.interfaces.IDropCoordinateSpace,
+		 			ru.teachbase.layout.ITreeLayoutElement"
+         preinitialize="preinitializeHandler(event)" xmlns:components="ru.teachbase.components.*">
+    <fx:Declarations>
+	</fx:Declarations>
+	
+	<!-- ui ctrl -->
+	<fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.behaviours.dragdrop.DragCoordinateSpace;
+        import ru.teachbase.behaviours.interfaces.IDragCoordinateSpace;
+        import ru.teachbase.components.*;
+        import ru.teachbase.core.App;
+        import ru.teachbase.events.ModuleEvent;
+        import ru.teachbase.events.PermissionEvent;
+        import ru.teachbase.layout.ITreeLayoutElement;
+        import ru.teachbase.manage.LayoutController;
+        import ru.teachbase.manage.LayoutModelManager;
+        import ru.teachbase.manage.SessionManager;
+        import ru.teachbase.manage.TraitManager;
+        import ru.teachbase.model.ModuleSettings;
+        import ru.teachbase.model.ModulesToInit;
+        import ru.teachbase.module.base.IModuleContent;
+        import ru.teachbase.skins.cursors.HorizontalResizerCursor;
+        import ru.teachbase.skins.cursors.VerticalResizerCursor;
+        import ru.teachbase.traits.PermissionTrait;
+        import ru.teachbase.utils.Permissions;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+
+        private var hoveredElement:ITreeLayoutElement;
+
+        private var p_trait:PermissionTrait = TraitManager.instance.createTrait(PermissionTrait) as PermissionTrait;
+
+        private var layout_controller:LayoutController;
+
+        private var _m:LayoutModelManager;
+
+        public const dropSpace:IDragCoordinateSpace = new DragCoordinateSpace();
+        private const elements:Vector.<ITreeLayoutElement> = new Vector.<ITreeLayoutElement>();
+
+
+        private const NAME:String = "modules";
+
+        protected function preinitializeHandler(event:FlexEvent):void {
+            _m = m(LayoutModelManager) as LayoutModelManager;
+            _m.moduleContainer = this;
+        }
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+            e.currentTarget.removeEventListener(e.type, creationCompleteHandler, e.eventPhase == EventPhase.CAPTURING_PHASE);
+            finilize();
+        }
+
+        public function finilize():void {
+            layout_controller = _m.controller as LayoutController;
+
+            layout_controller.init(elementContainer);
+            const instancesForInitialize:Vector.<ModulesToInit> = _m.instancesForLayoutInitialize;
+
+            var element:ModulesToInit;
+            var panel:ModuleGroup;
+
+            for (var i:int; i < instancesForInitialize.length; ++i) {
+                element = instancesForInitialize[i] as ModulesToInit;
+                panel = new ModuleGroup();
+                panel.title = (element.modules[0] as IModuleContent).label; //TODO: implement several instances
+                panel.elementID = element.panel;
+                panel.content = element.modules;
+                panel.container = this;
+                panel.dropSpace = dropSpace;
+                panel.permission = App.room.user.permissions;
+                layout_controller.initElement(panel);
+                elements.push(panel);
+            }
+
+            // clear:
+            _m.clearInstancesForLayoutInitialize();
+            lt.controller = layout_controller;
+
+
+            if (App.room.user.role != "admin")
+                layout_controller.fixed = true;
+
+            this.addEventListener(ModuleEvent.MINMAX, onMinMaxHandler, true);
+            this.addEventListener(ModuleEvent.REMOVE, onRemoveHandler, true);
+            this.addEventListener(ModuleEvent.SETTINGS, onSettingsHandler, true);
+            this.addEventListener(ModuleEvent.RESIZE, onResizerHandler, true);
+
+
+            p_trait.addEventListener(PermissionEvent.PERMISSIONS_CHANGED, onPermissionsChanged);
+
+            VerticalResizerCursor.icon = style("cursor", "resizev");
+            HorizontalResizerCursor.icon = style("cursor", "resizeh");
+
+
+            setsCallout = new SettingsCallout();
+            CONFIG::LIVE{
+                (m(SessionManager) as SessionManager).userReady();
+            }
+
+//CONFIG::RECORDING{
+//				(m(RoomModelManager) as RoomModelManager).start();
+//}
+            setTimeout(function ():void {
+                layout_controller.updateDisplayList()
+            }, 1000);
+
+        }
+
+
+        protected function onMinMaxHandler(event:ModuleEvent):void {
+            if (event.value)
+                layout_controller.expand(event.target as ITreeLayoutElement);
+            else
+                layout_controller.minimize(event.target as ITreeLayoutElement);
+        }
+
+        protected function onRemoveHandler(event:ModuleEvent):void {
+            removeModule(event.target as ITreeLayoutElement);
+        }
+
+        protected function onResizerHandler(event:ModuleEvent):void {
+            if ((event.target as ModuleResizer) && event.value) {
+                layout_controller.resize((event.target as ModuleResizer).key, event.value);
+            }
+        }
+
+        protected function onSettingsHandler(event:ModuleEvent):void {
+            var _remset:ModuleSettings = new ModuleSettings("minimize", ModuleSettings.FUN, removeModule, event.target);
+
+            var _s:Vector.<ModuleSettings> = (event.target as ModuleGroup).currentContent.settings;
+
+            if (!_s)
+                _s = new Vector.<ModuleSettings>();
+            else
+                _s = _s.concat();
+
+            _s.push(_remset);
+
+            setsCallout.dataProvider = _s;
+            setsCallout.open((event.target as ModuleGroup).settins);
+
+        }
+
+        protected function onPermissionsChanged(event:PermissionEvent):void {
+
+            layout_controller.fixed = !Permissions.isAdmin(event.value);
+
+
+            for each(var el:ITreeLayoutElement in elements)
+                el.permission = event.value;
+        }
+
+
+        private function removeModule(module:ITreeLayoutElement):void {
+            layout_controller.removeFromLayout(module);
+        }
+        ]]>
+	</fx:Script>
+	
+	<!--hover calculations-->
+	<fx:Script>
+		<![CDATA[
+	
+			private function calculatePossibleDrop():void
+			{
+				const mouseGlobal:Point = new Point(elementContainer.mouseX, elementContainer.mouseY);
+								
+				if(mouseGlobal.x < 0 || mouseGlobal.y < 0){
+					hoveredElement = null;	
+					decoreLayer.visible = false;
+					return;
+				}
+				
+				var drop_obj:Object = layout_controller.getElementUnderPoint(mouseGlobal);
+				
+				if(!drop_obj || !drop_obj.element)
+				{
+					decoreLayer.visible = false;
+					return;
+				}
+				
+				const element:ITreeLayoutElement = drop_obj.element as ITreeLayoutElement;
+				
+				
+				if(element is ITreeLayoutElement)
+				{
+					if(element !== hoveredElement || (hoveredBounds_catch && !isEqualSize(hoveredBounds_catch, element)))
+						dropBounds_catch = hoveredBounds_catch = null;
+					
+					dropDirectionChanged = !(dropDirection === drop_obj.direction);
+					
+					dropDirection = drop_obj.direction;
+					
+					hoveredElement = element as ITreeLayoutElement;
+					drawHoveredElementBounds();
+				}
+			}
+			
+			private function drawHoveredElementBounds():void
+			{
+				
+				if(!hoveredElement)
+					return;
+				
+				const mouseLocal:Point = new Point((hoveredElement as DisplayObject).mouseX, (hoveredElement as DisplayObject).mouseY);
+				
+				if(dropBounds_catch && !dropDirectionChanged)
+					return;
+				
+				const dropZone:Rectangle = dropBounds_catch = getDropBounds();
+				
+				if(dropZone){
+					decoreLayer.x = hoveredElement.x + dropZone.x;
+					decoreLayer.y = hoveredElement.y + dropZone.y;
+					decoreLayer.width = dropZone.width;
+					decoreLayer.height = dropZone.height;
+								
+				}
+			}
+			
+					
+			private function isEqualSize(a:Object, b:Object):Boolean
+			{
+				return a.width === b.width && a.height === b.height;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!--hover calculations-->
+	<!-- in new drag -->
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.behaviours.dragdrop.DragDirection;
+
+        private var getDropBoundsSide_catch:uint = DragDirection.NO_DIRECTION;
+        private var hoveredBounds_catch:Rectangle;
+        private var dropBounds_catch:Rectangle;
+
+        private var dropDirection:uint;
+        private var dropDirectionChanged:Boolean = true;
+
+        public function getDropBounds():Rectangle {
+
+            const full:Rectangle = new Rectangle(0, 0, hoveredElement.width, hoveredElement.height);
+
+            const cell:Rectangle = full.clone();
+
+            var kh:Number = 1;
+            var kw:Number = 1;
+
+            if (hoveredElement == elementContainer) {
+                //full.y-=this.y;
+                kh = 0.7;
+                kw = 0.5;
+            }
+
+            cell.y = full.y;
+
+            switch (dropDirection) {
+                case DragDirection.UP:
+                    cell.height = kh * full.height / 2;
+                    break;
+                case DragDirection.RIGHT:
+                    cell.x = full.x + full.width * (1 - kw / 2);
+                    cell.width = kw * full.width / 2;
+                    break;
+                case DragDirection.LEFT:
+                    cell.width = kw * full.width / 2;
+                    break;
+                case DragDirection.DOWN:
+                    cell.y += full.height * (1 - kh / 2);
+                    cell.height = kh * full.height / 2;
+                    break;
+            }
+
+
+            getDropBoundsSide_catch = dropDirection;
+
+            return cell;
+        }
+
+
+        public function getDropBoundsSide(rect:Rectangle):uint {
+            if (!rect)
+                return DragDirection.NO_DIRECTION;
+
+            // it calcs in getDropBoundsForPoint method
+            return getDropBoundsSide_catch;
+        }
+
+        public function getDropIndexBySide(side:uint):int {
+            switch (side) {
+                case DragDirection.LEFT:
+                case DragDirection.UP:
+                {
+                    return 0;
+                }
+
+                case DragDirection.RIGHT:
+                case DragDirection.DOWN:
+                default:
+                {
+                    return 1;
+                }
+            }
+        }
+
+        public function getDropAlignBySide(side:uint):int {
+            switch (side) {
+                case DragDirection.LEFT:
+                case DragDirection.RIGHT:
+                {
+                    return 0;
+                }
+
+                default:
+                case DragDirection.UP:
+                case DragDirection.DOWN:
+                {
+                    return 1;
+                }
+            }
+        }
+        ]]>
+	</fx:Script>
+	
+	<!--implementations-->
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.behaviours.interfaces.IDraggle;
+        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
+        import ru.teachbase.behaviours.interfaces.IDropCoordinateSpace;
+        import ru.teachbase.model.constants.ModuleID;
+        import ru.teachbase.module.base.IModule;
+        import ru.teachbase.module.documents.DocumentsModule;
+
+        private var _snapshot:DraggleSnapshot = null;
+        private var setsCallout:SettingsCallout;
+
+        public function hasDropUnderPoint(point:Point):Boolean {
+            return Boolean(hoveredElement);
+        }
+
+        public function getDropUnderPoint(point:Point):IDropCoordinateSpace {
+            return this;
+        }
+
+        public function addSnapshot(__snapshot:IDraggleSnapshot, position:Point):void {
+            if (!__snapshot)
+                return;
+
+            var snapshot:DraggleSnapshot = __snapshot as DraggleSnapshot;
+
+            stage.addChild(snapshot);
+            snapshot.x = position.x;
+            snapshot.y = position.y;
+
+            _snapshot = snapshot;
+
+            // if source is Panel
+            if (snapshot.source is ITreeLayoutElement) {
+                layout_controller.useVirtual = true;
+                layout_controller.removeElement(snapshot.source as ITreeLayoutElement);
+            } else if (snapshot.source is ActionBarButtonDraggle) {
+                const button:ActionBarButtonDraggle = snapshot.source as ActionBarButtonDraggle;
+                layout_controller.useVirtual = true;
+            }
+        }
+
+        public function removeSnapshot(__snapshot:IDraggleSnapshot):void {
+            _snapshot = null;
+            var snapshot:DraggleSnapshot = __snapshot as DraggleSnapshot;
+            snapshot.parent && snapshot.parent.removeChild(snapshot);
+        }
+
+        //----- IDropSpace
+
+        public function isPossibleDropFor(object:IDraggle):Boolean {
+            hoveredElement || calculatePossibleDrop();
+
+            return hoveredElement && hoveredElement !== object;
+        }
+
+        public function prepareDrop(object:IDraggleSnapshot, mouse:Point):void {
+            decoreLayer.visible = true;
+
+            calculatePossibleDrop();
+        }
+
+        public function drop(__snapshot:IDraggleSnapshot, mouse:Point):void {
+
+            var snapshot:DraggleSnapshot = __snapshot as DraggleSnapshot;
+            decoreLayer.visible = false;
+
+            if (!(hoveredElement || layout_controller.model.num === 0) || !_snapshot)
+                return;
+
+            // if source is Panel
+            if (snapshot.source is ITreeLayoutElement) {
+                //bringToFront(hoveredElement as DisplayObject);
+                //bringToFront(snapshot.source as DisplayObject);
+
+                if (getDropBoundsSide_catch !== DragDirection.NO_DIRECTION)
+                    layout_controller.addElement(snapshot.source as ITreeLayoutElement, hoveredElement as ITreeLayoutElement, dropDirection, false);
+            }
+            else if (snapshot.source is ActionBarButtonDraggle) {
+                const button:ActionBarButtonDraggle = snapshot.source as ActionBarButtonDraggle;
+
+                var panel:ModuleGroup = createTemplatePanel(button.module);
+
+                layout_controller.addElement(panel as ITreeLayoutElement, hoveredElement as ITreeLayoutElement, dropDirection, false, false, [
+                    {module: ModuleID.getID(button.module), id: panel.elementID}
+                ]);
+            }
+
+        }
+
+
+        public function cancelDrop(__snapshot:IDraggleSnapshot):void {
+            var snapshot:DraggleSnapshot = __snapshot as DraggleSnapshot;
+
+            if (snapshot.source is ITreeLayoutElement) {
+                layout_controller.useVirtual = false;
+                snapshot.source.visible = true;
+            }
+
+
+        }
+
+
+        private function bringToFront(obj:DisplayObject):void {
+            obj && obj.parent && obj.parent[(("setElementIndex" in obj.parent) ? "setElementIndex" : "setChildIndex")](obj, obj.parent.numChildren - 1);
+        }
+
+
+        public function createTemplatePanel(module:IModule):ModuleGroup {
+            var panel:ModuleGroup;
+            if (module is DocumentsModule)
+                panel = new ModuleGroup(); //TODO: tabs
+            else
+                panel = new ModuleGroup();
+
+            panel.elementID = layout_controller.maxId + 1;
+            panel.container = this;
+            panel.dropSpace = dropSpace;
+            panel.permission = App.room.user.permissions;
+            elements.push(panel);
+            return panel;
+        }
+
+
+        public function attachResizer(_r:ModuleResizer):void {
+            if (!_r)
+                return;
+
+            resizersContainer.addElement(_r);
+        }
+
+
+        public function cancelDragDrop():void {
+            if (!_snapshot)
+                return;
+            _snapshot.source.visible = true;
+            decoreLayer.visible = false;
+            removeSnapshot(_snapshot);
+        }
+        ]]>
+	</fx:Script>
+	
+	
+	<!-- ITreeLayoutElement implementation -->
+	
+	<fx:Script>
+		<![CDATA[
+			
+			public function get layoutIndex():String{
+				
+				return "";
+				
+			}
+			
+			public function set layoutIndex(value:String):void{
+				
+			}
+			
+			public function get privacy():Boolean{
+				return false;
+			}
+			
+			public function set privacy(value:Boolean):void{
+				
+			}
+			
+			public function get elementID():uint{
+				return 0;
+			}
+			
+			public function set elementID(value:uint):void{
+				
+			}
+			
+			public function get active():Boolean{
+				return true;
+			}
+			
+			public function set active(value:Boolean):void{
+				
+			}
+			
+			
+			public function set permission(value:int):void{
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!--main content layer-->
+	<components:ElementsContainer id="elementContainer"
+			 width="100%" height="100%"
+			 >
+		<components:layout>
+			<layout:MainLayout id="lt"/>
+		</components:layout>
+	</components:ElementsContainer>
+	
+	<!--resizers-->
+	
+	<s:Group id="resizersContainer"
+			 width="100%"
+			 height="100%"
+			 >
+		
+	</s:Group>
+	
+	
+	
+	
+	<!--top layer-->
+	<ns1:DropLayer id="decoreLayer" visible="false" mouseEnabled="false" mouseChildren="false" alpha="0.8"/>
+	
+	
+</s:Group>

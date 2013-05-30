@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                autoDrawBackground="false">
+
+    <fx:Script>
+		<![CDATA[
+        [Bindable]
+        private var _label:String;
+        [Bindable]
+        private var _value:String;
+        [Bindable]
+        private var _parentList:RadioList;
+        [Bindable]
+        private var _selected:Boolean;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            _label = String(value.label);
+            _value = String(value.value);
+            _selected = value.selected;
+
+            _parentList = parent.parent.parent.parent.parent as RadioList; //FIXME: really long parent!!
+        }
+        ]]>
+	</fx:Script>
+	<s:RadioButton group="{_parentList.group}" label="{_label}" value="{_value}" skinClass="ru.teachbase.skins.RadioButtonSkin" selected="{_selected}"/>
+</s:ItemRenderer>

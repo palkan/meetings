@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         initialize="controller.initialize()"
+         currentState="connecting"
+         minWidth="1000" minHeight="600">
+    <fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElement;
+        import mx.events.FlexEvent;
+        import mx.graphics.BitmapFillMode;
+
+        import ru.teachbase.components.Header;
+        import ru.teachbase.components.module.ModuleContainer;
+        import ru.teachbase.controller.ApplicationController;
+        import ru.teachbase.utils.shortcuts.style;
+
+        import spark.primitives.BitmapImage;
+
+        public const controller:ApplicationController = new ApplicationController(this);
+
+        private var _container:ModuleContainer;
+        private var _header:Header;
+
+        public function draw():void{
+
+            var background:BitmapImage = new BitmapImage();
+            background.source = style('globalsettings','bgicon');
+            background.left = background.right = background.top = background.bottom = 0;
+            background.fillMode = BitmapFillMode.REPEAT;
+
+            addElement(background);
+
+            _container = new ModuleContainer();
+            _container.left = _container.right = _container.bottom = 0;
+            _container.top = 43;
+            addElement(_container);
+
+            _header = new Header();
+            _header.left = _header.right = _header.top = 0;
+            _header.height = 43;
+            addElement(_header);
+
+        }
+
+
+        public function lightbox(element:IVisualElement):void{
+            //TODO
+        }
+
+
+        ]]>
+	</fx:Script>
+</s:Group>

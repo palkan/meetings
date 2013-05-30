@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark" xmlns:dragdrop="ru.teachbase.behaviours.dragdrop.*"
+         implements="ru.teachbase.behaviours.interfaces.IDragCoordinateSpace"
+         maxWidth="150"
+         maxHeight="120"
+         width="80"
+         height="100"
+         creationComplete="creationComplete(event)"
+        >
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+        <dragdrop:DragBehavior id="drag"
+                               mouseCoordinateSpace="{this}"
+                               dragStart="dragStartHandler(event)"
+                               dragEnd="dragEndHandler(event)"
+                               dispatchToTarget="false"
+                               useCapture="false"
+                               considerParent="false"
+                               bounds="{this}"
+                />
+    </fx:Declarations>
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.behaviours.dragdrop.DragEvent;
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.utils.chain.Chain;
+        import ru.teachbase.utils.chain.ChainMode;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        [Bindable]
+        private var _pageSnapshot:String;
+
+        private var _curentSize:Number;
+
+        private var _startX:Number;
+        private var _startY:Number;
+
+        private const ratio:Number = maxWidth / maxHeight;
+
+
+        private var _target:Group;
+
+        private var _disposed:Boolean;
+
+        private var _chain:Chain = Chain.initByMode(ChainMode.ONLY_LAST);
+
+        private var _contentW:Number = 1;
+        private var _contentH:Number = 1;
+        private var _scale:Number;
+
+        public function set pageSnapshot(obj:String):void {
+            _pageSnapshot = obj;
+        }
+
+
+        public function zoom(value:Number):void {
+
+            updateBorder();
+
+        }
+
+        public function rotate(flag:Boolean):void {
+            if (flag) {
+                rotateCW()
+            } else {
+                rotateCCW()
+            }
+
+            updateBorder();
+        }
+
+        protected function rotateCW(event:MouseEvent = null):void {
+
+            var _m:Matrix = transform.matrix.clone();
+            _m.rotate(Math.PI / 2);
+            _m.translate((height + width) / 2, (height - width) / 2);
+            transform.matrix = _m;
+
+        }
+
+        protected function rotateCCW(event:MouseEvent = null):void {
+
+            var _m:Matrix = transform.matrix.clone();
+            _m.rotate(-Math.PI / 2);
+            _m.translate((width - height) / 2, (height + width) / 2);
+            transform.matrix = _m;
+
+        }
+
+        private function dragStartHandler(evt:DragEvent):void {
+            stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+            _chain.startDispatchTimer(this);
+            removeEventListener(MouseEvent.CLICK, mapClick);
+        }
+
+        private function dragEndHandler(evt:DragEvent):void {
+            stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+            _chain.stopDispatchTimer();
+            addEventListener(MouseEvent.CLICK, mapClick);
+        }
+
+        private function onMouseMove(evt:Event):void {
+            _chain.push(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.MOVE, [-(borderRect.transform.matrix.tx) / width, -(borderRect.transform.matrix.ty) / height], false, ControlHost.CONTAINER, true));
+        }
+
+
+        public function setup(container:DisplayObjectContainer, customWidth:Number = 0, customHeight:Number = 0):void {
+
+        }
+
+        public function getBoundsRelativeChild(child:DisplayObject):Rectangle {
+
+
+            var rect_bounds:Rectangle = borderRect.getRect(this);
+
+            var deltaX:Number = borderRect.x - rect_bounds.x;
+            var deltaY:Number = borderRect.y - rect_bounds.y;
+
+
+            var bounds:Rectangle;
+
+            if (deltaX * deltaY == 0 && deltaX + deltaY != 0) {
+                bounds = new Rectangle(deltaX, deltaY, width - rect_bounds.width + rect_bounds.height, height + rect_bounds.width - rect_bounds.height);
+            } else {
+                bounds = new Rectangle(deltaX, deltaY, width, height);
+            }
+
+            return bounds;
+        }
+
+
+        private function updateBorder():void {
+
+            if (!_target)
+                return;
+
+            var h:Number = _target.height;
+            var w:Number = _target.width;
+
+            var _m:Matrix = _target.transform.matrix.clone();
+            _m.invert();
+            _m.tx *= width / w;
+            _m.ty *= height / h;
+            borderRect.transform.matrix = _m;
+
+            var _pm:Matrix = transform.matrix.clone();
+            _pm.invert();
+
+            borderRect.transform.matrix.concat(_pm);
+        }
+
+
+        public function resize():void {
+            if (!_target)
+                return;
+
+            var h:Number = _target.height;
+            var w:Number = _target.width;
+
+            var _k:Number = w / h;
+
+            if (_k > maxWidth / maxHeight) {
+                width = maxWidth;
+                height = maxWidth / _k;
+                thumbImage.height = height - 40 * (height / h);
+            }
+            else {
+                width = maxHeight * _k;
+                height = maxHeight;
+                thumbImage.width = width - 40 * (width / w);
+            }
+
+            updateBorder();
+
+        }
+
+
+        public function dispose():void {
+            _disposed = true;
+        }
+
+
+        public function set target(value:Group):void {
+            _target = value;
+        }
+
+        public function get disposed():Boolean {
+            return _disposed;
+        }
+
+
+        protected function mapClick(event:MouseEvent):void {
+            var _mx:Number;
+            var _my:Number;
+
+            var _w:Number = (borderRect.width * borderRect.scaleX) / 2;
+            var _h:Number = (borderRect.height * borderRect.scaleY) / 2;
+
+            var rect_bounds:Rectangle = borderRect.getRect(this);
+
+            var deltaX:Number = borderRect.x - rect_bounds.x;
+            var deltaY:Number = borderRect.y - rect_bounds.y;
+
+
+            if (_w > mouseX)
+                _mx = _w;
+            else if (_w > width - mouseX)
+                _mx = width - _w;
+            else
+                _mx = mouseX;
+
+            _mx -= _w;
+
+            if (_h > height - mouseY)
+                _my = height - _h;
+            else if (_h > mouseY)
+                _my = _h;
+            else
+                _my = mouseY;
+
+            _my -= _h;
+
+
+            borderRect.x = _mx + deltaX;
+            borderRect.y = _my + deltaY;
+
+            dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.MOVE, [-borderRect.transform.matrix.tx / width, -borderRect.transform.matrix.ty / height], false, ControlHost.CONTAINER, true));
+
+        }
+
+        protected function creationComplete(event:FlexEvent):void {
+            addEventListener(MouseEvent.CLICK, mapClick);
+        }
+        ]]>
+	</fx:Script>
+    <s:Group id="backGroup" width="100%" height="100%">
+        <s:Rect width="100%" height="100%">
+            <s:fill>
+                <s:SolidColor color="0x000000" alpha="0.4"/>
+            </s:fill>
+        </s:Rect>
+        <s:BitmapImage source="{_pageSnapshot}" id="thumbImage" maxHeight="120" maxWidth="150" scaleMode="letterbox"
+                       horizontalCenter="0" verticalCenter="0"/>
+    </s:Group>
+
+    <s:Group id="borderRect" width="{this.width}" height="{this.height}" initialize="drag.target = borderRect">
+        <s:Rect width="100%" height="100%">
+            <s:fill>
+                <s:SolidColor color="0xFFFFFF" alpha="0"/>
+            </s:fill>
+            <s:stroke>
+                <s:SolidColorStroke color="0xFF0000" weight="2"/>
+            </s:stroke>
+        </s:Rect>
+    </s:Group>
+</s:Group>

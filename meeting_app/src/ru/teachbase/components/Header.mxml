@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ActionBar xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             xmlns:c="ru.teachbase.components.*"
+             implements="ru.teachbase.utils.interfaces.ILocalable"
+             width="100%" height="43"
+             skinClass="ru.teachbase.skins.actionbar.CustomActionBarSkin"
+             resize="resizeHandler(event)"
+             creationComplete="creationCompleteHandler(event)"
+        >
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+        import mx.events.ResizeEvent;
+
+        import ru.teachbase.manage.SettingsManager;
+        import ru.teachbase.utils.BrowserUtils;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.system.isFullScreenMode;
+        import ru.teachbase.utils.system.switchFullScreenMode;
+
+        private const NAME:String = "actionbar";
+
+
+        private function resizeHandler(e:ResizeEvent = null):void {
+        }
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+            Localizer.addItem(this);
+            resizeHandler();
+        }
+
+        public function localize():void {
+            applicationPropertiesButton && (applicationPropertiesButton.toolTip = translate("settings", NAME));
+            switchFullscreenButton && (switchFullscreenButton.toolTip = translate("fullscreen", NAME));
+        }
+
+
+
+        ]]>
+	</fx:Script>
+
+	
+	<s:states>
+		<s:State id="normal" name="normal"/>
+		<s:State id="idle" name="idle"/>
+	</s:states>
+	
+	<s:navigationContent>
+		<c:Logo left="10" id="logoClip"/>
+		<s:Image id="logoImg" left="{logoClip.x + logoClip.width+ 10}" top="0" height="43" initialize="logoImg.source = style('actionBar','separator')"/>
+	</s:navigationContent>
+	
+	<s:titleLayout>
+		<s:HorizontalLayout horizontalAlign="center"/>
+	</s:titleLayout>
+	
+	<s:titleContent>
+
+		<c:SoundControls id="soundControls"/>
+				
+		<s:Image id="sep1" left="{soundControls.x + soundControls.width+ 3}" top="0" height="43" initialize="sep1.source = style('actionBar','separator')"/>
+		
+		<!--draggable content-->
+		<c:SlidedActionBarGroup id="modulesGroup"
+								   includeIn="normal"
+								   />
+		
+		<s:Image includeIn="normal" id="sep2"  left="{modulesGroup.x + modulesGroup.width+ 3}" top="0" height="43" initialize="sep1.source = style('actionBar','separator')"/>
+		
+		<!--
+		<c:ActionBarGroup dropSpace="{dropSpace}"
+								   toolTip="Layouts"
+								   />
+		-->
+	</s:titleContent>
+	
+	<s:actionContent>
+		<!--c:ActionBarButton id="helpButton"
+						   icon="{s('actionBar','helpIco')}"
+						   iconOver="{s('actionBar','helpIcoHover')}"
+						   skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+						   click="Alert.show('TODO', 'Help');"
+						   /-->
+		<c:ActionBarButton id="applicationPropertiesButton"
+						   focusSkin="{null}"
+						   skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+						   click="(m(SettingsManager) as SettingsManager).showDialog()"
+						   initialize="with(applicationPropertiesButton){
+						                       toolTip=translate('settings',NAME);
+						                       icon=style('actionBar','settingsIco');
+						                       iconOver=style('actionBar','settingsIcoHover');}"
+						   />
+		<c:ActionBarButton id="switchFullscreenButton"
+						   focusSkin="{null}"
+						   skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+						   addedToStage="switchFullscreenButton.selected = isFullScreenMode(switchFullscreenButton.stage);"
+						   click="switchFullscreenButton.selected = switchFullScreenMode(stage);"
+						   initialize="with(switchFullscreenButton){
+						                        toolTip=translate('fullscreen',NAME);
+						                        icon=style('actionBar','fullscreenIco');
+						                        iconOver=style('actionBar','fullscreenIcoHover');}"
+						   />
+		
+		<c:ActionBarButton id="exitButton"
+						   focusSkin="{null}"
+						   skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+						   initialize="with(exitButton){
+						                    toolTip=translate('cloase',NAME);
+						                    icon=style('actionBar','exitIco');
+						                    iconOver=style('actionBar','exitIcoHover');}"
+						   >
+			<c:click>
+				<![CDATA[
+					exitButton.selected = false;
+					CONFIG::WEB{
+						BrowserUtils.closeWindow();
+					}
+				]]>
+			</c:click>
+			</c:ActionBarButton>
+	</s:actionContent>
+</s:ActionBar>

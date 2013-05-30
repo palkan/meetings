@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         implements="ru.teachbase.module.documents.renderers.IWorkplaceRenderer"
+         creationComplete="completeHandler(event)"
+        >
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Metadata>
+		[Event(name="init", type="ru.teachbase.events.documents.RendererEvent")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElementContainer;
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.events.documents.RendererEvent;
+
+        protected var _editable:Boolean;
+        protected var _disposed:Boolean;
+
+        protected var _ratio:Number;
+
+        protected var _useWB:Boolean = false;
+
+        protected var _inited:Boolean;
+
+
+        protected var _initialWidth:Number = NaN;
+
+
+        protected var controlsContainer:IVisualElementContainer;
+
+
+        protected var parentContainer:Group;
+
+
+        public function dispose():void {
+
+        }
+
+
+        public function get hasControls():Boolean {
+            return false;
+        }
+
+        public function get useWB():Boolean {
+
+            return _useWB;
+        }
+
+        public function get ratio():Number {
+            return _ratio;
+        }
+
+        public function get editable():Boolean {
+            return _editable;
+        }
+
+        public function set editable(value:Boolean):void {
+
+            _editable = value;
+
+        }
+
+        public function set data(value:Object):void {
+
+        }
+
+        public function get disposed():Boolean {
+            return _disposed;
+        }
+
+        public function set disposed(value:Boolean):void {
+            _disposed = value;
+        }
+
+        public function resize(w:Number, h:Number):void {
+            this.width = w;
+            this.height = h;
+            return;
+
+        }
+
+        public function initControls(container:IVisualElementContainer):Boolean {
+
+            this.controlsContainer = container;
+            return true;
+        }
+
+        public function initParent(container:Group):Boolean {
+            this.parentContainer = container;
+            return true;
+        }
+
+
+        protected function completeHandler(event:FlexEvent):void {
+            inited = true;
+        }
+
+        public function get inited():Boolean {
+            return _inited;
+        }
+
+        public function set inited(value:Boolean):void {
+            _inited = value;
+            value && dispatchEvent(new RendererEvent(RendererEvent.INITIALIZED));
+        }
+
+        public function get initialWidth():Number {
+            return _initialWidth;
+        }
+
+        public function zoom(flag:Boolean):void {
+
+        }
+
+        public function rotate(flag:Boolean):void {
+
+        }
+        ]]>
+	</fx:Script>
+</s:Group>

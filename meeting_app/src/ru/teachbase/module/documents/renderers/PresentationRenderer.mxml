@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renderers:SWFRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                       xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:renderers="ru.teachbase.module.documents.renderers.*"
+                       width="100%" height="100%">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElementContainer;
+        import mx.core.UIComponent;
+
+        import ru.teachbase.events.documents.ChangeSlideEvent;
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.components.HorizontalThumbPanel;
+        import ru.teachbase.module.documents.components.NavigateButtons;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        private var horizontalThumb:HorizontalThumbPanel;
+        private var navigateButtons:NavigateButtons;
+
+        override public function initControls(container:IVisualElementContainer):Boolean {
+            horizontalThumb = new HorizontalThumbPanel();
+            horizontalThumb.percentWidth = 100;
+            horizontalThumb.setStyle('bottom', 0);
+            horizontalThumb.dataProvider = _assetList;
+            horizontalThumb.visible = _editable;
+
+            navigateButtons = new NavigateButtons();
+            navigateButtons.percentWidth = 100;
+            navigateButtons.percentHeight = 100;
+            navigateButtons.addEventListener('onChangeSlide', navigateButtonsClick);
+            navigateButtons.visible = _editable;
+
+            container.addElementAt(horizontalThumb, 0);
+            container.addElementAt(navigateButtons, 0);
+
+
+            return true;
+        }
+
+
+        private function navigateButtonsClick(evt:ChangeSlideEvent):void {
+            if (evt.direction == ChangeSlideEvent.DIRECTION_LEFT) {
+                dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.CHANGE_SLIDE, [_slideItem.slideId - 1], true, ControlHost.BOTH, true));
+            } else {
+                dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.CHANGE_SLIDE, [_slideItem.slideId + 1], true, ControlHost.BOTH, true));
+            }
+        }
+
+        override public function get hasControls():Boolean {
+            return true;
+        }
+
+
+        override public function resize(width:Number, height:Number):void {
+            super.resize(width, height);
+        }
+
+        override protected function set clip(value:UIComponent):void {
+            swlLoaderElement.removeAllElements()
+            swlLoaderElement.addElement(value);
+            progressBarCont.visible = true;
+        }
+
+        override public function onLoaded():void {
+            super.onLoaded();
+            progressBarCont.visible = false;
+        }
+
+        override public function set editable(value:Boolean):void {
+            super.editable = value;
+            if (horizontalThumb)
+                horizontalThumb.visible = value;
+            if (navigateButtons)
+                navigateButtons.visible = value;
+        }
+
+        override public function dispose():void {
+            super.dispose();
+            swlLoaderElement.removeAllElements();
+        }
+        ]]>
+	</fx:Script>
+
+	<s:Group id="swlLoaderElement" width="100%" height="100%"/>
+	<s:Group verticalCenter="0" horizontalCenter="0" id="progressBarCont">
+		<s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
+	</s:Group>
+	<!--mx:UIComponent id="progressBarCont" verticalCenter="0" horizontalCenter="0">
+		
+		<!mx:creationComplete>
+			<![CDATA[
+			const tm:BusyCursor = new BusyCursor();
+			progressBarCont.addChild(tm);
+			]]>
+		</mx:creationComplete>
+	</mx:UIComponent-->
+</renderers:SWFRenderer>

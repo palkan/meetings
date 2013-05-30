@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         width="100%" height="44"
+         addedToStage="onInit()">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import mx.collections.ArrayList;
+
+        import ru.teachbase.module.documents.renderers.ThumbHorizontalItemRenderer;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+
+        private var _timer:Timer = new Timer(100, 0);
+        private var _open:Boolean;
+        private var _loadingTimer:Timer = new Timer(1000, 1);
+        private var _renderersList:Vector.<IThumbRenderer> = new Vector.<IThumbRenderer>();
+        private var _lastLoadedSlide:int;
+
+        [Bindable]
+        private var _dataProvider:ArrayList;
+
+        private function onInit():void {
+            _timer.addEventListener(TimerEvent.TIMER, onTimer, false, 0, true);
+            _timer.start();
+            _loadingTimer.addEventListener(TimerEvent.TIMER, lodedHandler);
+
+            var classFactory:ClassFactory = new ClassFactory(ThumbHorizontalItemRenderer);
+            classFactory.properties = { handler: rendererInited, lodedHandler: lodedHandler};
+
+            thumbList.itemRenderer = classFactory;
+        }
+
+        private function onTimer(evt:Event):void {
+
+            if (this.mouseY > 0 && this.mouseY < 65 && this.mouseX > 0 && this.mouseX < this.width) {
+                open = true;
+            } else {
+                open = false;
+            }
+
+            if (this.mouseY < 0 || this.mouseX < 0 || this.mouseX > this.width || this.mouseY > this.height) {
+                return;
+            }
+
+            if (_open) {
+                if (this.mouseX > 0 && this.mouseX < 120) {
+                    moveLeft((120 - mouseX));
+                } else if (this.mouseX > this.width - 120 && this.mouseX < this.width) {
+                    moveRight(120 - (this.width - mouseX));
+                }
+            }
+        }
+
+        private function moveLeft(speed:Number):void {
+            thumbList.layout.horizontalScrollPosition -= speed >= thumbList.layout.horizontalScrollPosition ? thumbList.layout.horizontalScrollPosition : speed / 2;
+        }
+
+        private function moveRight(speed:Number):void {
+            if (speed / 2 >= thumbList.layout.target.contentWidth - thumbList.layout.horizontalScrollPosition - this.width + 10) {
+                thumbList.layout.horizontalScrollPosition = thumbList.layout.target.contentWidth - this.width + 10;
+            } else if (thumbList.layout.horizontalScrollPosition < thumbList.layout.target.contentWidth - this.width + 10) {
+                thumbList.layout.horizontalScrollPosition += speed / 2;
+            }
+        }
+
+        private function set open(value:Boolean):void {
+            if (_open == value) {
+                return;
+            }
+            _open = value;
+            if (_open) {
+                Tweener.addTween(mainGroup, {y: 0, time: 0.3, transition: "linear"});
+            } else {
+                //TODO: с таймером
+                Tweener.addTween(mainGroup, {y: 44, time: 0.3, transition: "linear"});
+            }
+        }
+
+        public function rendererInited(par:IThumbRenderer):void {
+
+            _renderersList.push(par);
+
+            if (par.itemId == 0) {
+                par.load();
+                _loadingTimer.start();
+            }
+        }
+
+        private function lodedHandler(par:Event = null):void {
+            _loadingTimer.reset();
+            _lastLoadedSlide++;
+
+            if (_lastLoadedSlide < _renderersList.length && _renderersList[_lastLoadedSlide]) {
+                _renderersList[_lastLoadedSlide].load();
+                _loadingTimer.start();
+            } else {
+                _loadingTimer.stop();
+                _loadingTimer.removeEventListener(TimerEvent.TIMER, lodedHandler);
+            }
+        }
+
+        public function set dataProvider(value:ArrayList):void {
+            _dataProvider = value;
+        }
+
+        public function dispose():void {
+            _dataProvider = null;
+            _timer.stop();
+            _timer.removeEventListener(TimerEvent.TIMER, onTimer);
+        }
+        ]]>
+	</fx:Script>
+	<s:Group id="mainGroup" width="100%" height="100%">
+		<s:Image id="backgroundRectHorizontal" initialize="backgroundRectHorizontal.source=style('docs','thumbListBg')"  scaleMode="stretch" height="44" width="100%" left="0" right="0" top="0"/>
+		
+		<s:List id="thumbList" borderVisible="false" left="5" right="5"			
+				height="100%" width="100%"
+				useVirtualLayout="false" 
+				dataProvider="{_dataProvider}"
+				contentBackgroundAlpha="0" horizontalCenter="0" verticalCenter="0" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+			<s:layout>
+				<s:HorizontalLayout gap="1"/>
+			</s:layout>
+		</s:List>
+	</s:Group>
+</s:Group>

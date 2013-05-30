@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark">
+    <!-- host component -->
+	<fx:Metadata>
+		[HostComponent("spark.components.ActionBar")]
+	</fx:Metadata>
+	
+	<!-- states -->
+	<s:states>
+		<s:State name="titleContentWithActionAndNavigation" />
+		<s:State name="titleContentWithNavigation" />
+		<s:State name="titleContentWithAction" />
+		<s:State name="titleContent" />
+		<s:State name="titleWithActionAndNavigation" />
+		<s:State name="titleWithNavigation" />
+		<s:State name="titleWithAction" />
+		<s:State name="title" />
+	</s:states>
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        ]]>
+	</fx:Script>
+
+	<s:Image id="img" initialize="img.source=style('actionBar','background')" top="0" left="0" right="0" scaleMode="stretch" height="43"/>
+	
+	<s:Group id="navigationGroup"
+			 left="12"
+			 top="0"/>
+
+	
+	<s:Group id="titleGroup"
+			 left="{navigationGroup.width + navigationGroup.x + 12}"
+			 top="0"/>
+
+	
+	<s:HGroup id="actionGroup" gap="2"
+			 right="12"
+			 top="0"/>
+	
+	<s:Label id="titleDisplay"
+			 horizontalCenter="0"
+			 top="0" right="11"/>
+</s:Skin>

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 implements="ru.teachbase.utils.interfaces.ILocalable, ru.teachbase.utils.interfaces.IDisposable"
+		 minWidth="80"
+		 minHeight="48"
+		 rollOver="_mouseOver = true" 
+		 rollOut="_mouseOver = false"
+		 initialize="Localizer.addItem(this)"
+		 >
+	<fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import mx.collections.ArrayCollection;
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.components.NavigatorWindow;
+        import ru.teachbase.core.App;
+        import ru.teachbase.events.ChangeEvent;
+        import ru.teachbase.features.live.mouse.SimpleLiveCursorManager;
+        import ru.teachbase.module.screenshare.ShareVideoModes;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        private const SNAP_TIME:int = 2000;
+
+        private var video:Video = null;
+
+        [Bindable]
+        public var stream:NetStream = null;
+
+        [Bindable]
+        private var titleName:String;
+
+        public var userId:Number;
+
+        [Bindable]
+        private var _paused:Boolean;
+
+        [Bindable]
+        private var _mouseOver:Boolean;
+
+        private var _animating:Boolean = false;
+
+        private var _disposed:Boolean = false;
+
+        private var _navigator:NavigatorWindow;
+
+        private var _navTimer:Timer = new Timer(SNAP_TIME);
+
+        private var _ratio:Number = 1;
+
+        private var _mode:String = ShareVideoModes.SCALE;
+
+        private var bufferPoint:Point;
+
+        private var modes:ArrayCollection = new ArrayCollection(['scale', 'crop']);
+
+        public function set from(userId:Number):void {
+            titleName = translate("user_share_title", "screenshare", App.room.getUserNameById(userId));
+            this.userId = userId;
+        }
+
+        public function localize():void {
+            titleName = translate("user_share_title", "screenshare", App.room.getUserNameById(userId));
+        }
+
+        public function get from():Number {
+            return this.userId;
+        }
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+
+            if (!stream) return;
+
+
+            video = new Video();
+            uic.width = this.width;
+            uic.height = this.height;
+            video.smoothing = true;
+            video.deblocking = 5;
+
+            video.attachNetStream(stream);
+
+            uic.addChild(video);
+
+        }
+
+
+        public function toggleCursor(point:Point):void {
+            if (!video)
+                return;
+            var posX:Number = point.x / 1000 * video.width + video.x;
+            var posY:Number = point.y / 1000 * video.height + video.y;
+
+            bufferPoint = point;
+
+            curContainer.visible = true;
+            _liveCursorManager.posCursor(new Point(posX, posY));
+        }
+
+
+        override public function setActualSize(w:Number, h:Number):void {
+
+            super.setActualSize(w, h);
+
+            if (video) {
+
+                _ratio = video.videoWidth / video.videoHeight;
+
+                if (_mode === ShareVideoModes.SCALE) {
+
+                    uic.width = w;
+                    uic.height = h;
+
+                    if (_ratio < w / h) {
+                        video.height = (h < video.videoHeight) ? h : video.videoHeight;
+                        video.width = _ratio * video.height;
+                        video.x = (w - video.width) / 2;
+                        video.y = (h - video.height) / 2;
+                    } else {
+                        video.width = (w < video.videoWidth) ? w : video.videoWidth;
+                        video.height = video.width / _ratio;
+                        video.x = (w - video.width) / 2;
+                        video.y = (h - video.height) / 2;
+
+                    }
+
+                    uic.x = 0;
+                    uic.y = 0;
+
+                    _navigator && resetNavigator();
+
+                } else {
+
+                    uic.width = video.width = video.videoWidth;
+                    uic.height = video.height = video.videoHeight;
+
+                    (uic.width < w) && (uic.x = (w - uic.width) / 2);
+                    (uic.height < h) && (uic.y = (h - uic.height) / 2);
+                    video.x = video.y = 0;
+
+                    if ((uic.width > width) || (uic.height > height)) setNavigator();
+
+                    _navigator && !_animating && _navigator.visible && resizeNavigator();
+
+                }
+
+            }
+        }
+
+        private function resizeNavigator():void {
+
+            _navigator.resize();
+            navBack.width = _navigator.width + 10;
+            navBack.height = _navigator.height + 10;
+
+        }
+
+        private function setNavigator():void {
+
+            if (_navigator.visible) return;
+
+            _navigator.visible = navBack.visible = true;
+            _navigator.addEventListener(ChangeEvent.CHANGED, onNavMove);
+
+            createSnapshot();
+
+            _navTimer.addEventListener(TimerEvent.TIMER, createSnapshot);
+            _navTimer.start();
+
+        }
+
+
+        private function resetNavigator():void {
+
+            if (!_navigator.visible) return;
+
+            _navigator.visible = navBack.visible = false;
+            _navigator.removeEventListener(ChangeEvent.CHANGED, onNavMove);
+
+            _navTimer.removeEventListener(TimerEvent.TIMER, createSnapshot);
+            _navTimer.stop();
+
+
+        }
+
+
+        private function createSnapshot(e:TimerEvent = null):void {
+
+            var _bmp:BitmapData = new BitmapData(video.width, video.height);
+            _bmp.draw(video, video.transform.matrix);
+
+            _navigator.snapshotSource = _bmp;
+
+        }
+
+        public function get videoWidth():Number {
+            return video ? video.videoWidth : 0;
+        }
+
+
+        protected function onNavMove(e:ChangeEvent):void {
+
+            _animating = true;
+            Tweener.addTween(uic, {x: e.value.x * uic.width, y: e.value.y * uic.height, time: .12, transition: "linear", onComplete: function ():void {
+                _animating = false;
+            }});
+
+        }
+
+
+        protected function onChangeMode(event:MouseEvent):void {
+            _mode = (switcher.selectedIndex === 0) ? ShareVideoModes.SCALE : ShareVideoModes.CROP;
+            setActualSize(width, height);
+            toggleCursor(bufferPoint);
+
+        }
+
+        protected function content_initializeHandler(event:FlexEvent):void {
+            _navigator = new NavigatorWindow();
+            _navigator.bottom = 42;
+            _navigator.right = 5;
+            _navigator.target = uic;
+            _navigator.viewport = this;
+            _navigator.setStyle("backgroundAlpha", 0);
+            _navigator.setStyle("borderColor", 0xFF0000);
+            _navigator.visible = false;
+            addElement(_navigator);
+        }
+
+
+        public function dispose():void {
+
+            if (_disposed) return;
+
+            if (_navTimer && _navTimer.running) {
+                _navTimer.removeEventListener(TimerEvent.TIMER, createSnapshot);
+                _navTimer.stop();
+            }
+
+            _disposed = true;
+
+        }
+
+        public function get disposed():Boolean {
+            return _disposed;
+        }
+
+        private var _liveCursorManager:SimpleLiveCursorManager;
+
+        private function curInit():void {
+            _liveCursorManager = new SimpleLiveCursorManager(uic);
+        }
+        ]]>
+	</fx:Script>
+	<s:Group id="content" clipAndEnableScrolling="true" width="100%" height="100%" creationComplete="content_initializeHandler(event)">
+		<s:BitmapImage fillMode="repeat" source="{style('screenshare','back')}" width="100%" height="100%"/>
+		<mx:UIComponent id="uic" initialize="creationCompleteHandler(event)"/>
+		<mx:UIComponent id="curContainer" width="100%" height="100%" visible="false" initialize="curInit()"/>
+	</s:Group>
+	
+	
+	
+	
+	<s:Rect id="navBack" width="120" height="100" right="0" bottom="37" visible="false">
+		<s:fill>
+			<s:SolidColor color="0x000000" alpha="0.65"/>
+		</s:fill>
+	</s:Rect>
+	<!--s:Label width="90%" text="{titleName}" left="10" bottom="3" color="0xFFFFFF"/-->
+	<!--s:CheckBox id="modeCheck" right="10" bottom="2" selected="true" change="onChangeMode(event)" height="20" visible="false"/-->
+	<s:Group right="0" bottom="0" width="69" height="37">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="0x000000" alpha=".65"/>				
+			</s:fill>
+		</s:Rect>
+		<s:ButtonBar id="switcher" skinClass="ru.teachbase.module.screenshare.skins.ModeSwitchButtonBarSkin" horizontalCenter="0" verticalCenter="0" click="onChangeMode(event)" initialize="with(switcher){dataProvider=modes;selectedIndex=0}"/>
+	</s:Group>
+</s:Group>

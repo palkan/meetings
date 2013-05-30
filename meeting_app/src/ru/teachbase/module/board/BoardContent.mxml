@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:board="ru.teachbase.module.board.*"
+         minWidth="150"
+         minHeight="200"
+         creationComplete="creationCompleteHandler(event)" xmlns:components1="ru.teachbase.module.board.components.*"
+        >
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.events.WhiteBoardEvent;
+
+        import ru.teachbase.module.board.figures.FigureManager;
+        import ru.teachbase.module.board.instruments.Instrument;
+
+        private var currentInstrumentType:String;
+        private var currentInstrument:Instrument;
+
+
+        public var instanceID:int;
+
+        private const figureManager:FigureManager = new FigureManager();
+        [Bindable]
+        private var _editable:Boolean;
+
+        private final function creationCompleteHandler(e:FlexEvent):void {
+            figureManager.initialize(canvas, instanceID);
+        }
+
+        /*public function set transparent(value:Boolean):void{
+         if (value) {
+         canvas.opaqueBackground = null;
+         }//TODO: return to default color
+         }
+
+
+         public function set background(ds:BitmapData):void{
+         canvas.background = ds;
+         }*/
+
+        protected function onPropertyChanged(event:WhiteBoardEvent):void {
+            if (event.propertyId == "stroke")
+                canvas.stroke.thickness = event.value;
+            else if (event.propertyId == "color")
+                canvas.stroke.color = event.value;
+        }
+
+        protected function onToolChanged(event:WhiteBoardEvent):void {
+
+            currentInstrument = figureManager.currentInstrument;
+
+            if (!event.value) {
+                currentInstrumentType = null;
+                currentInstrument && currentInstrument.dispose();
+                return;
+            }
+
+
+            if (currentInstrumentType == event.value)
+                return;
+
+            currentInstrumentType = event.value;
+
+            const newInstrument:Instrument = Instrument.get(currentInstrumentType, canvas);
+
+            if (currentInstrument && newInstrument === currentInstrument)
+                return;
+
+            if (currentInstrument) {
+                currentInstrument.dispose();
+                currentInstrument = null;
+                if (!currentInstrumentType)
+                    return;
+            }
+
+            currentInstrument = newInstrument;
+            currentInstrument && currentInstrument.initialize(figureManager);
+
+        }
+
+        protected function onUndoRedo(event:WhiteBoardEvent):void {
+            canvas.manager[event.value](canvas.manager.history[event.value]());
+        }
+
+
+        public function dispose():void {
+
+            canvas.dispose();
+            figureManager.dispose();
+
+        }
+
+        public function get editable():Boolean {
+            return _editable;
+        }
+
+        public function set editable(value:Boolean):void {
+            _editable = value;
+            /*if (canvas) {
+             canvas.mouseChildren = _enabled;
+             canvas.mouseEnabled = _enabled;
+             }*/
+        }
+
+        public function gotoPage(id:int):void {
+            canvas.gotoPage(id);
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:Group   width="100%"
+			  height="100%"
+			  >
+		
+		
+		
+		<!--canvas-->
+		<board:BoardCanvas id="canvas"
+						   width="{this.width}"
+						   height="{this.height}"
+						   editable="{_editable}"
+						   />
+		
+		<components1:WBControlbar id="wbc" 
+						 undo="{canvas.manager.history.undoAvailable}"
+						 redo="{canvas.manager.history.redoAvailable}"
+						 property="onPropertyChanged(event)"
+						 tool="onToolChanged(event)"
+						 undo_redo="onUndoRedo(event)"
+						 visible="{_editable}"
+						 />
+		
+	</s:Group>
+</s:Group>

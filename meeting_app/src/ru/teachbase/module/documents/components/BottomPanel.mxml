@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         width="210" height="26" xmlns:components="ru.teachbase.components.*">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="modifySlide", type="ru.teachbase.module.documents.docevents.ModifySlideEvent")]
+		[Event(name="onChangeSlide", type="ru.teachbase.module.documents.docevents.ChangeSlideEvent")]
+	</fx:Metadata>
+
+	<fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import ru.teachbase.events.documents.ChangeSlideEvent;
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.helpers.skin;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        private var _isHide:Boolean;
+
+        [Bindable]
+        private var _curentSlide:int = 0;
+
+        [Bindable]
+        private var _maxSlides:int;
+
+        private function buttonClick(evt:Event):void {
+            switch (evt.target) {
+                case rotateRight:
+                    dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.ROTATE, [true], true, ControlHost.BOTH, true));
+                    break;
+                case zoomIn:
+                case zoomInS:
+                    dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.ZOOM, [true], false, ControlHost.BOTH, true));
+                    break;
+                case zoomOut:
+                case zoomOutS:
+                    dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.ZOOM, [false], false, ControlHost.BOTH, true));
+                    break;
+            }
+        }
+
+        public function set isOwner(value:Boolean):void {
+            if (value) {
+                currentState = fullView.name;
+                this.width = 210;
+            } else {
+                currentState = lightView.name;
+            }
+        }
+
+        private function gotoSlide(evt:Event):void {
+            switch (evt.target) {
+                case previousSlide:
+                    if (_curentSlide > 0)
+                        dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.CHANGE_SLIDE, [_curentSlide - 1], true, ControlHost.BOTH, true));
+                    break;
+                case nextSlide:
+                    dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.CHANGE_SLIDE, [_curentSlide + 1], true, ControlHost.BOTH, true));
+                    break;
+            }
+        }
+
+        public function set maxSlides(value:int):void {
+            _maxSlides = value;
+        }
+
+        public function set curentSlide(value:int):void {
+            _curentSlide = value;
+        }
+
+        private function onKeyDown(evt:KeyboardEvent):void {
+            if (evt.keyCode == 13) {
+                var num:int = int(toSlide.text);
+                toSlide.text = "";
+                if (num != 0) {
+                    this.dispatchEvent(new ChangeSlideEvent("onChangeSlide", ChangeSlideEvent.DIRECTION_DIRECT, num));
+                }
+            }
+        }
+
+        private function onHideButtonClick(evt:Event):void {
+
+            if (_isHide) {
+                hideButton.toolTip = translate("hide");
+                Tweener.addTween(mainGroup, {y: mainGroup.y - 26, time: 0.2, transition: "linear"});
+            } else {
+                hideButton.toolTip = translate("show");
+                Tweener.addTween(mainGroup, {y: mainGroup.y + 26, time: 0.2, transition: "linear"});
+            }
+            _isHide = !_isHide;
+        }
+
+        public function dispose():void {
+            //
+
+        }
+        ]]>
+	</fx:Script>
+	<s:states>
+		<s:State id="fullView" name="fullView" />
+		<s:State id="lightView" name="lightView"/>
+	</s:states>
+	
+	<s:Group id="mainGroup" width="100%" height="100%" horizontalCenter="0">
+		
+		
+		<s:Button id="hideButton" initialize="with(hideButton){toolTip=translate('hide');setStyle('icon',ru.teachbase.utils.helpers.style('docs','hideButtonBottomPanel'))}" focusSkin="{null}"
+				  click="onHideButtonClick(event)" horizontalCenter="0" top="-11" height="11" width="19" skinClass="ru.teachbase.skins.SimpleButtonSkin" />
+		<!--s:Rect width="217" height="26" radiusX="3" radiusY="3">
+			<s:fill >
+				<s:SolidColor color="0x888888" alpha="0.7"/>
+			</s:fill>
+		</s:Rect-->
+		<s:HGroup gap="0" bottom="3" horizontalCenter="0" includeIn="fullView">
+			<components:CustomSkinableButton id="previousSlide" click="gotoSlide(event)"
+					  width="24" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  initialize="with(previousSlide){iconDown=ru.teachbase.utils.helpers.style('docs','bottomPrevDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomPrevOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomPrevUp');}"
+					  />
+			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
+			<s:Group width="57	">
+				<s:BitmapImage source="{style('docs','bottomNumbersBackground')}" top="0" left="0" right="0" bottom="0"/>
+				<s:TextArea id="toSlide" text="{_curentSlide+1}"  width="25" textAlign="center" height="18" keyDown="onKeyDown(event)" skinClass="ru.teachbase.skins.docs.RoundedTextArea" 
+							top="4" bottom="4" left="7" paddingLeft="4" paddingRight="0" paddingBottom="0" paddingTop="4" fontSize="12"/>
+			
+				<s:Label id="maxSlidesText" width="20" height="20" text="{'/'+_maxSlides}" fontSize="12" right="0" color="0xFFFFFF" top="9"/>
+			</s:Group>
+			
+			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
+			<components:CustomSkinableButton id="nextSlide" click="gotoSlide(event)"
+					  width="26" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  initialize="with(nextSlide){iconDown=ru.teachbase.utils.helpers.style('docs','bottomNextDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomNextOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomNextUp');}"
+					  />
+			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
+			<components:CustomSkinableButton id="zoomIn" click="buttonClick(event)"
+					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  initialize="with(zoomIn){iconDown=ru.teachbase.utils.helpers.style('docs','bottomZoomInDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomZoomInOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomZoomInUp');}"
+					  />
+			<components:CustomSkinableButton id="zoomOut" click="buttonClick(event)"
+					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  initialize="with(zoomOut){iconDown=ru.teachbase.utils.helpers.style('docs','bottomZoomOutDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomZoomOutOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomZoomOutUp');}"
+					  />
+			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
+			<components:CustomSkinableButton id="rotateRight" click="buttonClick(event)"
+					  width="29" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  initialize="with(rotateRight){ iconDown=ru.teachbase.utils.helpers.style('docs','bottomRotateDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomRotateOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomRotateUp');}"
+					  />
+			
+		</s:HGroup>
+		<s:HGroup includeIn="lightView" gap="0" horizontalCenter="0">
+			<components:CustomSkinableButton id="zoomOutS" click="buttonClick(event)"
+											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+											 initialize="with(zoomOutS){iconDown=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomOutDown'); iconOver=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomOutOver'); iconUp=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomOutUp');}"
+											 />
+
+			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
+			<s:Group width="24">
+				<s:BitmapImage source="{style('docs','bottomSmallNumbersBg')}" top="0" left="0" right="0" bottom="0"/>
+				<s:Label text="{_curentSlide+1}" width="24" height="20" fontSize="12" right="0" color="0xFFFFFF" top="9" textAlign="center"/>
+			</s:Group>
+			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
+			<components:CustomSkinableButton id="zoomInS" click="buttonClick(event)"
+											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+											 initialize="with(zoomInS){iconDown=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomInDown'); iconOver=ru.teachbase.utils.helpers.style('docs','ottomSmallZoomInOver'); iconUp=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomInUp');}"
+											 />
+		</s:HGroup>
+	</s:Group>
+</s:Group>

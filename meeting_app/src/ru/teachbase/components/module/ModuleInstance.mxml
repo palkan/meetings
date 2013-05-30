@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         implements="ru.teachbase.module.base.IModuleContent,
+		 ru.teachbase.behaviours.interfaces.INotDraggle"
+         width="100%"
+         height="100%">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.model.ModuleSettings;
+        import ru.teachbase.module.base.IModule;
+        import ru.teachbase.module.base.IModulePanel;
+
+        private var _ownerModule:IModule;
+        private var _instanceID:uint;
+        private var _label:String;
+        private var _panelID:uint;
+        private var _permission:int;
+        private var _ownerPanel:IModulePanel;
+
+
+        public function get ownerModule():IModule {
+            return _ownerModule;
+        }
+
+        public function set ownerModule(value:IModule):void {
+            _ownerModule = value;
+        }
+
+        [Bindable]
+        public function get instanceID():uint {
+            return _instanceID;
+        }
+
+        public function set instanceID(value:uint):void {
+            _instanceID = value;
+        }
+
+        public function get label():String {
+            return _label;
+        }
+
+        public function set label(value:String):void {
+            _label = value;
+            _ownerPanel.title = value;
+        }
+
+        public function get panelID():uint {
+            return _panelID;
+        }
+
+        public function set panelID(value:uint):void {
+            _panelID = value;
+        }
+
+        public function hideContainer():void {
+            _ownerModule.available = true;
+        }
+
+
+        public function set permission(value:int):void {
+            _permission = value;
+        }
+
+        public function get permission():int {
+            return _permission;
+        }
+
+        public function get settings():Vector.<ModuleSettings> {
+
+            return null;
+        }
+
+        public function get ownerPanel():IModulePanel {
+            return _ownerPanel;
+        }
+
+        public function set ownerPanel(value:IModulePanel):void {
+            _ownerPanel = value;
+        }
+        ]]>
+	</fx:Script>
+</s:Group>

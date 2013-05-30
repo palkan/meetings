@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renderers:DefaultRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                           xmlns:s="library://ns.adobe.com/flex/spark"
+                           xmlns:renderers="ru.teachbase.module.documents.renderers.*"
+        >
+    <fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElementContainer;
+
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        import spark.components.Button;
+        import spark.components.HGroup;
+
+        override public function get ratio():Number {
+
+            return 4 / 3;
+
+        }
+
+
+        override public function get useWB():Boolean {
+            return true;
+        }
+
+
+        override public function get hasControls():Boolean {
+            return false;
+        }
+
+
+        override public function resize(w:Number, h:Number):void {
+
+            rect.setLayoutBoundsPosition(0, 0);
+
+            if (w / h > ratio) {
+                rect.height = h;
+                rect.width = h * ratio;
+                rect.x = (w - rect.width) / 2;
+            } else {
+                rect.height = w / ratio;
+                rect.width = w;
+                rect.y = (h - rect.height) / 2;
+            }
+
+
+        }
+
+
+        override public function initControls(container:IVisualElementContainer):Boolean {
+            super.initControls(container);
+
+            var _group:HGroup = new HGroup();
+            _group.verticalAlign = "bottom";
+            _group.horizontalCenter = 0;
+
+            var _but:Button = new Button();
+            _but.label = "+";
+            _but.addEventListener(MouseEvent.CLICK, onZoomIn);
+
+            var _but2:Button = new Button();
+            _but2.label = "-";
+            _but2.addEventListener(MouseEvent.CLICK, onZoomOut);
+
+
+            _group.addElement(_but);
+            _group.addElement(_but2);
+
+            container.addElementAt(_group, 0);
+            return true;
+        }
+
+        private function onZoomIn(event:MouseEvent):void {
+
+            dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.ROTATE, [true], true, ControlHost.CONTAINER));
+
+        }
+
+
+        private function onZoomOut(event:MouseEvent):void {
+
+            dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.ROTATE, [false], true, ControlHost.CONTAINER));
+
+
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:Rect id="rect" width="400" height="300">
+		<s:fill>
+			<s:SolidColor color="0xFFFFFF"/>
+		</s:fill>
+		<s:filters>
+			<s:DropShadowFilter>
+				
+			</s:DropShadowFilter>
+		</s:filters>
+	</s:Rect>
+	
+	
+</renderers:DefaultRenderer>

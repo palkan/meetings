@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                width="116" height="130"
+                autoDrawBackground="false" click="onItemClick(event)">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.events.documents.FileEvent;
+        import ru.teachbase.model.FileItem;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.helpers.skin;
+        import ru.teachbase.utils.shortcuts.style;
+
+        [Bindable]
+        private var _label:String;
+
+        [Bindable]
+        private var _previewPath:String;
+
+        [Bindable]
+        private var _shield:DisplayObject;
+
+        private var _data:FileItem;
+
+        override public function set data(obj:Object):void {
+            super.data = obj;
+            if (obj == null)
+                return;
+            _data = FileItem(obj);
+            _label = _data.title;
+            _previewPath = _data.thumbUrl;
+            setShield(_data.type);
+        }
+
+        private function setShield(type:String):void {
+            _shield = style('docs', 'img-' + type);
+        }
+
+        private function onItemClick(evt:Event):void {
+            dispatchEvent(new FileEvent(FileEvent.FILE_CLICK_EVENT, _data, true, false));
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+		<s:State name="selected"/>
+	</s:states> 
+	<s:Rect  width="94" height="94" horizontalCenter="0" verticalCenter="-5">
+		<s:fill>
+			<s:SolidColor color="0xEEEEEE" alpha="1"/>
+		</s:fill>
+	</s:Rect>
+	<s:BitmapImage id="photo" source="{_previewPath}" 
+				   horizontalCenter="0" verticalCenter="-5" 
+				   width="76" height="76" smooth="true"/>
+
+	<s:BitmapImage id="rigthTopCorner"  source="{style('docs','corner')}"
+				   horizontalCenter="0" verticalCenter="-5" smooth="true"/>
+	<s:BitmapImage id="shield" bottom="30" left="10" source="{_shield}"/>
+	<s:Label id="bottomLabel" text="{_label}" width="80%" bottom="3" 
+			 maxDisplayedLines="1" color="0x515151"  fontSize="13"
+			 horizontalCenter="0"/>
+	<s:Rect includeIn="selected" width="100%" height="100%">
+		<s:stroke>
+			<s:SolidColorStroke color="0x3198FE" alpha="1" weight="2"/>
+		</s:stroke>
+	</s:Rect>
+</s:ItemRenderer>

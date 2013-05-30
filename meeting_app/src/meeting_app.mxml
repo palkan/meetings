@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               preloader="ru.teachbase.components.LogoCustomPreloader"
+               preinitialize="preinitHandler(event)"
+        >
+    <fx:Metadata>
+        [SWF(width="1000", height="600")]
+    </fx:Metadata>
+    <fx:Style source="defaults.css"/>
+
+    <fx:Script>
+		<![CDATA[
+        import mx.core.FlexGlobals;
+        import mx.events.FlexEvent;
+        import mx.managers.SystemManager;
+        import mx.preloaders.Preloader;
+
+        import ru.teachbase.events.CoreEvent;
+
+        import ru.teachbase.preloader.LogoCustomPreloader;
+        import ru.teachbase.utils.Configger;
+        import ru.teachbase.components.web.MainApplication;
+
+        private var _main:MainApplication;
+
+        private function onStatus(event:CoreEvent):void {
+            var pr:LogoCustomPreloader = getPreloader();
+            if (!pr)
+                return;
+            pr.setPreloaderLoadingText(event.statusText, event.isFatal);
+        }
+
+        private function getPreloader():LogoCustomPreloader {
+            const sm:SystemManager = this.parent as SystemManager;
+            const preloader:Preloader = sm.mx_internal::preloader;
+            if (!preloader)
+                return null;
+            if (preloader.numChildren > 0) {
+                if (preloader.getChildAt(0) is LogoCustomPreloader) {
+                    const pr:LogoCustomPreloader = preloader.getChildAt(0) as LogoCustomPreloader;
+                    return pr;
+                }
+            }
+            return null;
+        }
+
+        protected function preinitHandler(event:FlexEvent):void {
+            _main = new MainApplication();
+            _main.percentHeight = 100;
+            _main.percentWidth = 100;
+            _main.controller.addEventListener(CoreEvent.CORE_LOAD_COMPLETE, onCoreComplete);
+            _main.controller.addEventListener(CoreEvent.CORE_LOAD_ERROR, onStatus);
+            _main.controller.addEventListener(CoreEvent.LOADING_STATUS, onStatus);
+
+            CONFIG::debug{
+                Configger.setDefaults({external: CONFIG::CONF_URL_D});
+            }
+
+            CONFIG::release{
+                Configger.setDefaults({external: FlexGlobals.topLevelApplication.parameters['conf'] ? FlexGlobals.topLevelApplication.parameters['conf'] : CONFIG::CONF_URL});
+            }
+
+            addElement(_main);
+        }
+
+
+        protected function onCoreComplete(event:CoreEvent):void {
+            _main.controller.removeEventListener(CoreEvent.CORE_LOAD_COMPLETE, onCoreComplete);
+            _main.controller.removeEventListener(CoreEvent.CORE_LOAD_ERROR, onStatus);
+            _main.controller.removeEventListener(CoreEvent.LOADING_STATUS, onStatus);
+
+            var pr:LogoCustomPreloader = getPreloader();
+            if (!pr)
+                return;
+            pr.complete();
+        }
+        ]]>
+	</fx:Script>
+</s:Application>

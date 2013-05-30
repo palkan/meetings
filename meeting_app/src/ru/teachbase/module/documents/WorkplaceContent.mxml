@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module:ModuleInstance xmlns:fx="http://ns.adobe.com/mxml/2009"
+                           xmlns:s="library://ns.adobe.com/flex/spark"
+                           xmlns:components="ru.teachbase.components.*"
+                           xmlns:com="ru.teachbase.module.documents.components.*"
+                           xmlns:module="ru.teachbase.components.module.*"
+                           implements="ru.teachbase.utils.interfaces.ILocalable"
+                           initialize="Localizer.addItem(this);label=translate('label','docs')"
+                           creationComplete="creationCompleteHandler(event)"
+                           clipAndEnableScrolling="true"
+                           currentState="idle">
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <fx:Script>
+		<![CDATA[
+        import mx.rpc.Responder;
+
+        import ru.teachbase.core.App;
+        import ru.teachbase.core.Core;
+        import ru.teachbase.events.DocEvent;
+        import ru.teachbase.events.FileStatusEvent;
+        import ru.teachbase.manage.FileManager;
+        import ru.teachbase.manage.LayoutModelManager;
+        import ru.teachbase.manage.TraitManager;
+        import ru.teachbase.model.DocChangeData;
+        import ru.teachbase.model.FileItem;
+        import ru.teachbase.model.ModuleSettings;
+        import ru.teachbase.model.User;
+        import ru.teachbase.model.constants.Recipients;
+        import ru.teachbase.module.documents.components.SelectSourceWindow;
+        import ru.teachbase.module.documents.model.WorkplaceRenderers;
+        import ru.teachbase.traits.DocTrait;
+        import ru.teachbase.utils.AssetLoader;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.Permissions;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.helpers.m;
+        import ru.teachbase.utils.helpers.s;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.helpers.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        CONFIG::AIR{
+            import ru.teachbase.air.components.DropSpace;
+            import ru.teachbase.air.events.FileDropEvent;
+        }
+
+
+        public var setsDP:Vector.<ModuleSettings> = new Vector.<ModuleSettings>();
+
+        [Bindable]
+        private var _isOwner:Boolean = true;
+        [Bindable]
+        private var _docTrait:DocTrait;
+        private var _initilized:Boolean = false;
+        //	private var _p_trait:PermissionTrait = TraitManager.instance.createTrait(PermissionTrait) as PermissionTrait;// new PermissionTrait();
+        private var _xmlLoader:AssetLoader = new AssetLoader()
+        private var _fm:FileManager;
+        private var _docChangeData:DocChangeData;
+        private var _panel:SelectSourceWindow;
+
+        CONFIG::AIR{
+            private var fileDropSpace:DropSpace;
+        }
+
+        protected function creationCompleteHandler(event:Event = null):void {
+            _docTrait = TraitManager.instance.createTrait(DocTrait, false, this.instanceID) as DocTrait; //new DocTrait(this.instanceID);
+            _docTrait.addEventListener(DocEvent.LOAD, onDocLoad);
+            _docTrait.call("get_history", new mx.rpc.Responder(onHistoryRecieved, null), "doc", this.instanceID);
+            //	_p_trait.addEventListener(PermissionEvent.PERMISSIONS_CHANGED, permissionChanged);
+
+            //_isOwner =  Permissions.docsAvailable(App.room.user.permissions);
+            setsDP.push(new ModuleSettings("clear_workplace", ModuleSettings.FUN, clearWorkplace));
+            setsDP.push(new ModuleSettings("save_screenshot", ModuleSettings.FUN, container.takeSnapshot))
+
+        }
+
+        override public function set permission(value:int):void {
+
+            //private function permissionChanged(evt:PermissionEvent):void{
+            _isOwner = Permissions.docsAvailable(value);
+            if (container)
+                container.editable = _isOwner;
+        }
+
+        private function onDocLoad(event:DocEvent):void {
+            onHistoryRecieved(event.data);
+        }
+
+        private function onHistoryRecieved(data:*):void {
+            if (!(data is DocChangeData)) {
+                _docTrait.readyToReceive = true;
+                return;
+            }
+
+            if (_panel) _panel.closeMe();
+
+            const docData:DocChangeData = data as DocChangeData;
+
+            if (docData.type == "idle") {
+                currentState = idle.name;
+                _docTrait.readyToReceive = true;
+                return;
+            }
+
+            if (docData.type == "loading") {
+                currentState = loading.name;
+                if (App.room.usersByID[docData.id]) progressText.text = translate("loading", "docs", (App.room.usersByID[docData.id] as User).fullName);
+                _docTrait.readyToReceive = true;
+                return;
+            }
+
+
+            if (!(docData.type == "load") || !docData.dataType)
+                return;
+
+
+            (ownerModule as DocumentsModule).registerNewDoc(docData.id, docData.title);
+
+
+            switch (docData.dataType) {
+                case "wb":
+                {
+                    onWBChoose(null);
+                    _docTrait.readyToReceive = true;
+                    return;
+                }
+                case "DOCS":
+                {
+                    _docChangeData = docData;
+                    loadConfigXML(docData.url);
+                    return;
+                }
+                case "YouTube":
+                {
+                    onYouTubeChoose(docData.url, docData.duration);
+                    return;
+                }
+                case "IMAGE":
+                {
+                    onImageChoose(docData.url);
+                    return
+                }
+                case "VIDEO":
+                {
+                    onVideoChoose(docData.url);
+                    return
+                }
+            }
+        }
+
+        private function onUploadButtonClick(evt:Event):void {
+            if (_panel == null) _panel = new SelectSourceWindow()
+            _panel.workplaceContent = this;
+            Core.addPopupToTop(_panel);
+            //_docTrait.output({type:"loading",id:App.room.user.sid},Recipients.ALL_EXCLUDE_ME);
+            //onStartLoad();
+        }
+
+
+        private function convertFromLibrary(item:FileItem):void {
+            _fm = m(FileManager) as FileManager;
+
+            setFileListeners(_fm);
+
+            currentState = loading.name;
+
+            _fm.convert(item);
+
+
+        }
+
+
+        private function convertFromGoogle(item:FileItem):void {
+            _fm = m(FileManager) as FileManager;
+
+            setFileListeners(_fm);
+
+            currentState = loading.name;
+
+            //	_docTrait.output({type:"loading",id:App.room.user.sid},Recipients.ALL_EXCLUDE_ME);
+
+            _fm.grabImage(item);
+
+
+        }
+
+
+        public function onStartLoad(event:Event = null):void {
+
+            _fm = m(FileManager) as FileManager;
+
+            setFileListeners(_fm);
+
+            currentState = loading.name;
+
+            _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+
+            _fm.upload_convert();
+        }
+
+
+        CONFIG::AIR{
+            private function onFileDropped(event:FileDropEvent):void {
+
+                _fm = m(FileManager) as FileManager;
+
+                setFileListeners(_fm);
+
+                currentState = loading.name;
+
+                _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+
+                _fm.upload_file(event.file);
+            }
+        }
+
+        private function setFileListeners(fm:FileManager):void {
+            fm.addEventListener(FileStatusEvent.COMPLETE, onFileReady);
+            //fm.addEventListener(FileStatusEvent.PROGRESS, onFileProgress);
+            fm.addEventListener(ErrorEvent.ERROR, onFileError);
+            fm.addEventListener(FileStatusEvent.CANCEL, onFileCancel);
+            fm.addEventListener(FileStatusEvent.SELECTED, fileSelected)
+        }
+
+
+        private function removeFileListeners(fm:FileManager):void {
+            fm.removeEventListener(FileStatusEvent.COMPLETE, onFileReady);
+            //fm.removeEventListener(FileStatusEvent.PROGRESS, onFileProgress);
+            fm.removeEventListener(ErrorEvent.ERROR, onFileError);
+            fm.removeEventListener(FileStatusEvent.CANCEL, onFileCancel);
+            fm.removeEventListener(FileStatusEvent.SELECTED, fileSelected)
+        }
+
+        private function fileSelected(evt:Event):void {
+            if (_panel) Core.removePopupFromTop(_panel);
+        }
+
+        private function onFileCancel(event:FileStatusEvent):void {
+            removeFileListeners(_fm);
+            currentState = idle.name;
+            _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+        }
+
+        private function onFileReady(event:FileStatusEvent):void {
+
+
+            _docTrait.output({url: event.value.url, type: "load", dataType: event.value.type, title: _fm.filename, id: this.instanceID}, Recipients.ALL);//_EXCLUDE_ME);
+
+            //(ownerModule as DocumentsModule).registerNewDoc(this.instanceID,_fm.filename);
+
+            currentState = loading.name;
+
+            removeFileListeners(_fm);
+            //		loadConfigXML(event.value);
+
+        }
+
+        private function loadConfigXML(url:String):void {
+            _xmlLoader.addEventListener(Event.COMPLETE, onConfLoaded)
+            _xmlLoader.addEventListener(ErrorEvent.ERROR, function (evt:Event):void {
+                _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+                currentState = idle.name;
+            })
+
+            _xmlLoader.load(url);
+        }
+
+
+        private function onConfLoaded(evt:Event):void {
+            parseXML(new XML(evt.target.loadedObject));
+        }
+
+        private function parseXML(xml:XML):void {
+            if (_docChangeData)
+                container.history = _docChangeData;
+            container.renderer = WorkplaceRenderers.getClassByDocExt(xml.params.type.toString());
+            currentState = ready.name;
+            container.data = xml;
+        }
+
+        //private function onFileProgress(event:FileStatusEvent):void{
+        ///progressText.text = "loading " + event.value;
+        //progressBar.progress = Number(event.value/100);
+        //}
+
+
+        private function onFileError(event:ErrorEvent):void {
+
+            Logger.log(event.text, "file");
+
+            removeFileListeners(_fm);
+            _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+            currentState = idle.name;
+        }
+
+        protected function onWBChoose(event:MouseEvent):void {
+            if (event) {
+                _docTrait.output({type: "load", dataType: "wb", title: translate("Whiteboard", "docs") + " " + this.instanceID.toString(), id: this.instanceID}, Recipients.ALL);
+                return;
+            }
+
+            container.renderer = WorkplaceRenderers.getClassById("whiteboard");
+
+            currentState = ready.name;
+
+
+        }
+
+        private function onYouTubeChoose(url:String, duration:Number):void {
+            container.renderer = WorkplaceRenderers.getClassById("youTube_video");
+            currentState = ready.name;
+            var ob:Object = new Object();
+            ob.url = url;
+            ob.duration = duration;
+            container.data = ob;
+        }
+
+        private function onVideoChoose(url:String):void {
+            container.renderer = WorkplaceRenderers.getClassById("video");
+            currentState = ready.name;
+            var ob:Object = new Object();
+            ob.url = url;
+            container.data = ob;
+        }
+
+        private function onImageChoose(url:String, title:String = ""):void {
+            container.renderer = WorkplaceRenderers.getClassById("img");
+            var xml:XML = <main>
+                <items>
+                    <item slideurl="null"/>
+                </items>
+            </main>;
+            xml.items.item[0].@slideurl = url;
+            currentState = ready.name;
+            container.data = xml;
+        }
+
+        public function onSourceChoose(obj:FileItem):void {
+
+            switch (obj.type) {
+                case 'YouTube':
+                    _docTrait.output({type: "load", dataType: "YouTube", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}, Recipients.ALL);
+                    break;
+                case 'IMAGE':
+                    _docTrait.output({type: "load", dataType: "IMAGE", title: obj.title, id: this.instanceID, url: obj.url}, Recipients.ALL);
+                    break;
+                case 'DOCS':
+                case 'PRES':
+                    _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+                    convertFromLibrary(obj);
+                    break;
+                case 'VIDEO':
+                    _docTrait.output({type: "load", dataType: "VIDEO", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}, Recipients.ALL);
+                    break;
+                case "GOOGLE_IMAGE":
+                    _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+                    convertFromGoogle(obj);
+                    break;
+
+            }
+
+        }
+
+        override public function hideContainer():void {
+            super.hideContainer();
+            container && container.dispose();
+        }
+
+
+        public function clearWorkplace():void {
+
+            (m(LayoutModelManager) as LayoutModelManager).restartPanelContent(this.panelID);
+        }
+
+
+        override public function get settings():Vector.<ModuleSettings> {
+
+            return setsDP;
+
+        }
+
+
+        public function localize():void {
+
+            label = translate('label', 'docs');
+            progressText && (progressText.text = translate('Loading'));
+            doc && (doc.label = translate('Load_files', 'docs'));
+            white && (white.label = translate('Whiteboard', 'docs'));
+        }
+        ]]>
+	</fx:Script>
+    <module:states>
+        <s:State id="ready" name="ready"/>
+        <s:State id="idle" name="idle"/>
+        <s:State id="loading" name="loading"/>
+    </module:states>
+
+    <com:WorkplaceContainer id="container"
+                            width="{this.width}" height="{this.height}"
+                            instanceId="{this.instanceID}" editable="{_isOwner}"
+                            trait="{_docTrait}"/>
+
+    <s:Label id="progressText" initialize="progressText.text=translate('Loading')" horizontalCenter="0"
+             includeIn="loading" verticalCenter="-60"/>
+
+    <s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="loading">
+        <s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
+    </s:VGroup>
+
+    <s:Group id="idleGroup" width="400" height="260" horizontalCenter="0" verticalCenter="0" includeIn="idle"
+             visible="{_isOwner}">
+        <s:VGroup horizontalCenter="0" top="50">
+            <s:VGroup horizontalCenter="0" width="176">
+
+                <components:CustomSkinableButton id="doc" width="176" click="onUploadButtonClick(event)"
+                                                 focusSkin="{null}"
+                                                 skinClass="ru.teachbase.skins.StandartButtonWithIcon"
+                                                 initialize="with(doc){label=translate('Load_files','docs');iconUp=ru.teachbase.utils.helpers.style('docs','uploadFile'); iconDown=ru.teachbase.utils.helpers.style('docs','uploadFileDown'); iconOver=ru.teachbase.utils.helpers.style('docs','uploadFileHover')}"
+                        />
+                <components:CustomSkinableButton id="white" width="176" click="onWBChoose(event)" focusSkin="{null}"
+                                                 skinClass="ru.teachbase.skins.StandartButtonWithIcon"
+                                                 initialize="with(white){label=translate('Whiteboard','docs');iconUp=ru.teachbase.utils.helpers.style('docs','whitebordButton');iconDown=ru.teachbase.utils.helpers.style('docs','whitebordButtonDown');iconOver=ru.teachbase.utils.helpers.style('docs','whitebordButtonHover')}"
+                        />
+            </s:VGroup>
+
+        </s:VGroup>
+        <s:initialize>
+			<![CDATA[
+                CONFIG::AIR{
+
+
+                    fileDropSpace = new DropSpace();
+
+                    fileDropSpace.horizontalCenter = 0;
+                    fileDropSpace.verticalCenter = 0;
+                    fileDropSpace.width = 380;
+                    fileDropSpace.height = 240;
+
+                    idleGroup.addElementAt(fileDropSpace, 0);
+
+                    fileDropSpace.addEventListener(FileDropEvent.DROPPED, onFileDropped);
+
+                }
+            ]]>
+		</s:initialize>
+    </s:Group>
+
+
+</module:ModuleInstance>

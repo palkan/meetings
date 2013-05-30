@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:components="ru.teachbase.components.*" height="100%">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import mx.collections.ArrayCollection;
+
+        [Bindable]
+        private var _dataProvider:ArrayCollection;
+
+        private var _slided:Boolean = true;
+        [Bindable]
+        private var _mask:Sprite = new Sprite();
+
+        public function set dataProvider(list:ArrayCollection):void {
+            _dataProvider = list;
+        }
+
+
+        private function modulesGroupAdded():void {
+            this.width = modulesGroup.width + slideButton.width;
+            slideButton.left = modulesGroup.width + 5;
+            if (modulesGroup.width != 0) {
+                _mask.graphics.clear();
+                _mask.graphics.beginFill(0xFFFFFF);
+                _mask.graphics.drawRect(0, 0, modulesGroup.width, modulesGroup.height);
+                _mask.graphics.endFill();
+            }
+        }
+
+        private function onSlideButtonClick():void {
+            _slided = !_slided;
+            if (_slided) {
+                Tweener.addTween(this, {width: modulesGroup.width + slideButton.width, time: .5});
+                Tweener.addTween(slideButton, {left: modulesGroup.width + 5, time: .5});
+                Tweener.addTween(_mask, {width: modulesGroup.width, time: .5});
+            } else {
+                Tweener.addTween(this, {width: 147 + slideButton.width, time: .5});
+                Tweener.addTween(slideButton, {left: 149, time: .5});
+                Tweener.addTween(_mask, {width: 147, time: .5});
+            }
+        }
+        ]]>
+	</fx:Script>
+	<components:ActionBarGroup id="modulesGroup"
+					  dataProvider="{_dataProvider}" mask="{_mask}" added="modulesGroupAdded()"
+					  />
+	<s:ToggleButton id="slideButton" label="s" click="onSlideButtonClick()" 
+					focusSkin="{null}" skinClass="ru.teachbase.skins.actionbar.SliderToggleButtonSkin"/>
+</s:Group>

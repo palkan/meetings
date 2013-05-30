@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         implements="ru.teachbase.layout.ITreeLayoutElement">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<!-- ITreeLayoutElement implementation -->
+	
+	<fx:Script>
+		<![CDATA[
+			
+			public function get layoutIndex():String{
+				
+				return "";
+				
+			}
+			
+			public function set layoutIndex(value:String):void{
+				
+			}
+			
+			public function get privacy():Boolean{
+				return false;
+			}
+			
+			public function set privacy(value:Boolean):void{
+				
+			}
+			
+			public function get elementID():uint{
+				return 0;
+			}
+			
+			public function set elementID(value:uint):void{
+				
+			}
+			
+			public function get active():Boolean{
+				return true;
+			}
+			
+			public function set active(value:Boolean):void{
+				
+			}
+			
+			
+			public function set permission(value:int):void{
+				
+			}
+			
+		]]>
+	</fx:Script>
+</s:Group>

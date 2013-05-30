@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module:ModuleInstance xmlns:fx="http://ns.adobe.com/mxml/2009"
+                       xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:module="ru.teachbase.components.module.*"
+                       implements="ru.teachbase.utils.interfaces.ILocalable"
+                       initialize="label=translate('label','users');Localizer.addItem(this);"
+                       xmlns:components1="ru.teachbase.module.users.components.*"
+        >
+    <fx:Declarations>
+    </fx:Declarations>
+
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.core.App;
+        import ru.teachbase.skins.VerticalScrollerSkin;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.helpers.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        internal function clear():void {
+            ownersList.dataProvider = null;
+            usersList.dataProvider = null;
+        }
+
+        protected function myScrollerAddedToStageHandler(event:Event):void {
+            if (myScroller && myScroller.verticalScrollBar)
+                myScroller.verticalScrollBar.setStyle("skinClass", VerticalScrollerSkin);
+        }
+
+        public function localize():void {
+            label = translate('label', 'users');
+            ownersList && (ownersList.label = translate('admins', 'users'));
+            usersList && (usersList.label = translate('users', 'users'));
+        }
+        ]]>
+	</fx:Script>
+    <s:Scroller width="100%" height="100%" horizontalScrollPolicy="off" id="myScroller">
+        <s:VGroup id="usersVerticalGroup" verticalAlign="top" width="100%" gap="0"
+                  resize="myScrollerAddedToStageHandler(event)">
+            <components1:VerticalExpandedListElement id="ownersList" width="100%" usersType="admin"
+                                                     initialize="ownersList.label = translate('admins','users');ownersList.dataProvider=App.room.usersList;"/>
+
+            <components1:VerticalExpandedListElement id="usersList"
+                                                     width="100%"
+                                                     initialize="usersList.label=translate('users','users');usersList.dataProvider=App.room.usersList;"
+                                                     usersType="user"
+                    />
+
+        </s:VGroup>
+    </s:Scroller>
+</module:ModuleInstance>

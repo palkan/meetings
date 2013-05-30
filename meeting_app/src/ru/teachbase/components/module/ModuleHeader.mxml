@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ActionBar xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             xmlns:components = "ru.teachbase.components.*"
+             minWidth="100" height="28" skinClass="ru.teachbase.skins.module.ModuleActionBar"
+             creationComplete="creationCompleteHandler(event)">
+    <fx:Script><![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.events.ModuleEvent;
+
+        import ru.teachbase.utils.shortcuts.style;
+
+
+        private var _title:String = '';
+        private var _p_enabled:Boolean = true;
+        private var _expanded:Boolean = false;
+
+        /**
+         * Header owner which dispatches events
+         */
+
+        public var target:EventDispatcher;
+
+
+        protected function creationCompleteHandler(e:FlexEvent):void {
+
+            title = title;
+            p_enabled = p_enabled;
+
+        }
+
+        override public function get title():String {
+            return _title;
+        }
+
+        override public function set title(value:String):void {
+            _title = value;
+
+            title_lb && (title_lb.text = value);
+
+        }
+
+        public function get p_enabled():Boolean {
+            return _p_enabled;
+        }
+
+        public function set p_enabled(value:Boolean):void {
+            _p_enabled = value;
+            hide_btn.visible = minmax_btn.visible = settings_btn.visible = value;
+        }
+
+        public function get expanded():Boolean {
+            return _expanded;
+        }
+
+        public function set expanded(value:Boolean):void {
+            _expanded = value;
+            with (settings_btn) {
+                iconUp = _expanded ? style('modulecontainer', 'minimizeIcon') : style('modulecontainer', 'fullScreenIcon');
+                iconDown = _expanded ? style('modulecontainer', 'minimizeIconOver') : style('modulecontainer', 'fullScreenIconOver');
+                iconOver = _expanded ? style('modulecontainer', 'minimizeIconOver') : style('modulecontainer', 'fullScreenIconOver');
+            }
+        }
+        ]]></fx:Script>
+
+    <s:titleContent>
+        <s:Label id="title_lb"  fontSize="13" left="0" right="85" lineBreak="explicit"
+                 initialize="title_lb.setStyle('color', style('modulecontainer','titleTextColor','string'))"/>
+    </s:titleContent>
+    <s:actionContent>
+        <components:CustomSkinableButton id="hide_btn" width="26" height="26" click="target &amp;&amp; target.dispatchEvent(new ModuleEvent(ModuleEvent.REMOVE))"
+                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+                                         initialize="with(hide_btn){
+                                                       iconUp=style('modulecontainer','removeIcon');
+                                                       iconDown=style('modulecontainer','removeIconOver');
+                                                       iconOver=style('modulecontainer','removeIconOver');}"
+                />
+        <components:CustomSkinableButton id="minmax_btn" width="24" height="26" click="target &amp;&amp; target.dispatchEvent(new ModuleEvent(ModuleEvent.MINMAX,!_expanded) &amp;&amp; (expanded = !_expanded))"
+                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+                                         initialize="expanded = _expanded"
+                />
+        <components:CustomSkinableButton id="settings_btn" width="20" height="26" click="target &amp;&amp; target.dispatchEvent(new ModuleEvent(ModuleEvent.SETTINGS))"
+                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+                                         initialize="with(settings_btn){
+                                                        iconUp=style('modulecontainer','preferenceIcon');
+                                                        iconDown = style('modulecontainer','preferenceIconOver');
+                                                        iconOver= style('modulecontainer','preferenceIconOver');}"
+                />
+    </s:actionContent>
+</s:ActionBar>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         width="100%" preinitialize="init()">
+    <s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+		<fx:Script>
+			<![CDATA[
+            import caurina.transitions.Tweener;
+
+            import mx.collections.ArrayCollection;
+            import mx.events.CollectionEvent;
+
+            import ru.teachbase.core.App;
+            import ru.teachbase.model.User;
+            import ru.teachbase.utils.Permissions;
+
+            private var _dataProvider:ArrayCollection;
+
+            [Bindable]
+            public var label:String = "";
+
+
+            private var _expanded:Boolean = true;
+
+            public var usersType:String = '';
+
+            [Bindable]
+            private var _listProvider:ArrayCollection;
+
+            public function set listProvider(value:ArrayCollection):void {
+                _listProvider = new ArrayCollection(value.toArray().filter(filter).sort(compare));
+                makeTween();
+            }
+
+
+            public function set dataProvider(value:ArrayCollection):void {
+                _dataProvider = value;
+                _dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE, onCollectionChanged);
+                listProvider = _dataProvider;
+            }
+
+
+            private function filter(user:User, index:int = 0, arr:Array = null):Boolean {
+                return Boolean(user && (user.role === usersType));
+            }
+
+            private function compare(a:User, b:User, arr:Array = null):int {
+                if (a.iam)
+                    return -1;
+
+                if (b.iam)
+                    return 1;
+
+                if (Permissions.isAdmin(App.room.user.permissions) && (a.requestStatus - b.requestStatus) != 0)
+                    return (a.requestStatus > b.requestStatus) ? -1 : 1;
+
+                if (a.fullName === b.fullName)
+                    return (a.suffix > b.suffix) ? 1 : -1;
+
+                return (a.fullName > b.fullName) ? 1 : -1;
+            }
+
+            private function init():void {
+                toggleButton.selected = true;
+            }
+
+            private function onCollectionChanged(evt:CollectionEvent = null):void {
+                listProvider = _dataProvider;
+            }
+
+            private function onToggleClick():void {
+                _expanded = !_expanded;
+                makeTween();
+            }
+
+
+            private function makeTween():void {
+                if (!ownersList.dataProvider)
+                    return;
+
+                if (_expanded) {
+                    Tweener.addTween(ownersList, {height: ownersList.dataProvider.length * 32, time: .3});
+                } else {
+                    Tweener.addTween(ownersList, {height: 0, time: .3});
+                }
+            }
+            ]]>
+		</fx:Script>
+	<s:List id="ownersList"
+			width="100%" top="25" left="0" right="0"
+			 height="0"
+			 dataProvider="{_listProvider}"
+			itemRenderer="ru.teachbase.module.users.components.UserItemRenderer" verticalScrollPolicy="off" horizontalScrollPolicy="off"/>
+	<s:ToggleButton id="toggleButton" skinClass="ru.teachbase.skins.VerticalExpandedToggleButtonSkin" click="onToggleClick()"  label="{this.label + ' ('+ownersList.dataProvider.length+')' }" top="0" left="0" height="25" width="100%"/>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+</s:Group>

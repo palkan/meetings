@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                autoDrawBackground="false"
+                click="clickHandler(event)"
+        >
+    <s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+	</s:states> 
+	<fx:Script>
+		<![CDATA[
+        import mx.events.ItemClickEvent;
+
+        protected function clickHandler(event:MouseEvent):void {
+            var e:ItemClickEvent = new ItemClickEvent(ItemClickEvent.ITEM_CLICK, true);
+            e.item = data;
+            e.index = itemIndex;
+            dispatchEvent(e);
+        }
+        ]]>
+	</fx:Script>
+	<s:Label text="{data.label}" fontSize="13" color="0x515151" color.hovered="0x777777"  paddingBottom="5" paddingTop="5" toolTip="{data.label}"/>
+	
+</s:ItemRenderer>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                width="100%" height="100%"
+                resize="onResize(event)" autoDrawBackground="false" contentBackgroundAlpha="0">
+
+    <fx:Script>
+		<![CDATA[
+        import mx.core.UIComponent;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+
+            if (value == null) return;
+            const clip:UIComponent = value.clip as UIComponent;
+            slideIdText.text = value.slideId;
+            swlLoaderElement.addElement(clip);
+        }
+
+        private function onResize(evt:Event):void {
+            if (data == null) return;
+            const clip:UIComponent = data.clip as UIComponent;
+            if (clip == null) {
+                return;
+            }
+            clip.width = this.width;
+            clip.height = this.height;
+        }
+
+        public function get ratio():Number {
+            if (data) {
+                return data.ratio;
+            } else {
+                return 1;
+            }
+        }
+        ]]>
+	</fx:Script>
+	<s:Group id="swlLoaderElement" width="100%" height="100%"/>
+	<s:Label id="slideIdText" top="10" left="10" fontSize="30" visible="false"/>
+</s:ItemRenderer>

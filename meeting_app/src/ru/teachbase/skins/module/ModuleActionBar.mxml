@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        rollOver="actionGroup.visible = true"
+        rollOut="actionGroup.visible = false">
+    <!-- host component -->
+	<fx:Metadata>
+		[HostComponent("ru.teachbase.components.module.ModuleHeader")]
+	</fx:Metadata>
+	
+	<!-- states -->
+	<s:states>
+		<s:State name="titleContentWithActionAndNavigation" />
+		<s:State name="titleContentWithNavigation" />
+		<s:State name="titleContentWithAction" />
+		<s:State name="titleContent" />
+		<s:State name="titleWithActionAndNavigation" />
+		<s:State name="titleWithNavigation" />
+		<s:State name="titleWithAction" />
+		<s:State name="title" />
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.helpers.skin;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        ]]>
+	</fx:Script>
+	<s:HGroup width="100%" top="0" left="0" right="0" height="28" gap="0">
+		<s:BitmapImage source="{style('modulecontainer','actionbarLeftCorner')}" height="28" width="4"/>
+		<s:Image id="stretch" initialize="stretch.source=style('modulecontainer','actionbarCenter')"  scaleMode="stretch" height="28" width="100%"/>
+		<s:BitmapImage source="{style('modulecontainer','actionbarRightCorner')}" height="28" width="4"/>
+	</s:HGroup>
+	
+	<s:Group id="navigationGroup"
+			 left="12"
+			 top="0"/>
+	
+	<s:Group id="titleGroup"
+			 left="10"
+			 top="7"/>
+	
+	<s:HGroup id="actionGroup" gap="0" visible="false"
+			  right="6"
+			  top="1"/>
+	
+	<s:Label id="titleDisplay"
+			 horizontalCenter="0"
+			 top="0"/>
+</s:Skin>

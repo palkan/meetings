@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:board="ru.teachbase.module.board.*"
+         xmlns:components="ru.teachbase.module.board.components.*"
+         clipAndEnableScrolling="true" initialize="init(event)" resize="resizeHandler(event)"
+        >
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:states>
+		<s:State id="normal" name="normal"/>
+		<s:State id="wbOn" name="wbOn"/>
+	</s:states>
+	<fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import mx.events.FlexEvent;
+        import mx.events.ResizeEvent;
+        import mx.graphics.ImageSnapshot;
+
+        import ru.teachbase.events.DocEvent;
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.events.documents.RendererEvent;
+        import ru.teachbase.model.DocChangeData;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.model.constants.Recipients;
+        import ru.teachbase.module.board.figures.FigureManager;
+        import ru.teachbase.module.documents.renderers.IWorkplaceRenderer;
+        import ru.teachbase.traits.DocTrait;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        private var _renderer:IWorkplaceRenderer;
+
+        private var _trait:DocTrait;
+
+        private var _history:DocChangeData;
+
+        /* Board elements */
+        [Bindable]
+        private var figure_mgr:FigureManager;
+
+        [Bindable]
+        private var _editable:Boolean;
+
+        private var _instanceId:int;
+
+
+        /* transformation const */
+        private const scaleIn:Number = 2;
+        private const scaleOut:Number = 1 / scaleIn;
+
+        private const maxScale:int = 4;
+        private const minScale:Number = 1 / maxScale;
+
+        protected function init(event:FlexEvent):void {
+
+            currentState = normal.name;
+
+        }
+
+
+        public function dispose():void {
+
+            _renderer && _renderer.dispose();
+            board && board.dispose() && figure_mgr.dispose();
+
+            _renderer = null;
+
+            currentState = normal.name;
+
+            removeAllElements();
+
+            this.removeEventListener(ControlEvent.CHANGE, changeHandler);
+            _trait && _trait.removeEventListener(DocEvent.CHANGE, traitInputHandler);
+        }
+
+
+        private function addWB():void {
+
+            figure_mgr = new FigureManager();
+
+            currentState = wbOn.name;
+
+            figure_mgr.initialize(board, this.instanceId);
+
+            board.ratio = _renderer.ratio;
+            board.maxCanvasWidth = _renderer.initialWidth;
+            if (_history && _history.slide)
+                board.gotoPage(_history.slide);
+
+        }
+
+
+        private function addControlsListener():void {
+
+            this.addEventListener(ControlEvent.CHANGE, changeHandler);
+
+        }
+
+
+        protected function zoomIn(event:MouseEvent = null):void {
+            var _m:Matrix = content.transform.matrix.clone();
+            _m.scale(scaleIn, scaleIn);
+            _m.translate((content.width / 2) * (1 - scaleIn), (content.height / 2) * (1 - scaleIn));
+
+            content.transform.matrix = _m;
+        }
+
+
+        protected function zoomOut(event:MouseEvent = null):void {
+
+            var _m:Matrix = content.transform.matrix.clone();
+            _m.scale(scaleOut, scaleOut);
+            _m.translate((content.width / 2) * (1 - scaleOut), (content.height / 2) * (1 - scaleOut));
+
+            if (_m.a == 1)
+                _m.tx = _m.ty = 0;
+
+            content.transform.matrix = _m;
+        }
+
+
+        protected function rotateCW(event:MouseEvent = null):void {
+
+            var _m:Matrix = content.transform.matrix.clone();
+            _m.rotate(Math.PI / 2);
+            _m.translate((content.height + content.width) / 2, (content.height - content.width) / 2);
+            content.transform.matrix = _m;
+
+        }
+
+        protected function rotateCCW(event:MouseEvent = null):void {
+
+            var _m:Matrix = content.transform.matrix.clone();
+            _m.rotate(-Math.PI / 2);
+            _m.translate((content.width - content.height) / 2, (content.height + content.width) / 2);
+            content.transform.matrix = _m;
+
+        }
+
+
+        private function dispatchToServer(event:ControlEvent):void {
+
+            if (_trait)
+                _trait.output({type: "change", method: event.method, data: event.args, host: event.handler}, Recipients.ALL_EXCLUDE_ME);
+
+        }
+
+
+        public function takeSnapshot():void {
+
+//				var _jpegEncoder:JPEGEncoder = new JPEGEncoder(100);
+            controls.visible = false;
+            var _imgSnap:ImageSnapshot = ImageSnapshot.captureImage(this, 0);//,_jpegEncoder);
+            var fileReference:FileReference = new FileReference();
+            fileReference.save(_imgSnap.data, "snapshot.png");
+            controls.visible = true;
+        }
+
+
+        /* control methods: make them public! */
+
+        public function zoom(flag:Boolean):void {
+            if (flag)
+                (content.scaleX < maxScale) && zoomIn();
+            else
+                (content.scaleX > minScale) && zoomOut();
+        }
+
+        public function rotate(flag:Boolean):void {
+            if (flag)
+                rotateCW();
+            else
+                rotateCCW();
+        }
+
+        public function goToSlide(id:int):void {
+
+            board.gotoPage(id);
+
+        }
+
+
+        public function moveDoc(posX:Number, posY:Number):void {
+            var p:Point = new Point(posX * _renderer.width, posY * _renderer.height);
+            var newP:Point = content.transform.matrix.deltaTransformPoint(p);
+            Tweener.addTween(content, {x: newP.x, y: newP.y, time: .15, transition: "linear"});
+        }
+
+
+        /* handlers */
+
+
+        private function callHostFunction(host:Object, method:String, args:Array = null, n:int = 1):void {
+
+            if (!host.hasOwnProperty(method))
+                return;
+            do {
+                if (args)
+                    host[method].apply(null, args);
+                else
+                    host[method]();
+                n--;
+            } while (n > 0);
+        }
+
+
+        protected function resizeHandler(event:ResizeEvent = null):void {
+            content.width = this.width;
+            content.height = this.height;
+
+            if (event) {
+                var realDeltaScaled:Point = new Point();
+                realDeltaScaled.x = (content.x - (event.oldWidth * (1 - content.scaleX)) / 2);
+                realDeltaScaled.y = (content.y - (event.oldHeight * (1 - content.scaleY)) / 2);
+
+                content.x = realDeltaScaled.x + (width - content.width * content.scaleX) / 2;
+                content.y = realDeltaScaled.y + (height - content.height * content.scaleY) / 2;
+            }
+
+            _renderer && _renderer.resize(content.width - 40, content.height - 40);
+        }
+
+
+        public function changeHandler(event:ControlEvent):void {
+
+            ControlHost.isContainer(event.handler) && callHostFunction(this, event.method, event.args);
+
+            ControlHost.isRenderer(event.handler) && callHostFunction(_renderer, event.method, event.args);
+
+            event.callServer && dispatchToServer(event);
+
+        }
+
+        protected function traitInputHandler(event:DocEvent):void {
+            changeHandler(new ControlEvent(ControlEvent.CHANGE, event.data.method, event.data.data as Array, false, event.data.host));
+        }
+
+
+        /* get/set */
+
+        public function set data(value:Object):void {
+            if (_renderer)
+                _renderer.data = value;
+        }
+
+        public function set renderer(value:Class):void {
+
+            if (_renderer && value)
+                throw new IllegalOperationError("Renderer reinitialization denied");
+
+            _renderer && !value && dispose();
+
+            if (!value)
+                return;
+
+            _renderer = new value();
+
+            _renderer.editable = this.editable;
+            _renderer.setLayoutBoundsPosition(20, 20);
+            _renderer.addEventListener(RendererEvent.INITIALIZED, rendererInited);
+            content.addElementAt(_renderer, 0);
+
+        }
+
+        public function get renderer():Class {
+            return _renderer as Class;
+        }
+
+        private function rendererInited(e:RendererEvent):void {
+            _history && _history.rotation && callHostFunction(this, WorkplaceMethod.ROTATE, [_history.rotation > 0], Math.abs(_history.rotation));
+            _history && _history.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_history.rotation > 0], Math.abs(_history.rotation));
+            _history && _history.slide && callHostFunction(_renderer, WorkplaceMethod.CHANGE_SLIDE, [_history.slide]);
+            _renderer.initParent(content);
+            _renderer.useWB && addWB();
+            _renderer.hasControls && _renderer.initControls(controls) && addControlsListener();
+            _renderer.removeEventListener(RendererEvent.INITIALIZED, rendererInited);
+
+            Logger.log('renderer inited: ' + _renderer.ratio.toString(), 'Workplace');
+            if (_trait)
+                _trait.readyToReceive = true;
+            resizeHandler();
+        }
+
+        public function get editable():Boolean {
+            return _editable;
+        }
+
+        public function set editable(value:Boolean):void {
+            _editable = value;
+
+            if (_renderer)
+                _renderer.editable = value;
+
+        }
+
+        public function get instanceId():int {
+            return _instanceId;
+        }
+
+        public function set instanceId(value:int):void {
+            _instanceId = value;
+        }
+
+
+        public function set trait(value:DocTrait):void {
+            _trait = value;
+            _trait && _trait.addEventListener(DocEvent.CHANGE, traitInputHandler);
+        }
+
+        public function set history(value:DocChangeData):void {
+            if (value.slide || value.rotation)
+                _history = value;
+        }
+        ]]>
+	</fx:Script>
+	
+	
+	<!-- board fucntions -->
+	
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.events.WhiteBoardEvent;
+        import ru.teachbase.module.board.instruments.Instrument;
+
+        private var currentInstrumentType:String;
+        private var currentInstrument:Instrument;
+
+
+        protected function onPropertyChanged(event:WhiteBoardEvent):void {
+            if (event.propertyId == "stroke")
+                board.stroke.thickness = event.value;
+            else if (event.propertyId == "color")
+                board.stroke.color = event.value;
+        }
+
+        protected function onToolChanged(event:WhiteBoardEvent):void {
+
+            currentInstrument = figure_mgr.currentInstrument;
+
+            if (!event.value) {
+                currentInstrumentType = null;
+                currentInstrument && currentInstrument.dispose();
+                return;
+            }
+
+
+            if (currentInstrumentType == event.value)
+                return;
+
+            currentInstrumentType = event.value;
+
+            const newInstrument:Instrument = Instrument.get(currentInstrumentType, board);
+            if (currentInstrument && newInstrument === currentInstrument)
+                return;
+
+            if (currentInstrument) {
+                currentInstrument.dispose();
+                currentInstrument = null;
+                if (!currentInstrumentType)
+                    return;
+            }
+
+            currentInstrument = newInstrument;
+            currentInstrument && currentInstrument.initialize(figure_mgr);
+
+        }
+
+        protected function onUndoRedo(event:WhiteBoardEvent):void {
+            figure_mgr[event.value](figure_mgr.history[event.value]());
+        }
+        ]]>
+	</fx:Script>
+	
+	<!-- content -->
+	<s:Group id="content" mouseEnabled="false">
+		
+	<!--canvas-->
+	<board:BoardCanvas id="board" includeIn="wbOn" x="20" y="20" width="{content.width-40}"
+					   height="{content.height-40}" depth="1" editable="{_editable}"/>
+		
+	</s:Group>
+	
+	<!-- controls -->
+	
+	<s:Group id="controls" width="{this.width}" height="{this.height}">
+		<components:WBControlbar id="wbToolbar" includeIn="wbOn" visible="{_editable}"
+								 property="onPropertyChanged(event)" tool="onToolChanged(event)"
+								 undo_redo="onUndoRedo(event)"
+								 undo="{figure_mgr.history.undoAvailable}"
+								 redo="{figure_mgr.history.redoAvailable}"/>
+	</s:Group>
+</s:Group>

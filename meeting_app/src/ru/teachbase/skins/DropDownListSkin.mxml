@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    ADOBE SYSTEMS INCORPORATED
+    Copyright 2008 Adobe Systems Incorporated
+    All Rights Reserved.
+
+    NOTICE: Adobe permits you to use, modify, and distribute this file
+    in accordance with the terms of the license agreement accompanying it.
+ 
+--> 
+<!--- The default skin class for the Spark DropDownList component. 
+      The skin for the anchor button for a DropDownList component 
+      is defined by the DropDownListButtonSkin class.  
+      
+      <p>In a custom skin class that uses transitions, set the 
+      <code>itemDestructionPolicy</code> property to <code>never</code>
+      for the PopUpAnchor defined by the popUp property.</p>      
+        
+      @see spark.components.DropDownList        
+      @see spark.skins.spark.DropDownListButtonSkin
+        
+      @langversion 3.0
+      @playerversion Flash 10
+      @playerversion AIR 1.5
+      @productversion Flex 4
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabled=".5" width="223"> 
+
+    <!-- host component -->
+    <fx:Metadata>
+    <![CDATA[ 
+        /** 
+         * @copy spark.skins.spark.ApplicationSkin#hostComponent
+         */
+        [HostComponent("spark.components.DropDownList")]
+    ]]>
+    </fx:Metadata> 
+
+    <fx:Script fb:purpose="styling">
+        <![CDATA[            
+            
+            /* Define the content fill items that should be colored by the "contentBackgroundColor" style. */
+        
+        ]]>
+    </fx:Script>
+    
+    <s:states>
+        <s:State name="normal" />
+        <s:State name="open" />
+        <s:State name="disabled" />
+    </s:states>
+    
+    <s:PopUpAnchor id="popUp"  displayPopUp.normal="false" displayPopUp.open="true" includeIn="open"
+        left="0" right="0" top="0" bottom="0" itemDestructionPolicy="auto"
+        popUpPosition="below" popUpWidthMatchesAnchorWidth="true" width="223">
+
+        <s:Group id="dropDown" width="100%">
+        
+            <s:Rect id="background" left="1" right="1" top="1" bottom="1" >
+                <s:fill>
+                    <s:SolidColor color="0xEFEFEF" />
+                </s:fill>
+				<s:filters>
+					<s:DropShadowFilter blurX="5" blurY="4" color="0x000000" angle="90"  distance="1"/>
+				</s:filters>
+            </s:Rect>
+            
+            <!--- @private -->
+            <s:Scroller id="scroller" left="0" top="0" right="0" bottom="0" hasFocusableChildren="false" minViewportInset="1" horizontalScrollPolicy="off" width="223">
+                <!--- @copy spark.components.SkinnableDataContainer#dataGroup-->
+                <s:DataGroup id="dataGroup" itemRenderer="ru.teachbase.skins.DropdownListItemRenderer" width="223">
+                    <s:layout>
+                        <s:VerticalLayout gap="0" horizontalAlign="contentJustify" requestedMinRowCount="1" requestedMaxRowCount="6"/>
+                    </s:layout>
+                </s:DataGroup> 
+            </s:Scroller>
+        </s:Group>
+    </s:PopUpAnchor>
+    
+
+    <s:Button id="openButton" left="0" right="0" top="0" bottom="0" focusEnabled="false" tabEnabled="false"
+        skinClass="ru.teachbase.skins.DropDownListButtonSkin" />  
+        
+    <!--- @copy spark.components.DropDownList#labelDisplay -->
+    <s:Label id="labelDisplay" verticalAlign="middle" maxDisplayedLines="1" 
+        mouseEnabled="false" mouseChildren="false"
+        left="30" right="7" top="2" bottom="2" width="75" verticalCenter="1" /> 
+
+</s:SparkSkin>

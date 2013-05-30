@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                autoDrawBackground="false" width="100%">
+
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.utils.Strings;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            if (!value)
+                return;
+            const timer:Date = new Date(Math.floor(value.timestampS));
+            timeStamp.text = '(' + Strings.zero(timer.hours) + ':' + Strings.zero(timer.minutes) + '):';
+        }
+        ]]>
+	</fx:Script>
+	<s:Group height="100%" left="15" top="4" right="10" bottom="2" id="cont">
+		<s:layout>
+			<s:VerticalLayout gap="3"/>
+		</s:layout>
+		<s:HGroup gap="3">
+			<s:Label text="{data.name}" color="0x3E83B9" fontWeight="bold" fontSize="13"/>
+			<s:Label id="timeStamp" color="0x3E83B9" fontSize="13"/>
+		</s:HGroup>
+		<s:RichEditableText text="{data.body}"  multiline="true" width="100%" focusSkin="{null}" editable="false" 
+							color="0x515151" fontSize="13"/>
+	</s:Group>
+</s:ItemRenderer>
+
+

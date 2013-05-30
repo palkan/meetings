@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renderers:DefaultRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                           xmlns:s="library://ns.adobe.com/flex/spark"
+                           xmlns:renderers="ru.teachbase.module.documents.renderers.*">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElementContainer;
+        import mx.events.FlexEvent;
+
+        import org.osmf.events.MediaPlayerStateChangeEvent;
+
+        import ru.teachbase.module.documents.components.VideoPlayerControls;
+
+        private var _timer:Timer = new Timer(100, 0);
+       // private var _duration:Number = 0;
+
+        private var _videoPlayerControls:VideoPlayerControls;
+        [Bindable]
+        private var _videoSoure:String;
+
+
+        override protected function completeHandler(event:FlexEvent):void {
+
+        }
+
+        override public function get hasControls():Boolean {
+            return true;
+        }
+
+        override public function set editable(value:Boolean):void {
+            super.editable = value;
+            if (_videoPlayerControls)
+                _videoPlayerControls.visible = value;
+        }
+
+        override public function set data(value:Object):void {
+            if (!value.hasOwnProperty("url"))
+                return;
+
+            super.data = value;
+
+            _videoSoure = value.url as String;
+        }
+
+        override public function initControls(container:IVisualElementContainer):Boolean {
+            _videoPlayerControls = new VideoPlayerControls();
+
+            _videoPlayerControls.horizontalCenter = 0;
+            _videoPlayerControls.visible = false;
+            _timer.addEventListener(TimerEvent.TIMER, onTimer);
+            container.addElement(_videoPlayerControls);
+
+            if (video.videoObject) {
+                _videoPlayerControls.visible = _editable;
+                positionBottomMenu(video.videoObject.width, video.videoObject.height);
+            }
+            return true;
+        }
+
+        private function positionBottomMenu(w:Number, h:Number):void {
+            if (!_videoPlayerControls || !video)
+                return;
+
+            _videoPlayerControls.width = w * .95;
+            _videoPlayerControls.y = video.y + h - 15;
+        }
+
+        override public function resize(width:Number, height:Number):void {
+            super.resize(width, height);
+            if (!video)
+                return;
+
+            const r:Number = width / height;
+            var h:Number;
+            var w:Number;
+
+            if (r > ratio) {
+                h = height;
+                w = h * ratio;
+            } else {
+                w = width;
+                h = w / ratio;
+            }
+
+            video.width = w;
+            video.height = h;
+
+            video.x = (width - w) / 2;
+            video.y = (height - h) / 2;
+            positionBottomMenu(w, h);
+
+        }
+
+        override public function dispose():void {
+            super.dispose();
+            _timer.stop();
+            if (video) {
+                video.stop();
+            }
+        }
+
+        override public function get ratio():Number {
+            if (video && video.videoObject) {
+                return video.videoObject.width / video.videoObject.height;
+            }
+            return 4 / 3;
+        }
+
+        private function onTimer(evt:Event):void {
+            trace(video.bytesTotal, video.bytesLoaded);
+            _videoPlayerControls.buffered = video.bytesTotal / video.bytesLoaded;
+            _videoPlayerControls.curTume = video.currentTime;
+        }
+
+        public function playVideo():void {
+            if (video)
+                video.play();
+        }
+
+        public function stopVideo():void {
+            if (video)
+                video.pause();
+        }
+
+        public function gotoVideo(val:int):void {
+            if (video)
+                video.seek(val);
+        }
+
+        public function muteVideo():void {
+            if (video)
+                video.muted = true;
+        }
+
+
+        public function unmuteVideo():void {
+            if (video)
+                video.muted = false;
+        }
+
+        private function onPlayerStateChange(event:MediaPlayerStateChangeEvent):void {
+            trace(event.state, video.videoObject ? video.videoObject.width : 0)
+            if (!inited && video.videoObject && video.videoObject.width > 0) {
+                inited = true;
+                //_duration = 100;
+                _timer.start();
+                _videoPlayerControls.max = video.duration;
+
+            }
+
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:VideoDisplay id="video" source="{_videoSoure}" mediaPlayerStateChange="onPlayerStateChange(event)" autoPlay="false"/>
+</renderers:DefaultRenderer>

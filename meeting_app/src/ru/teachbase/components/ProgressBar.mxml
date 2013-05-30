@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         width="100%" height="14">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.helpers.skin;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+
+        public function set progress(value:Number):void {
+            if (value > 1) value = 1;
+            thumbMaskRect.width = this.width * value;
+        }
+        ]]>
+	</fx:Script>
+	<s:Group left="1" top="1" right="1" bottom="1" id="thumbMask" width="1">
+		<s:Rect left="0" top="0" bottom="0" width="1" id="thumbMaskRect">
+			<s:fill>
+				<s:SolidColor color="0xFFFFFF" alpha="0"/>
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+	
+	<s:HGroup id="bg" gap="0" width="100%">
+		<s:BitmapImage source="{style('video','settingsProgressbarBgLeft')}"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBgCenter')}" fillMode="repeat" width="100%"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBgCight')}"/>
+	</s:HGroup>
+	
+	<s:HGroup id="thumb" width="100%" gap="0" mask="{thumbMask}">
+		<s:BitmapImage source="{style('video','settingsProgressbarBarLeft')}"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBarCenter')}" fillMode="repeat" width="100%"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBarRight')}"/>
+	</s:HGroup>
+</s:Group>

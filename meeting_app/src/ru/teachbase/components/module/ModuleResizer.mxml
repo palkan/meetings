@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:dragdrop="ru.teachbase.behaviours.dragdrop.*"
+         implements="ru.teachbase.behaviours.interfaces.IDraggle"
+         currentState="{drag.state}"
+         creationComplete="creationCompleteHandler(event)"
+         mouseEnabledWhereTransparent="true"
+         useHandCursor="false"
+         rollOver="{CursorManager.setCursor(cursorClazz,CursorManagerPriority.HIGH)}"
+         rollOut="{if(currentState == normal.name)  CursorManager.removeAllCursors()}"
+        >
+    <fx:Metadata>
+        [Event(name="module_resize", type="ru.teachbase.events.ModuleEvent")]
+    </fx:Metadata>
+    <fx:Declarations>
+        <dragdrop:DragBehavior id="drag"
+                               target="{this}"
+                               direction="{direction}"
+                               mouseCoordinateSpace="{this.parentApplication}"
+                               dragPrepare="dragPrepareHandler(event)"
+                               dragStart="dragStartHandler(event)"
+                               dragEnd="dragEndHandler(event)"
+                               dispatchToTarget="false"
+                               virtualBounds="{dragBounds}"
+                               useCapture="false"
+                />
+    </fx:Declarations>
+
+    <s:states>
+        <s:State id="normal" name="static"/>
+        <s:State id="dragging" name="dragging" stateGroups="drag"/>
+        <s:State id="dragPreparing" name="preparing" stateGroups="drag"/>
+    </s:states>
+
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+        import mx.managers.CursorManager;
+        import mx.managers.CursorManagerPriority;
+
+        import ru.teachbase.skins.cursors.VerticalResizerCursor;
+
+        [Bindable]
+        private var cursorClazz:Class;
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+
+            setActualSize(Math.max(minWidth, width), Math.max(minHeight, height));
+        }
+        ]]>
+	</fx:Script>
+
+
+    <!-- drag responses -->
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.behaviours.dragdrop.DragBehavior;
+        import ru.teachbase.behaviours.dragdrop.DragDirection;
+        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
+        import ru.teachbase.behaviours.interfaces.IDropContainer;
+        import ru.teachbase.behaviours.dragdrop.DragEvent;
+        import ru.teachbase.events.ModuleEvent;
+        import ru.teachbase.skins.cursors.HorizontalResizerCursor;
+
+        [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragStart", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragCancel", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragEnd", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+
+        import
+        ru.teachbase.behaviours.DragDirection;
+        [Bindable]
+        public var container:IDropContainer;
+
+        [Bindable]
+        public var animation:Boolean = true;
+
+        private var _delta:int;
+        private var _param:int = 0;
+
+        [Bindable]
+        public var direction:uint;
+
+        private var _start:int;
+        private var _groupParam:int;
+
+
+        public var key:String;
+
+        [Bindable]
+        public var dragBounds:Rectangle;
+        public var gap:int = 0;
+
+
+        private function dragPrepareHandler(e:DragEvent):void {
+            currentState = dragPreparing.name;
+        }
+
+        private function dragStartHandler(e:DragEvent):void {
+            _start = (direction === 0) ? stage.mouseX : stage.mouseY;
+            currentState = dragging.name;
+        }
+
+        private function dragEndHandler(e:DragEvent):void {
+            completeDrag(stage.mouseX, stage.mouseY);
+            dispatchEvent(new ModuleEvent(ModuleEvent.RESIZE, delta));
+            currentState = normal.name;
+            CursorManager.removeAllCursors();
+        }
+
+
+        private function completeDrag(x:int, y:int):void {
+
+            var _d:int = (direction === 0) ? x - _start : y - _start;
+
+            _delta = int(_d * 100 / _groupParam);
+
+        }
+
+
+        public function getSnapshot():IDraggleSnapshot {
+
+            return this as IDraggleSnapshot;
+        }
+
+
+        public function get dragBehavior():DragBehavior {
+            return drag as DragBehavior;
+        }
+
+        public function get dragState():String {
+            return currentState;
+        }
+
+        public function get delta():int {
+            return _delta;
+        }
+
+        public function set delta(value:int):void {
+            _delta = value;
+        }
+
+
+        public function setDirection(value:uint):void {
+            direction = value;
+
+            if (value === 0) {
+                cursorClazz = HorizontalResizerCursor;
+                setActualSize(gap, param);
+            } else {
+                cursorClazz = VerticalResizerCursor;
+                setActualSize(param, gap);
+            }
+
+        }
+
+        public function get param():int {
+
+            return _param;
+        }
+
+        public function set param(value:int):void {
+            if (direction === 0)
+                setActualSize(gap, value);
+            else
+                setActualSize(value, gap);
+
+
+            _param = value;
+        }
+
+        public function get groupParam():int {
+            return _groupParam;
+        }
+
+        public function set groupParam(value:int):void {
+            _groupParam = value;
+        }
+        ]]>
+	</fx:Script>
+    <s:Rect width="100%" height="100%" x="0" y="0">
+        <s:fill>
+            <s:SolidColor color="0x333333" alpha.static="0" alpha.preparing="1" alpha.dragging="0.3"/>
+        </s:fill>
+    </s:Rect>
+</s:Group>
+

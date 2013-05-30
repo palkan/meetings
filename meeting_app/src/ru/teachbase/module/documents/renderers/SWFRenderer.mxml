@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renderers:DefaultRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                           xmlns:renderers="ru.teachbase.module.documents.renderers.*"
+                           width="100%" height="100%">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import mx.collections.ArrayList;
+        import mx.core.UIComponent;
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.model.SlideAsset;
+        import ru.teachbase.module.documents.components.SlideItem;
+
+        protected var _slideItem:SlideItem;
+
+        [Bindable]
+        protected var _assetList:ArrayList = new ArrayList();
+
+        private var _slidesArray:ArrayList = new ArrayList();
+
+        public var _getAllSlides:Boolean;
+
+        override protected function completeHandler(event:FlexEvent):void {
+            _useWB = true;
+            _ratio = -1;
+        }
+
+        public function goToSlide(value:int):void {
+            if (value >= 0 && value < _slidesArray.length)
+                slideItem = value;
+        }
+
+        override public function set data(value:Object):void {
+            var i:int;
+            const xml:XML = value as XML;
+            for each(var item:XML in xml.items.*) {
+                var asset:SlideAsset = new SlideAsset();
+                asset.id = i;
+                asset.assetURL = String(item.@slideurl);
+                asset.thumbURL = String(item.@thumburl);
+                _assetList.addItem(asset);
+                _slidesArray.addItem(new SlideItem(asset, this));
+                i++;
+            }
+
+            if (_slidesArray.length > 0)
+                slideItem = 0;
+
+            //if (_getAllSlides) {
+            //	getAllSlide(1);
+            //}
+        }
+
+
+        public function getAllSlide(id:int):void {
+            onLoaded();
+            //trace('loading next slide ' , id)
+            if (id < _slidesArray.length) {
+
+                const nextSlide:SlideItem = _slidesArray.getItemAt(id) as SlideItem;
+                nextSlide.load();
+            }
+        }
+
+        public function set slideItem(value:int):void {
+            _slideItem = _slidesArray.getItemAt(value) as SlideItem;
+            if (_slideItem == null) return;
+            const $clip:UIComponent = _slideItem.clip;
+            clip = $clip;
+            _slideItem.load();
+
+            //предзагрузка следующего слайда
+            /*	if (value+1<_slidesArray.length) {
+             const nextSlide:SlideItem =  _slidesArray.getItemAt(value+1) as SlideItem;
+             nextSlide.load();
+             }*/
+        }
+
+        override public function resize(width:Number, height:Number):void {
+            super.resize(width, height);
+            if (_slideItem == null) return;
+            const clip:UIComponent = _slideItem.clip;
+            const r:Number = width / height;
+            if (r > _slideItem.ratio) {
+                clip.height = height;
+                clip.width = clip.height * _slideItem.ratio;
+            } else {
+                clip.width = width;
+                clip.height = clip.width / _slideItem.ratio;
+            }
+            clip.x = (width - clip.width) / 2;
+            clip.y = (height - clip.height) / 2;
+        }
+
+        public function onLoaded():void {
+            resize(this.width, this.height);
+            if (!_inited) {
+                _ratio = _slideItem.ratio;
+                inited = true;
+            }
+        }
+
+        override public function get ratio():Number {
+            //if (_slideItem) {
+            return _ratio;
+            //}else{
+            //		return 1;
+            //}
+        }
+
+        protected function set clip(value:UIComponent):void {
+            // this method must override
+        }
+
+        override public function dispose():void {
+            super.dispose();
+            //TODO:clear slides array
+        }
+        ]]>
+	</fx:Script>
+	
+</renderers:DefaultRenderer>

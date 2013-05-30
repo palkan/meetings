@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:tcom="ru.teachbase.components.tree.*"
+			   xmlns:com="ru.teachbase.components.*"
+			   implements="ru.teachbase.utils.interfaces.ILocalable"
+			   controlBarVisible="false"  
+			   mouseDownOutside="closeMe(event)" 
+			   backgroundColor="0xE3E3E3"
+			   borderColor="0x252525"
+			   initialize="Localizer.addItem(this)"
+			   addedToStage="onAdded(event)" 
+			   width="555" height="578"
+			   skinClass="ru.teachbase.skins.TitleWindowSkin">
+	<fx:Script>
+		<![CDATA[
+        import mx.collections.ArrayCollection;
+        import mx.collections.ArrayList;
+        import mx.events.FlexEvent;
+        import mx.events.ItemClickEvent;
+        import mx.rpc.Responder;
+
+        import ru.teachbase.core.App;
+        import ru.teachbase.core.Core;
+        import ru.teachbase.events.TreeEvent;
+        import ru.teachbase.events.documents.FileEvent;
+        import ru.teachbase.manage.LayoutModelManager;
+        import ru.teachbase.model.FileItem;
+        import ru.teachbase.module.documents.DocumentsModule;
+        import ru.teachbase.module.documents.WorkplaceContent;
+        import ru.teachbase.skins.VerticalScrollerSkin;
+        import ru.teachbase.utils.AssetLoader;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.Strings;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.helpers.m;
+        import ru.teachbase.utils.shortcuts.style;
+
+        public var workplaceContent:WorkplaceContent;
+
+        private var _fileItem:FileItem;
+
+        private function onAdded(evt:Event):void {
+            invalidatePosition();
+            stage && stage.addEventListener(Event.RESIZE, invalidatePosition, false, 0, true);
+        }
+
+        private function invalidatePosition(evt:Event = null):void {
+            if (!stage)
+                return;
+            this.x = (stage.stageWidth - this.width) / 2;
+            this.y = (stage.stageHeight - this.height) / 2;
+        }
+
+        public function closeMe(evt:Event = null):void {
+            viewStack.selectedIndex = 0;
+            buttonBar.selectedIndex = 0;
+            stage && stage.removeEventListener(Event.RESIZE, invalidatePosition);
+            Core.removePopupFromTop(this);
+            commitGroup.visible = false;
+            _fileItem = null;
+        }
+
+        private function changeSelection(event:MouseEvent):void {
+            switch (event.target.itemIndex) {
+                case 0:
+                    viewStack.selectedIndex = 0;
+                    //workplaceContent && workplaceContent.onStartLoad();
+                    break;
+                case 1:
+                    viewStack.selectedIndex = 1;
+                    (App.room.user.status === 'user') && initLibrary();
+                    break;
+                case 2:
+                    viewStack.selectedIndex = 2;
+                    break;
+            }
+        }
+
+        private function commitChanges():void {
+            if (workplaceContent) {
+                workplaceContent.onSourceChoose(_fileItem);
+            }
+            closeMe(null);
+        }
+
+        //--------------------------------------------------------------------------
+        //
+        //  our library
+        //
+        //--------------------------------------------------------------------------
+
+        private var _treeLoader:AssetLoader;
+
+        [Bindable]
+        private var _libraryList:ArrayCollection;
+
+        private var _filesLoader:AssetLoader;
+        private var _checkKey:String;
+
+        private function initLibrary():void {
+
+            App.service.http && App.service.http.request("folders",
+                    new mx.rpc.Responder(
+                            onTreeLoaded,
+                            onError
+                    )
+            );
+
+        }
+
+
+        private function onError(reason:String):void {
+            Logger.log(reason, "file");
+        }
+
+        private function onTreeLoaded(obj:Object):void {
+            var _docArray:Array = new Array();
+            treeBusyIndicator.visible = false;
+            for each(var ob:Object in obj) {
+                _docArray.push(ob);
+            }
+
+            _docArray.sortOn('id');
+
+            _libraryList = sortList(_docArray);
+            tree.addEventListener(TreeEvent.ITEM_OPEN, onItemOpen)
+
+            if (_libraryList.toArray()[0].children && _libraryList.toArray()[0].children.length > 0)
+                onItemOpen(new TreeEvent(TreeEvent.ITEM_OPEN, false, { id: 0 }));
+
+            libraryFoundedItems.addEventListener(FileEvent.FILE_CLICK_EVENT, fileItemClicked)
+        }
+
+
+        private function onItemOpen(evt:TreeEvent):void {
+
+            docsBusyIndicator.visible = true;
+            libraryFoundedItems.dataProvider = null;
+            ;
+            App.service.http && App.service.http.request("files",
+                    new mx.rpc.Responder(
+                            onFilesLoaded,
+                            onError
+                    ),
+                    {fol: evt.clickedTarget.id}
+            );
+        }
+
+        private function onFilesLoaded(cont:Object):void {
+            docsBusyIndicator.visible = false;
+            var arr:Array = new Array();
+
+            for each (var obj:Object in cont) {
+                var docFile:FileItem = new FileItem(obj.title, obj.url, obj.thumb, obj.type, obj.ext, obj.id);
+                arr.push(docFile);
+            }
+            libraryFoundedItems.dataProvider = new ArrayList(arr);
+        }
+
+        private function fileItemClicked(evt:FileEvent):void {
+            _fileItem = evt.fileItem;
+            commitGroup.visible = true;
+        }
+
+
+        private function sortList(arr:Array):ArrayCollection {
+            var res:Object = new Object();
+
+            for (var i:int; i < arr.length; i++) {
+                if (arr[i].parent_id == null || arr[i].parent_id == 0) {
+                    if (!res.children)
+                        res.children = new Array();
+                    res.children.push(arr[i]);
+                } else {
+                    addToParent(res, arr[i]);
+                }
+            }
+            res.title = '...';
+            res.id = 0;
+            var resArr:Array = [res];
+
+            return new ArrayCollection(resArr);
+        }
+
+        private function addToParent(arr:Object, object:Object):void {
+            for each (var obj:Object in arr) {
+                if (obj.id == object.parent_id) {
+                    if (!obj.children)
+                        obj.children = new Array();
+                    obj.children.push(object);
+                    return;
+                }
+                if (obj.children && obj.children is Array) {
+                    addToParent(obj.children, object);
+                }
+            }
+        }
+
+        //--------------------------------------------------------------------------
+        //
+        //  youtube
+        //
+        //--------------------------------------------------------------------------
+
+        private var _youTubeLoader:AssetLoader;
+        private var _youTubeResults:int = 0;
+        [Bindable]
+        private var _youtubeListCollection:ArrayList = new ArrayList();
+
+        private function youTubeSearch(pageId:int = 0):void {
+            const url:String = encodeURI("http://ajax.googleapis.com/ajax/services/search/video?v=1.0&q=" + youTubeSearchField.text + '&rsz=8&start=' + pageId);
+            if (!_youTubeLoader)
+                _youTubeLoader = new AssetLoader();
+            _youTubeLoader.addEventListener(Event.COMPLETE, onYouTubeLoaded);
+            _youTubeLoader.addEventListener(ErrorEvent.ERROR, function (evt:Event):void {
+                Logger.log("error wile loading youtube json", "file");
+            })
+
+            _youTubeLoader.load(url);
+        }
+
+        private function onYouTubeLoaded(evt:Event):void {
+            _youTubeLoader.removeEventListener(Event.COMPLETE, onYouTubeLoaded);
+            try {
+                var cont:Object = JSON.parse(String(_youTubeLoader.loadedObject));
+            } catch (evt:*) {
+                Logger.log("error wile loading youtube json", "file");
+            }
+            sortYouTubeList(cont.responseData);
+        }
+
+
+        private function sortYouTubeList(obj:Object):void {
+            if (obj == null)
+                return;
+            _youTubeResults = obj.cursor.estimatedResultCount;
+
+            var arr:Array = new Array();
+            for  each (var sourceObj:Object in obj.results) {
+                var docFile:FileItem = new FileItem(sourceObj.title, sourceObj.playUrl, sourceObj.tbUrl, 'YouTube', 'YouTube', 0, {duration: sourceObj.duration});
+                arr.push(docFile);
+            }
+
+            googleFoundedItems.addEventListener(FileEvent.FILE_CLICK_EVENT, fileItemClicked)
+            if (!_youtubeListCollection)
+                _youtubeListCollection = new ArrayList();
+            _youtubeListCollection = new ArrayList(arr);
+            googleFoundedItems.dataProvider = _youtubeListCollection;
+        }
+
+
+        //--------------------------------------------------------------------------
+        //
+        //  google search
+        //
+        //--------------------------------------------------------------------------
+
+        private var _imageLoader:AssetLoader;
+        private var _imageResults:int = 0;
+
+        private function googleSearch(page:int = 0):void {
+            const url:String = encodeURI("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + googleSerchField.text + '&rsz=8');
+            if (!_imageLoader) //TODO: кешить или не кешить....
+                _imageLoader = new AssetLoader();
+            _imageLoader.addEventListener(Event.COMPLETE, onImageLoaded);
+            _imageLoader.addEventListener(ErrorEvent.ERROR, function (evt:Event):void {
+                Logger.log("error wile loading image json", "file");
+            })
+
+            _imageLoader.load(url);
+        }
+
+
+        private function onImageLoaded(evt:Event):void {
+            _imageLoader.removeEventListener(Event.COMPLETE, onImageLoaded);
+            try {
+                var cont:Object = JSON.parse(String(_imageLoader.loadedObject));
+            } catch (evt:*) {
+                Logger.log("error wile loading image json", "file");
+            }
+            sortImageList(cont.responseData);
+        }
+
+
+        private function sortImageList(obj:Object):void {
+            if (obj == null)
+                return;
+            _imageResults = obj.cursor.estimatedResultCount;
+
+            var arr:Array = new Array();
+            for  each (var sourceObj:Object in obj.results) {
+                var docFile:FileItem = new FileItem(Strings.strip(sourceObj.title), sourceObj.url, sourceObj.tbUrl, 'GOOGLE_IMAGE');
+                arr.push(docFile);
+            }
+
+            googleFoundedItems.addEventListener(FileEvent.FILE_CLICK_EVENT, fileItemClicked)
+            googleFoundedItems.dataProvider = new ArrayList(arr);
+
+        }
+
+
+        protected function initList(event:FlexEvent):void {
+            docsList.addEventListener(ItemClickEvent.ITEM_CLICK, recentDocChosenHandler);
+        }
+
+
+        protected function recentDocChosenHandler(event:ItemClickEvent):void {
+
+            if (!event.item || !event.item.id)
+                return;
+
+            closeMe();
+
+            workplaceContent && (m(LayoutModelManager) as LayoutModelManager).restartPanelContent(workplaceContent.panelID, event.item.id);
+        }
+
+
+        public function localize():void {
+            loadFilesLabel && (loadFilesLabel.text = translate('load_files', 'docs'));
+            defaultState && (defaultState.label = translate('from_pc', 'docs'));
+            libraryState && (libraryState.label = translate('from_lib', 'docs'));
+            libGuestField && (libGuestField.text = translate('only_users', 'docs'));
+            searchState && (searchState.label = translate('from_web', 'docs'));
+            openButton && (openButton.label = translate('Open'));
+            orLbl && (orLbl.text = translate('or'));
+            cancelbl && (cancelbl.text = translate('cancel'));
+            recentLbl && (recentLbl.text = translate('recent_docs', 'docs'));
+            chooseBtn && (chooseBtn.label = translate('choose_files', 'docs'));
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:VGroup width="100%" height="100%">
+		<s:Group height="50" width="100%">
+			<s:Label id="loadFilesLabel" initialize="with(loadFilesLabel){text=translate('load_files','docs');}" color="0x515151" fontSize="16" left="48" bottom="8"/>
+		</s:Group>
+		<s:Group width="100%" height="50">
+			<s:ButtonBar id="buttonBar" skinClass="ru.teachbase.module.documents.skins.SelectDocSourceButtonBar" click="changeSelection(event)" horizontalCenter="0" dataProvider="{viewStack}">
+			</s:ButtonBar>
+		</s:Group>
+		<mx:ViewStack id="viewStack" height="406" width="100%" backgroundAlpha="0">
+			<s:NavigatorContent width="100%" id="defaultState" backgroundAlpha="0" initialize="defaultState.label=translate('from_pc','docs')">
+				<s:Group width="100%" height="406">
+					
+					<s:Group width="176" horizontalCenter="0">
+						
+					<com:CustomSkinableButton width="176" 
+											  y = "50"
+											  id="chooseBtn"
+											  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
+											  initialize="with(chooseBtn){label=translate('choose_files','docs');iconUp=ru.teachbase.utils.helpers.style('docs','uploadFile'); iconDown=ru.teachbase.utils.helpers.style('docs','uploadFileDown'); iconOver=ru.teachbase.utils.helpers.style('docs','uploadFileHover')}">
+						<com:click>
+							<![CDATA[
+								workplaceContent && workplaceContent.onStartLoad();
+							]]>
+						</com:click>
+					</com:CustomSkinableButton>
+					</s:Group>
+					
+					<s:VGroup id="recentGroup" width="250"  y="150" visible="false" horizontalCenter="0">
+						<s:Label id="recentLbl" initialize="recentLbl.text=translate('recent_docs','docs')" width="250" fontSize="13" fontWeight="bold" color="0x515151"/>
+						<s:Graphic>
+							<s:Line xFrom="0" xTo="250" yFrom="0" yTo="0">
+								<s:stroke>
+									<s:SolidColorStroke color="0x515151" weight="1" caps="round"/>
+								</s:stroke>
+							</s:Line>
+						</s:Graphic>
+						<s:List id="docsList" 
+								horizontalScrollPolicy="off" 
+								width="250" 
+								contentBackgroundAlpha="0"
+								initialize="initList(event)" 
+								itemRenderer="ru.teachbase.module.documents.renderers.DocsListItemRenderer"/>
+						<s:initialize>
+							<![CDATA[
+									recentGroup.visible=Boolean((workplaceContent.ownerModule as DocumentsModule).docsCollection.length);
+									if(recentGroup.visible)
+										docsList.dataProvider=(workplaceContent.ownerModule as DocumentsModule).docsCollection; 
+							]]>
+						</s:initialize>
+					</s:VGroup>
+				</s:Group>
+			</s:NavigatorContent>
+			<s:NavigatorContent visible="false"  id="libraryState" backgroundAlpha="0" initialize="libraryState.label=translate('from_lib','docs')">
+				<s:RichText id="libGuestField" horizontalCenter="0" y="50"  width="80%" initialize="libGuestField.text=translate('only_users','docs'); libGuestField.visible = (App.room.user.status === 'guest');" />
+				<s:HGroup width="100%" height="406" left="26" right="26" id="treeGr" initialize="treeGr.visible = (App.room.user.status === 'user')">
+					<s:Group width="50%" height="100%">
+						<tcom:Tree dataProvider="{_libraryList}" width="100%" height="410" id="tree" contentBackgroundAlpha="0"  horizontalScrollPolicy="off" 
+								   itemRenderer="ru.teachbase.components.tree.TreeItemRenderer"/>
+						<s:Group verticalCenter="0" horizontalCenter="0" id="treeBusyIndicator">
+							<s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
+						</s:Group>
+					</s:Group>
+					<s:Group width="50%" height="100%"> 
+						<s:Rect width="100%" height="100%">
+							<s:fill>
+								<s:SolidColor color="0xFAFAFA" alpha="1"/>
+							</s:fill>
+							<s:filters>
+								<s:DropShadowFilter inner="true" blurX="5" blurY="5" color="0x000000" strength="0.5"/>
+							</s:filters>
+						</s:Rect>
+						<s:List id="libraryFoundedItems"  
+								width="277" height="410" 
+								itemRenderer="ru.teachbase.module.documents.renderers.FileItemRenderer"
+								verticalScrollPolicy="on" horizontalScrollPolicy="off" contentBackgroundAlpha="0"
+								creationComplete="libraryFoundedItems.scroller.verticalScrollBar.setStyle('skinClass',VerticalScrollerSkin)">
+							<s:layout>
+								<s:TileLayout requestedColumnCount="2" columnWidth="126" paddingLeft="8" paddingRight="8" paddingTop="8" paddingBottom="8"/>
+							</s:layout>
+						</s:List>
+						<s:Group verticalCenter="0" horizontalCenter="0" id="docsBusyIndicator" visible="false">
+							<s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
+						</s:Group>
+					</s:Group>
+				</s:HGroup>
+			</s:NavigatorContent>
+			<s:NavigatorContent visible="false"  id="searchState" backgroundAlpha="0" initialize="searchState.label=translate('from_web','docs');">
+				<s:HGroup  width="100%" height="406" left="26" right="26">
+					<s:VGroup width="50%" height="100%" gap="50">
+						<s:VGroup>
+							<s:Image source="{ru.teachbase.utils.helpers.style('docs','youTube')}" />
+							<s:TextInput id="youTubeSearchField" enter="youTubeSearch()" focusSkin="{null}"  width="190"
+									 skinClass="ru.teachbase.skins.SearchField"/>
+							<s:click>
+								<![CDATA[
+									if (youTubeSearchField.text != "")
+										youTubeSearch()
+								]]>
+							</s:click>
+						</s:VGroup>
+						<s:VGroup>
+							<s:BitmapImage source="{ru.teachbase.utils.helpers.style('docs','google')}"/>
+							<s:TextInput id="googleSerchField" enter="googleSearch()" focusSkin="{null}" width="190"
+									 skinClass="ru.teachbase.skins.SearchField">
+								<s:click>
+									<![CDATA[
+									if (googleSerchField.text != "")
+									googleSearch()
+									]]>
+								</s:click>
+							</s:TextInput>
+						</s:VGroup>
+					</s:VGroup>
+					<s:Group width="50%" height="100%"> 
+						<s:Rect width="100%" height="100%">
+							<s:fill>
+								<s:SolidColor color="0xFAFAFA" alpha="1"/>
+							</s:fill>
+							<s:filters>
+								<s:DropShadowFilter inner="true" blurX="5" blurY="5" color="0x000000" strength="0.5"/>
+							</s:filters>
+						</s:Rect>
+						<s:List id="googleFoundedItems"  
+								width="277" height="410" 
+								itemRenderer="ru.teachbase.module.documents.renderers.FileItemRenderer"
+								verticalScrollPolicy="on" horizontalScrollPolicy="off" contentBackgroundAlpha="0"
+								
+								creationComplete="googleFoundedItems.scroller.verticalScrollBar.setStyle('skinClass',VerticalScrollerSkin)">
+							<s:layout>
+								<s:TileLayout requestedColumnCount="2" columnWidth="126" paddingLeft="8" paddingRight="8" paddingTop="8" paddingBottom="8"/>
+							</s:layout>
+						</s:List>
+					</s:Group>
+				</s:HGroup>
+			</s:NavigatorContent>
+		</mx:ViewStack>
+	<s:HGroup paddingLeft="25" id="commitGroup" visible="false">
+		<s:Button id="openButton"  
+				  skinClass="ru.teachbase.skins.StandartButton" 
+				  width="107" left="25" height="39"
+				  initialize="openButton.label=translate('Open')"
+				  click="commitChanges()"/>
+		<s:Group height="100%">
+			<s:Label id="orLbl"  initialize="orLbl.text=translate('or')" verticalCenter="0" verticalAlign="middle"/>
+		</s:Group>
+		<s:Group height="100%">
+			<s:Label  id="cancelbl" initialize="cancelbl.text=translate('cancel')" click="closeMe(event)" color="0x0000FF" verticalCenter="0" verticalAlign="middle"/>
+		</s:Group>
+	</s:HGroup>
+	</s:VGroup>
+	
+</s:TitleWindow>

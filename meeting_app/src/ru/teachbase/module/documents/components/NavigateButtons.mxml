@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         width="100%" height="100%">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="onChangeSlide", type="ru.teachbase.module.documents.docevents.ChangeSlideEvent")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.events.documents.ChangeSlideEvent;
+
+        /*public function set isOwner(isO:Boolean):void{
+         if(isO &&  SlidesManager.type == SlidesManager.TYPE_PRESENTATION) {
+         previousButton.visible = true;
+         nextButton.visible = true;
+         }else{
+         previousButton.visible = false;
+         nextButton.visible = false;
+         }
+         }*/
+
+        private function buttonClick(event:Event):void {
+            if (event.target == previousButton) {
+                this.dispatchEvent(new ChangeSlideEvent("onChangeSlide", ChangeSlideEvent.DIRECTION_LEFT));
+            } else if (event.target == nextButton) {
+                this.dispatchEvent(new ChangeSlideEvent("onChangeSlide", ChangeSlideEvent.DIRECTION_RIGHT));
+            }
+
+        }
+        ]]>
+	</fx:Script>
+	<s:Button id="previousButton"  visible="true"
+			  height="100%" width="120" left="0" 
+			  skinClass="ru.teachbase.module.documents.skins.DocumentsPresentationLeftButton" 
+			  click="buttonClick(event)" />
+	
+	<s:Button id="nextButton" visible="true"
+			  height="100%" width="120" right="0" 
+			  skinClass="ru.teachbase.module.documents.skins.DocumentsPresentationRightButton" 
+			  click="buttonClick(event)" />
+</s:Group>

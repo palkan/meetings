@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                autoDrawBackground="false" width="237" height="64"
+                xmlns:components="ru.teachbase.components.*"
+                contentBackgroundAlpha="0">
+
+    <s:Label text="{data}"/>
+	
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.manage.SessionManager;
+        import ru.teachbase.model.Notification;
+        import ru.teachbase.model.constants.NotificationTypes;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.helpers.skin;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        import spark.components.List;
+
+        [Bindable]
+        private var _notification:Notification;
+
+        [Bindable]
+        private var _icon:DisplayObject;
+
+        [Bindable]
+        private var _title:String;
+        private var _timer:Timer = new Timer(5000, 1);
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            if (!value) {
+                return;
+            }
+
+            _notification = value as Notification;
+
+            if (_notification.type == NotificationTypes.PERMISSION_NOTIFICATION) {
+                if (int(_notification.value) & 1) {
+                    _icon = style('notification', 'whiteboard');
+                    _title = translate('req_doc', 'notifications', _notification.user.name);
+                } else if (int(_notification.value) & 2) {
+                    _icon = style('notification', 'mic');
+                    _title = translate('req_mic', 'notifications', _notification.user.name);
+                } else if (int(_notification.value) & 4) {
+                    _icon = style('notification', 'cam');
+                    _title = translate('req_cam', 'notifications', _notification.user.name);
+                }
+            } else if (_notification.type == NotificationTypes.ADD_USER_NOTIFICATION) {
+                if (_notification.value == true) {
+                    _title = translate('enter_room', 'notifications', _notification.user.name);
+                } else {
+                    _title = translate('leave_room', 'notifications', _notification.user.name);
+                }
+            } else if (_notification.type == NotificationTypes.RECORD_NOTIFICATION) {
+                if (_notification.value == true) {
+                    _title = translate('start_rec', 'notifications');
+                } else {
+                    _title = translate('stop_rec', 'notifications');
+                }
+            } else if (_notification.type == NotificationTypes.CHAT_NOTIFICATION) {
+                _title = translate('new_message', 'notifications', _notification.user.name, _notification.value);
+            }
+            _timer.addEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);
+            _timer.start();
+
+        }
+
+        private function onTimerComplete(evt:Event):void {
+            _timer.removeEventListener(TimerEvent.TIMER_COMPLETE, onTimerComplete);
+            deleteMe();
+        }
+
+        private function deleteMe():void {
+            if (!data) {
+                return;
+            }
+            var parentList:List = owner as List;
+            parentList.dataProvider.removeItemAt(parentList.dataProvider.getItemIndex(data));
+        }
+        ]]>
+	</fx:Script>
+	<s:Rect width="100%" height="100%" x="0" y="0">
+		<s:fill>
+			<s:SolidColor color="0x353535" alpha="0.8"/>
+		</s:fill>
+	</s:Rect>
+	<s:BitmapImage id="icon" top="4" left="4" source="{_icon}"/>
+	<s:BitmapImage left="0" right="0" bottom="0" fillMode="repeat" source="{style('notification','break')}"/>
+	<s:RichEditableText editable="false"  color="0xE8E8E8" fontSize="11" text="{_title}" left="22" top="8" width="210" textAlign="center"/>
+	<s:HGroup left="43" bottom="4" id="requestGroup" visible="{_notification.type == NotificationTypes.PERMISSION_NOTIFICATION}">
+		<components:CustomSkinableButton id="okButton"  width="97" height="22"
+										 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin" color='0xE8E8E8'
+										 initialize="with(okButton){label=translate('Confirm');iconUp=ru.teachbase.utils.helpers.style('users','deleteUserCancelBg');iconOver=ru.teachbase.utils.helpers.style('users','deleteUserCancelBgHover');}"
+										 >
+			<components:click>
+				<![CDATA[
+                    import ru.teachbase.manage.SessionManager;
+                    import ru.teachbase.manage.SessionManager;
+
+                    CONFIG::LIVE{
+                        (m(SessionManager) as SessionManager).setUserRights(_notification.user.sid, _notification.value, true);
+                        deleteMe();
+                    }
+                ]]>
+			</components:click>
+			</components:CustomSkinableButton>
+		<components:CustomSkinableButton id="cancelButton"  width="87" height="22"
+										 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"  color='0xE8E8E8'
+										 initialize="with(cancelButton){label=translate('Decline');iconUp=ru.teachbase.utils.helpers.style('users','deleteUserCancelBg'); iconOver=ru.teachbase.utils.helpers.style('users','deleteUserCancelBgHover');}"
+										 >
+			<components:click>
+				<![CDATA[
+                    import ru.teachbase.manage.SessionManager;
+                    import ru.teachbase.manage.SessionManager;
+
+                    CONFIG::LIVE{
+                        (m(SessionManager) as SessionManager).setRequest(_notification.value, false, _notification.user.sid);
+                        deleteMe();
+                    }
+                ]]>
+			</components:click>
+			</components:CustomSkinableButton>
+	</s:HGroup>
+	<s:Group id='plainGroup' left="43" bottom="4" visible="{_notification.type != NotificationTypes.PERMISSION_NOTIFICATION}" horizontalCenter="0">
+		<components:CustomSkinableButton id="ok" label="Ok" width="87" height="22" right="0"  horizontalCenter="0"
+										 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin" color='0xE8E8E8'
+										 initialize="with(ok){iconUp=ru.teachbase.utils.helpers.style('users','deleteUserCancelBg');iconOver=ru.teachbase.utils.helpers.style('users','deleteUserCancelBgHover');}"
+										 click="deleteMe()"/>
+	</s:Group>
+</s:ItemRenderer>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               width="600" height="500">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			private function exicuteQuery():void{
+				
+			}
+			
+			public function handler(res:String):void{
+				
+			}
+		]]>
+	</fx:Script>
+	<s:VGroup gap="5">	
+		<s:TextArea id="logArea" width="90%" />
+		<s:HGroup width="100%">
+			<s:TextArea id="inputText"/>
+			<s:Button click="exicuteQuery()"/>
+		</s:HGroup>
+	</s:VGroup>
+</s:TitleWindow>

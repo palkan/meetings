@@ -1,0 +1,19 @@
+{
+    "share":{
+        "plugin_url":"http://home.teachbase.ru/plugin/",
+        "jre":"http://home.teachbase.ru/app/jre-7u9-windows-i586.exe"
+    },
+    "net":{
+        "rtmp":"127.0.0.1",
+        "http":"http://test2013.teachbase.ru/"
+    },
+    "lang":"ru",
+    "skin":"../../assets/skins/skin.xml",
+    "locales":[
+        {
+            "code":"ru",
+            "label":"русский",
+            "url":"../../assets/locales/ru.xml"
+        }
+    ]
+}

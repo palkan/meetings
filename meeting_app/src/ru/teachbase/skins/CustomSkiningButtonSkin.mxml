@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+    ADOBE SYSTEMS INCORPORATED
+    Copyright 2008 Adobe Systems Incorporated
+    All Rights Reserved.
+
+    NOTICE: Adobe permits you to use, modify, and distribute this file
+    in accordance with the terms of the license agreement accompanying it.
+
+-->
+
+<!--- The default skin class for the Spark Button component.  
+
+       @see spark.components.Button
+        
+      @langversion 3.0
+      @playerversion Flash 10
+      @playerversion AIR 1.5
+      @productversion Flex 4
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        minWidth="21" minHeight="21"
+        alpha.disabled="0.5"
+        creationComplete="initSkin()">
+
+    <fx:Metadata>
+        <![CDATA[ 
+        /** 
+         * @copy spark.skins.spark.ApplicationSkin#hostComponent
+         */
+        [HostComponent("ru.teachbase.components.CustomSkinableButton")]
+        ]]>
+    </fx:Metadata>        
+    <!-- states -->
+    <s:states>
+        <s:State name="up" />
+        <s:State name="over" />
+        <s:State name="down" />
+        <s:State name="disabled" />
+    </s:states>
+	
+	<fx:Script>
+		private function initSkin():void {
+			labelDisplay.setStyle('color' , getStyle('color'));
+		}
+	</fx:Script>
+    
+    <!-- layer 1: shadow -->
+	<!--- @private -->
+	<s:BitmapImage source="{hostComponent.iconUp}" includeIn="up" width="100%"/>
+	<s:BitmapImage source="{hostComponent.iconDown? hostComponent.iconDown : hostComponent.iconUp}" includeIn="down" width="100%" />
+	<s:BitmapImage source="{hostComponent.iconOver? hostComponent.iconOver : hostComponent.iconUp}"  includeIn="over"  width="100%"/>
+	<s:BitmapImage source="{hostComponent.iconDisabled ? hostComponent.iconDisabled : hostComponent.iconUp}"  includeIn="disabled"  width="100%"/>
+	
+	<s:Group x="0" verticalCenter="0" horizontalCenter="0" mouseEnabled="false">
+		<s:BitmapImage
+			id="icon"
+			source="{hostComponent.icon}"
+			verticalCenter="0"
+			/>
+	</s:Group>
+	<s:Label id="labelDisplay"
+			 textAlign="center"
+			 maxDisplayedLines="1"
+			 verticalCenter="1" 
+			 fontSize="12"
+			 fontWeight="normal"
+			 left="10" right="10" top="2" color="0xE8E8E8">
+	</s:Label>
+</s:Skin>

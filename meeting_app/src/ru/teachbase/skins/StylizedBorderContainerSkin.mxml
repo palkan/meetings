@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark">
+    <!-- host component -->
+	<fx:Metadata>
+		[HostComponent("ru.teachbase.module.documents.components.DashedBorderContainer")]
+	</fx:Metadata>
+	
+	<!-- states -->
+	<s:states>
+		<s:State name="disabled" />
+		<s:State name="normal" />
+	</s:states>
+	<fx:Script>
+		<![CDATA[
+			
+			private const _E:Number = Math.pow(10,-3);
+			
+			private var dashlen:int;
+			private var gaplen:int;
+			
+			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void{
+				
+				super.updateDisplayList(unscaledWidth, unscaledHeight);
+				
+				var borderThickness:int = getStyle("borderWeight");
+				var borderColor:int = getStyle("borderColor");
+				var backgroundColor:int = getStyle("backgroundColor");
+				var backgroundAlpha:Number = getStyle("backgroundAlpha");
+				
+				graphics.clear();
+				
+				graphics.beginFill(backgroundColor, backgroundAlpha);
+				graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+				
+				graphics.lineStyle(borderThickness, borderColor, 1)
+				
+				if (getStyle("dashLength")) {
+					this.dashlen = getStyle("dashLength");
+				}
+				if (getStyle("gapLength")) {
+					this.gaplen = getStyle("gapLength");
+				}
+				
+				drawBorder(this.x, this.y, unscaledWidth, unscaledHeight,this.dashlen, this.gaplen); 
+			}
+			
+			public function drawLine(x1:Number, y1:Number, x2:Number, y2:Number,
+														   dashlen:Number, gaplen:Number): void {     
+				if((x1 != x2) || (y1 != y2)){
+					var incrlen:Number = dashlen + gaplen;
+					
+					var len:Number = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+					var angle:Number = Math.atan((y2 - y1) / (x2 - x1));
+					var steps:uint = len / (dashlen + gaplen);
+					
+					var dashstepx:Number = dashlen * Math.cos(angle);
+					if (x2 < x1) dashstepx *= -1;
+					
+					dashstepx = (Math.abs(dashstepx) < _E) ? 0 : dashstepx;
+					
+					var dashstepy:Number = dashlen * Math.sin(angle);
+					
+					dashstepy = (Math.abs(dashstepy) < _E) ? 0 : dashstepy;
+					
+					var gapstepx:Number = gaplen * Math.cos(angle);
+					if (x2 < x1) gapstepx *= -1;
+					
+					gapstepx = (Math.abs(gapstepx) < _E) ? 0 : gapstepx;
+					
+					var gapstepy:Number = gaplen * Math.sin(angle);
+					
+					gapstepy = (Math.abs(gapstepy) < _E) ? 0 : gapstepy;
+
+					
+					var stepcount:uint = 0;
+					
+					var nextX:Number;
+					var nextY:Number;
+					
+					nextX = x1 + gapstepx + dashstepx/2;
+					nextY = y1 + gapstepy + dashstepy/2;
+					
+					
+					
+					makeStep(dashlen/2,gaplen);
+					
+					
+					while ((stepcount++)< steps-1) {        
+						
+						makeStep(dashlen,gaplen);
+						
+					}
+					
+					makeStep(dashlen/2,gaplen);
+
+					
+					
+					function makeStep(_d:int,_g:int):void{
+						
+						
+						var dashstartx:Number;
+						var dashstarty:Number;
+						var dashendx:Number;
+						var dashendy:Number;
+						
+						if(x1 == nextX && y1 != nextY){
+							dashstartx = dashendx = x1;
+							if(nextY > y1){
+								dashstarty = y1;// + ((_step-1) * (_d + _g));              
+								dashendy = dashstarty + _d;
+							}else{
+								dashstarty = y1;// - ((_step-1) * (_d + _g));              
+								dashendy = dashstarty - _d;
+							}
+						}else if(y1 == nextY && x1 != nextX){
+							dashstarty = dashendy = y1;
+							if(nextX > x1){
+								dashstartx = x1;// + ((_step-1) * (_d + _g));
+								dashendx = dashstartx + _d;
+							}else{
+								dashstartx = x1;// - ((_step-1) * (_d + _g));
+								dashendx = dashstartx - _d;
+							}
+						}
+						
+						x1 = nextX;
+						y1 = nextY;
+						
+						nextX+=gapstepx + dashstepx;
+						nextY+=gapstepy + dashstepy;
+						
+						graphics.moveTo(dashstartx, dashstarty);
+						graphics.lineTo(dashendx, dashendy);
+						
+						
+						
+						
+					}
+				}
+			}
+			
+			private function drawBorder(x1:Number, y1:Number, width:Number, height:Number,
+										dashlen:Number, gaplen:Number) : void {
+				drawLine(x1, y1, x1 + width, y1, dashlen, gaplen);
+				drawLine(x1 + width, y1, x1 + width, y1 + height, dashlen, gaplen);
+				drawLine(x1 + width, y1 + height, x1, y1 + height, dashlen, gaplen);
+				drawLine(x1, y1 + height, x1, y1, dashlen, gaplen);
+			}    
+			
+		]]>
+	</fx:Script>
+	
+</s:Skin>

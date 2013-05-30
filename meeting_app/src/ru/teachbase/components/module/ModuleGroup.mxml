@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                      xmlns:s="library://ns.adobe.com/flex/spark"
+                      xmlns:components="ru.teachbase.components.module.*" xmlns:dragdrop="ru.teachbase.behaviours.dragdrop.*"
+                      implements="ru.teachbase.module.base.IModulePanel,
+		                          ru.teachbase.behaviours.interfaces.IDraggle"
+                      minWidth="140" minHeight="100"
+                      creationComplete="creationCompleteHandler(event)"
+                      preinitialize="preinitializeHandler(event)"
+                      skinClass="ru.teachbase.skins.module.ModuleSkin"
+        >
+    <fx:Metadata>
+        [Event(name="", type="ru.teachbase.events.ModuleEvent")]
+    </fx:Metadata>
+    <fx:Declarations>
+        <dragdrop:DragDropBehavior id="drag"
+                                   target="{this}"
+                                   mouseCoordinateSpace="{this.parentApplication}"
+                                   dragPrepare="dragPrepareHandler(event)"
+                                   dragStart="dragStartHandler(event)"
+                                   dragEnd="dragEndHandler(event)"
+                                   dispatchToTarget="true"
+                                   container="{container}"
+                                   bounds="{dropSpace}"
+                />
+    </fx:Declarations>
+
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.components.*;
+
+        import ru.teachbase.module.base.IModuleContent;
+        import ru.teachbase.utils.shortcuts.style;
+
+        private var _title:String;
+
+        protected var _content:Vector.<IModuleContent>;
+
+        private var instancesToLoad:Boolean = false;
+
+        private var __initialized:Boolean = false;
+
+        private var _currentContent:IModuleContent;
+
+        private var _p_enabled:Boolean = true;
+
+        private var _expanded:Boolean = false;
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+            width = Math.max(minWidth, width);
+            height = Math.max(minHeight, height);
+
+            __initialized = true;
+
+            if (instancesToLoad) {
+                mainContent.addElement(_currentContent);
+                instancesToLoad = false;
+            }
+
+        }
+
+        private function preinitializeHandler(e:FlexEvent):void {
+            this.setStyle("backgroundColor", style('modulecontainer', 'background', 'string'));
+        }
+
+        public function set content(value:Array):void {
+
+            if (!value || !(value is Array)) {
+                hide();
+                mainContent.removeAllElements();
+                return;
+            }
+
+            _title = (value[0] as IModuleContent).label;
+            _content = new Vector.<IModuleContent>();
+
+            const size:int = value.length;
+
+
+            // convert our array to vector (stop if we find a non-IModuleContent element or pass thru all
+
+            for (var i:int = 0; (_content[i] = value[i] as IModuleContent) && i < size; i++);
+
+            _currentContent = _content[0];
+            _currentContent.p_enabled = _p_enabled;
+            _currentContent.ownerPanel = this;
+
+            if (this._initialized)
+                mainContent.addElement(_currentContent);
+            else
+                instancesToLoad = true;
+        }
+
+        public function get _initialized():Boolean {
+            return __initialized;
+        }
+        ]]>
+	</fx:Script>
+
+    <!-- ITreeLayoutElement implementation -->
+    <fx:Script>
+		<![CDATA[
+        private var _id:uint;
+        private var _layoutIndex:String = '';
+        private var _active:Boolean;
+
+        public function get elementID():uint {
+            return _id;
+        }
+
+        public function set elementID(value:uint):void {
+            _id = value;
+        }
+
+        public function get layoutIndex():String {
+            return _layoutIndex;
+        }
+
+        public function set layoutIndex(value:String):void {
+            _layoutIndex = value;
+        }
+
+        public function hide():void {
+            for each (var el:IModuleContent in _content) {
+                el.hide();
+            }
+        }
+
+
+        public function get active():Boolean {
+            return _active;
+        }
+
+        public function set active(value:Boolean):void {
+            _active = value;
+            if (!value)
+                hide();
+        }
+        ]]>
+	</fx:Script>
+
+
+    <!-- drag responses -->
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.behaviours.interfaces.IDragCoordinateSpace;
+        import ru.teachbase.behaviours.interfaces.IDropContainer;
+        import ru.teachbase.behaviours.dragdrop.DragEvent;
+
+        [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragStart", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragCancel", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragEnd", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragDrop", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+
+
+        [Bindable]
+        public var dropSpace:IDragCoordinateSpace;
+
+        [Bindable]
+        public var container:IDropContainer;
+
+        private function dragPrepareHandler(e:DragEvent):void {
+        }
+
+        private function dragStartHandler(e:DragEvent):void {
+        }
+
+        private function dragEndHandler(e:DragEvent):void {
+        }
+
+        ]]>
+	</fx:Script>
+
+    <!-- implementation -->
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.behaviours.dragdrop.DragBehavior;
+        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
+
+        protected var snapshot_catch:IDraggleSnapshot;
+
+        public function getSnapshot():IDraggleSnapshot {
+
+            snapshot_catch = snapshot_catch || new DraggleSnapshot(this);
+
+            return snapshot_catch;
+        }
+
+        public function get dragBehavior():DragBehavior {
+            return drag;
+        }
+
+        public function get dragState():String {
+            return currentState;
+        }
+
+        public function get title():String {
+            return _title;
+        }
+
+        public function set title(value:String):void {
+            _title = value;
+            titleBar.title = value;
+        }
+
+        public function get currentContent():IModuleContent {
+            return _currentContent;
+        }
+
+        public function set currentContent(value:IModuleContent):void {
+            _currentContent = value;
+        }
+
+        public function set p_enabled(value:Boolean):void {
+
+            titleBar.p_enabled = value;
+
+            for each (var el:IModuleContent in _content) {
+                el.p_enabled = value;
+            }
+
+        }
+        ]]>
+	</fx:Script>
+    <s:layout>
+        <s:VerticalLayout gap="0"/>
+    </s:layout>
+    <components:ModuleHeader id="titleBar" width="100%" height="28" initialize="titleBar.target = this;"/>
+    <s:Group id="mainContent" width="100%" top="28" bottom="0"/>
+</s:SkinnableContainer>

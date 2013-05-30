@@ -1,0 +1,48 @@
+<s:SparkButtonSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+                   xmlns:s="library://ns.adobe.com/flex/spark"
+                   minWidth="21" minHeight="21"
+                   alpha.disabled="0.5">
+
+    <fx:Metadata>
+		<![CDATA[ 
+		
+		[HostComponent("spark.components.Button")]
+		]]>
+	</fx:Metadata>
+	
+	<!-- states -->
+	<s:states>
+		<s:State name="up" />
+		<s:State name="over" />
+		<s:State name="down" />
+		<s:State name="disabled" />
+	</s:states>
+	
+	<s:Rect id="buttonMask" left="0" right="0" top="0" bottom="0">
+		<s:fill>
+			<s:SolidColor color="0xFFFFFF" alpha="0"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:Rect id="fill" left="0" right="0" top="0" bottom="0" includeIn="over, down">
+		<s:fill>
+			<s:LinearGradient rotation="180">
+				<s:GradientEntry color="0x808080" 
+								 alpha="0.2" 
+								 ratio="0.1"/>
+				<s:GradientEntry color="0xBEBEBE" 
+								 ratio=".99"
+								 alpha="0.1" />
+
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<s:Graphic id="triangle" y="{this.height/2 - 30}" x="60" includeIn="over, down">
+		<s:Path data="M 0 0 L 40 30 L 0 60 L 0 0 ">
+			<s:fill>
+				<s:SolidColor color="0x8D98A1" color.down="0x616C75"  alpha="0.5" />
+			</s:fill>
+		</s:Path>
+	</s:Graphic>
+</s:SparkButtonSkin>

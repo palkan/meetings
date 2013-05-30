@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:gcomp="ru.teachbase.components.*"
+         xmlns:comp="ru.teachbase.module.documents.components.*"
+         width="100%" height="38">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.events.documents.ControlEvent;
+        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.utils.Strings;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.workplace.ControlHost;
+
+        private var _totalTime:Number = 0;
+        private var _mouseDown:Boolean;
+        private var _seekAvailable:Boolean = true;
+
+        [Bindable]
+        private var _isPlaying:Boolean = false;
+
+        [Bindable]
+        private var _isMute:Boolean = false;
+
+        public function set buffered(val:Number):void {
+            if (isNaN(val))
+                return;
+            if (slider)
+                slider.buffered = val;
+        }
+
+        public function set max(val:Number):void {
+            ;
+            if (isNaN(val)) val = 0;
+            _totalTime = val;
+            slider.maximum = val;
+            totalTimeLabel.text = Strings.digits(val);
+        }
+
+        public function set curTume(val:Number):void {
+            currentTime.text = Strings.digits(Math.floor(val));
+            if (!_mouseDown)
+                slider.value = Math.floor(val);
+        }
+
+        public function set playing(val:Boolean):void {
+            _isPlaying = val;
+        }
+
+        public function get seekAvailable():Boolean {
+            return _seekAvailable;
+        }
+
+        public function set seekAvailable(value:Boolean):void {
+            _seekAvailable = value;
+        }
+        ]]>
+	</fx:Script>
+	<s:Image id="backStretch" initialize="backStretch.source=style('videoplayer','background')" scaleMode="stretch" height="38" width="100%"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Group >
+			<gcomp:CustomSkinableButton includeInLayout="{_isPlaying}" visible="{_isPlaying}"
+					  click="_isPlaying = !_isPlaying; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.STOP_VIDEO,[],true,ControlHost.RENDERER, true))" 
+					  initialize="with(pauseBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','pauseButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','pauseButtonOver');}"
+					  id="pauseBtn"
+					  skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+			<gcomp:CustomSkinableButton  includeInLayout="{!_isPlaying}" visible="{!_isPlaying}"
+					  click="_isPlaying = !_isPlaying; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.PLAY_VIDEO,[],true,ControlHost.RENDERER, true))" 
+					  id="playBtn"
+					  initialize="with(playBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','playButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','playButtonOver');}"
+					  skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+		</s:Group>
+		<s:HGroup width="100%">
+			<s:Label id="currentTime" text="0.00" color="0xFFFFFF"/>
+			<s:Group width="100%"> 
+				<comp:CustomHSlider id="slider" width="100%" skinClass="ru.teachbase.module.documents.skins.CustomHSliderSkin" 
+								changeEnd="_seekAvailable &amp;&amp; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.GOTO_VIDEO,[slider.value],true,ControlHost.RENDERER, true))" 
+								mouseDown="_mouseDown = true"
+								click="_seekAvailable &amp;&amp; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.GOTO_VIDEO,[slider.value],true,ControlHost.RENDERER, true))"
+								creationComplete="stage.addEventListener(MouseEvent.MOUSE_UP,function(e:Event):void{ _mouseDown = false;}); slider.thumb.visible = _seekAvailable; slider.mouseEnabled = slider.mouseChildren = _seekAvailable;"/>
+			</s:Group>
+			<s:Label id="totalTimeLabel" text="10.00" color="0xFFFFFF"/>
+		</s:HGroup>
+		<s:Group >
+			<gcomp:CustomSkinableButton includeInLayout="{!_isMute}" visible="{!_isMute}"
+										click="_isMute = !_isMute; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.MUTE_VIDEO,[],true,ControlHost.RENDERER, true))" 
+										id="muteBtn"
+										initialize="with(muteBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','muteButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','muteButtonOver');}"
+										skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+			<gcomp:CustomSkinableButton  includeInLayout="{_isMute}" visible="{_isMute}"
+										 click="_isMute = !_isMute; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.UNMUTE_VIDEO,[],true,ControlHost.RENDERER, true))" 
+										 id="unmuteBtn"
+										 initialize="with(unmuteBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','unmuteButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','unmuteButtonOver');}"
+										 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+		</s:Group>
+	</s:HGroup>
+</s:Group>

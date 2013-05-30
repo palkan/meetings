@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renderers:SWFRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                       xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:renderers="ru.teachbase.module.documents.renderers.*"
+                       width="100%" height="100%">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElementContainer;
+        import mx.core.UIComponent;
+
+        import ru.teachbase.model.SlideAsset;
+        import ru.teachbase.module.documents.components.BottomPanel;
+        import ru.teachbase.module.documents.components.DocumentMap;
+        import ru.teachbase.module.documents.components.VerticalThumbPanel;
+
+        private var bottomPanel:BottomPanel = new BottomPanel();
+        private var verticalThumb:VerticalThumbPanel;
+        private var documentMap:DocumentMap = new DocumentMap();
+
+        /* transformation const */
+        private const scaleIn:Number = 2;
+        private const scaleOut:Number = 1 / scaleIn;
+        private var _curZoom:Number = 1;
+
+        override public function initControls(container:IVisualElementContainer):Boolean {
+            verticalThumb = new VerticalThumbPanel();
+            verticalThumb.setStyle('right', 0);
+            verticalThumb.percentHeight = 100;
+            verticalThumb.dataProvider = _assetList;
+            verticalThumb.visible = _editable;
+            container.addElement(verticalThumb);
+
+            bottomPanel.horizontalCenter = 0;
+            bottomPanel.setStyle('bottom', 0);
+            bottomPanel.maxSlides = _assetList.length;
+            //bottomPanel.visible = _editable;
+            container.addElement(bottomPanel);
+
+            documentMap.setStyle('bottom', 0);
+            documentMap.setStyle('horizontalCenter', -200);
+            documentMap.visible = false;
+            documentMap.target = parentContainer;
+            //documentMap.includeInLayout = false;
+            container.addElement(documentMap);
+
+            if (_slideItem)
+                slideItem = _slideItem.slideId;
+
+            return true;
+        }
+
+        override public function set editable(value:Boolean):void {
+            super.editable = value;
+            bottomPanel.isOwner = value;
+            //buttomPanel.visible = true;
+            if (verticalThumb)
+                verticalThumb.visible = value;
+        }
+
+        override public function get hasControls():Boolean {
+            return true;
+        }
+
+        override public function resize(w:Number, h:Number):void {
+            super.resize(w, h);
+            if (documentMap)
+                documentMap.resize();//   RectSize(_slideItem.clip.width/w, _slideItem.clip.height/h);
+        }
+
+        override protected function set clip(value:UIComponent):void {
+            swlLoaderElement.removeAllElements()
+            swlLoaderElement.addElement(value);
+            progressBarCont.visible = true;
+        }
+
+        override public function set slideItem(value:int):void {
+            super.slideItem = value;
+            var asset:SlideAsset = _assetList.getItemAt(value) as SlideAsset;
+            documentMap.pageSnapshot = asset.thumbURL;
+            bottomPanel.curentSlide = value;
+        }
+
+        override public function onLoaded():void {
+            super.onLoaded();
+            progressBarCont.visible = false;
+        }
+
+        override public function dispose():void {
+            super.dispose();
+            swlLoaderElement.removeAllElements();
+        }
+
+        override public function zoom(flag:Boolean):void {
+            if (flag) {
+                _curZoom /= scaleIn;
+            } else {
+                _curZoom /= scaleOut;
+            }
+
+            zoomRect();
+        }
+
+        private function zoomRect():void {
+            if (_curZoom >= 1) {
+                documentMap.visible = false;
+                return;
+            }
+
+            !documentMap.visible && (documentMap.visible = true);
+
+            documentMap.visible && documentMap.zoom(_curZoom);
+        }
+
+        override public function rotate(flag:Boolean):void {
+            documentMap.rotate(flag);
+        }
+        ]]>
+	</fx:Script>
+	<s:Group id="swlLoaderElement" width="100%" height="100%"/>
+	
+	<s:Group verticalCenter="0" horizontalCenter="0" id="progressBarCont">
+		<s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
+	</s:Group>
+</renderers:SWFRenderer>

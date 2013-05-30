@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Callout xmlns:fx="http://ns.adobe.com/mxml/2009"
+           xmlns:s="library://ns.adobe.com/flex/spark"
+           mouseDownOutside="this.close()">
+
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			
+			
+			private var _active:Boolean = false;
+			
+			private var timer:Timer = new Timer(1200);
+			
+			
+			override public function open(owner:DisplayObjectContainer, modal:Boolean=false):void{
+				
+				if(isOpen){
+					close();
+					return;
+				}
+				
+				super.open(owner,modal);
+				
+				timer.addEventListener(TimerEvent.TIMER,timerHandler);
+				timer.start();
+				_active = true;
+				addEventListener(MouseEvent.MOUSE_MOVE, mmoveHandler, true);
+			}
+			
+			
+			override public function close(commit:Boolean=false, data:*=null):void{
+				
+				super.close(commit,data);
+				timer.stop();
+				timer.removeEventListener(TimerEvent.TIMER,timerHandler);
+				removeEventListener(MouseEvent.MOUSE_MOVE, mmoveHandler, true);
+			}
+			
+			
+			private function mmoveHandler(event:MouseEvent):void
+			{
+				_active = true;
+			}
+			
+			protected function timerHandler(event:TimerEvent):void
+			{
+				if(!_active)
+					close();
+				
+				_active = false;
+			}
+			
+			public function get active():Boolean
+			{
+				return _active;
+			}
+
+			public function set active(value:Boolean):void
+			{
+				_active = value;
+			}
+
+		]]>
+	</fx:Script>
+</s:Callout>

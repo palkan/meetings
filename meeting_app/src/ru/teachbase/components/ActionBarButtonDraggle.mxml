@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Button xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+          xmlns:dragdrop="ru.teachbase.behaviours.dragdrop.*"
+          implements="ru.teachbase.behaviours.interfaces.IDragDelegate"
+          skinClass="ru.teachbase.skins.actionbar.ActionBarButtonSkin"
+          creationComplete="onCreationComplete(event)"
+        >
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.behaviours.dragdrop.DragBehavior;
+        import ru.teachbase.behaviours.dragdrop.DragDirection;
+        import ru.teachbase.behaviours.interfaces.IDragCoordinateSpace;
+        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
+        import ru.teachbase.behaviours.dragdrop.DragEvent;
+        import ru.teachbase.model.LayoutChangeData;
+        import ru.teachbase.layout.LayoutElementData;
+        import ru.teachbase.model.constants.PacketType;
+        import ru.teachbase.module.base.Module;
+        import ru.teachbase.utils.helpers.dispatchTraitEvent;
+
+        [Bindable]
+        public var module:Module;
+
+        [Bindable]
+        public var icon:DisplayObject;
+
+        [Bindable]
+        public var iconOver:DisplayObject;
+
+        [Bindable]
+        public var iconSelected:DisplayObject;
+
+
+        [Bindable]
+        public var dropSpace:IDragCoordinateSpace;
+
+        private function dragPrepareHandler(e:DragEvent):void {
+            removeEventListener(MouseEvent.CLICK, clickHandler);
+        }
+
+        private function dragStartHandler(e:DragEvent):void {
+        }
+
+        private function dragEndHandler(e:DragEvent):void {
+            if (!hasEventListener(MouseEvent.CLICK))
+                addEventListener(MouseEvent.CLICK, clickHandler);
+        }
+
+        private function clickHandler2(event:MouseEvent):void {
+
+            // TODO: I don't like this piece of code!
+
+
+            if (module) {
+                var _d:LayoutChangeData = new LayoutChangeData();
+                var _data:LayoutElementData = new LayoutElementData();
+                _data.content = [
+                    {module: module}
+                ];
+                _d.fromObject({type: "module_click", data: _data});
+
+                dispatchTraitEvent(PacketType.LAYOUT, _d);
+
+            }
+        }
+
+
+        //---- implementation
+        protected var snapshot_catch:DraggleSnapshot;
+
+        public function getSnapshot():IDraggleSnapshot {
+
+
+            snapshot_catch = snapshot_catch || new DraggleSnapshot(this, false);
+            return snapshot_catch;
+        }
+
+        public function get dragBehavior():DragBehavior {
+            return drag;
+        }
+
+        public function get dragState():String {
+            return currentState;
+        }
+
+        protected function onCreationComplete(event:FlexEvent):void {
+
+            //TODO: Maybe there is another way?
+
+            drag.mouseCoordinateSpace = this.parentApplication as DisplayObject;
+            addEventListener(MouseEvent.CLICK, clickHandler2);
+        }
+        ]]>
+	</fx:Script>
+    <fx:Declarations>
+        <dragdrop:DragDropBehavior id="drag"
+                                   target="{this}"
+                                   useCapture="false"
+                                   direction="{DragDirection.DOWN | DragDirection.LEFT | DragDirection.RIGHT}"
+                                   startDirection="{DragDirection.DOWN}"
+                                   mouseCoordinateSpace="{this.parentApplication}"
+                                   dragPrepare="dragPrepareHandler(event)"
+                                   dragStart="dragStartHandler(event)"
+                                   dragEnd="dragEndHandler(event)"
+                />
+    </fx:Declarations>
+</s:Button>

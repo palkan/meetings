@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module:ModuleInstance xmlns:fx="http://ns.adobe.com/mxml/2009"
+                           xmlns:s="library://ns.adobe.com/flex/spark"
+                           xmlns:components="ru.teachbase.components.*" xmlns:module="ru.teachbase.components.module.*"
+                           implements="ru.teachbase.utils.interfaces.ILocalable"
+                           creationComplete="creationCompleteHandler(event)">
+
+
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <module:states>
+        <s:State id="sharing" name="sharing"/>
+        <s:State id="iams" name="iamsharing"/>
+        <s:State id="iamp" name="iampreparing"/>
+        <s:State id="prepare" name="prepare"/>
+        <s:State id="idle" name="idle"/>
+    </module:states>
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+        import mx.rpc.Responder;
+
+        import ru.teachbase.core.App;
+        import ru.teachbase.events.ScreenShareEvent;
+        import ru.teachbase.manage.TraitManager;
+        import ru.teachbase.model.LocalStream;
+        import ru.teachbase.model.Packet;
+        import ru.teachbase.model.User;
+        import ru.teachbase.model.constants.PacketType;
+        import ru.teachbase.model.constants.Recipients;
+        import ru.teachbase.model.constants.RecordingStates;
+        import ru.teachbase.module.screenshare.components.VideoContainerShare;
+        import ru.teachbase.traits.ScrShareTrait;
+        import ru.teachbase.utils.BrowserUtils;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.config;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.Permissions;
+        import ru.teachbase.utils.extensions.AIRLauncher;
+        import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.debug;
+
+        CONFIG::AIR{
+            import ru.teachbase.ane.*;
+            import ru.teachbase.utils.Disposer;
+        }
+
+
+        private const RESTART_STREAM_TIME:int = 2000;
+
+        private var _trait:ScrShareTrait = TraitManager.instance.createTrait(ScrShareTrait) as ScrShareTrait;
+
+        private var _activeUser:User;
+
+        private const user:User = App.room.user;
+
+        private var _available:Boolean = false;
+
+
+        private var _netStream:NetStream;
+
+        private var _streamName:String;
+
+        private var _launcher:AIRLauncher;
+
+
+        CONFIG::AIR{
+
+            private var _share:TBShare;
+
+        }
+
+        private var _vc:VideoContainerShare;
+
+        [Bindable]
+        private var _isOwner:Boolean = false;
+
+        private function creationCompleteHandler(event:FlexEvent):void {
+
+            currentState = idle.name;
+
+            label = translate('label', 'screenshare');
+
+            Localizer.addItem(this);
+
+
+            _trait.call("get_history", new mx.rpc.Responder(stateHandler, null), PacketType.SCREEN_SHARING);
+
+            CONFIG::AIR{
+
+                noAppLbl.includeInLayout = noAppLbl.visible = false;
+
+
+                _share = new TBShare(null);
+                _available = _share.isJavaAvailable();
+
+                alertType = "no_java_alert";
+
+
+                start && (start.enabled = _available) && (start.visible = _available);
+                noAppBtn.label = translate('install_app', 'screenshare');
+                !_available && config("plugin_url", false) && (noAppBtn.visible = true);
+                noAppGroup && (noAppGroup.visible = !_available);
+                additionalAlert.text = translate(alertType, 'screenshare');
+                additionalAlert.includeInLayout = additionalAlert.visible = !_available;
+                appGroup && (appGroup.visible = _available);
+            }
+
+            CONFIG::WEB{
+
+                start && (start.enabled = false);
+                start && (start.visible = false);
+                noAppGroup && (noAppGroup.visible = true);
+                appGroup && (appGroup.visible = false);
+
+                Logger.log(Capabilities.os, 'os');
+
+                if (Capabilities.os.search("Windows") > -1) {
+
+                    _launcher = new AIRLauncher('teachbase.meetings.desktop', '', [App.room.user.status === "guest", App.room.id, (App.room.user.status === "guest") ? App.room.user.fullName : App.room.user.id, App.room.user.role, CONFIG::debug]);
+                    Logger.log([App.room.user.status === "guest", App.room.id, (App.room.user.status === "guest") ? App.room.user.fullName : App.room.user.id, App.room.user.role, CONFIG::debug].join(";"), "ENTRY_ARGS");
+                    _launcher.addEventListener(Event.COMPLETE, onLauncherComplete);
+                    _launcher.init();
+
+                } else {
+                    alertType = "no_win_alert";
+                    additionalAlert.text = translate(alertType, 'screenshare');
+                    additionalAlert.includeInLayout = additionalAlert.visible = !_available;
+                    noAppBtn.visible = false;
+
+
+                }
+
+            }
+
+
+        }
+
+
+        CONFIG::WEB{
+
+            private function onLauncherComplete(e:Event):void {
+
+                Logger.log(_launcher.status, 'launcher_status');
+
+                if (_launcher.status & AIRLauncher.APP_INSTALLED) {
+                    noAppBtn.label = translate('run_app', 'screenshare');
+                    noAppBtn.visible = true;
+                } else if (_launcher.status & AIRLauncher.IN_CHROME) {
+                    alertType = "chrome_alert";
+                    additionalAlert.text = translate(alertType, 'screenshare');
+                    additionalAlert.includeInLayout = additionalAlert.visible = !_available;
+                    noAppBtn.visible = false;
+                } else {
+                    noAppBtn.label = translate('install_app', 'screenshare');
+                    config("plugin_url", false) && (noAppBtn.visible = true);
+                }
+
+
+            }
+
+
+        }
+
+        private function launchOrLoadApp(e:MouseEvent):void {
+
+            if (_launcher.status & AIRLauncher.APP_INSTALLED) {
+                _launcher.launchApp();
+                BrowserUtils.closeWindow();
+            } else {
+                navigateToURL(new URLRequest(config("plugin_url")), "_blank");
+            }
+
+        }
+
+        private function stateHandler(packet:Packet = null):void {
+
+            const data:Object = packet ? packet.data : null;
+
+            if (data && data.type === "prepare" && data.uid) {
+
+                prepareShareHandler(new ScreenShareEvent("", data.uid));
+
+            } else if (data && data.type === "start" && data.uid && data.stream) {
+
+                prepareShareHandler(new ScreenShareEvent("", data.uid));
+                receive(data.stream);
+
+            }
+
+
+            _trait.addEventListener(ScreenShareEvent.START_SHARE, startShareHandler);
+            _trait.addEventListener(ScreenShareEvent.PREPARE_SHARE, prepareShareHandler);
+            _trait.addEventListener(ScreenShareEvent.STOP_SHARE, function (e:Event) {
+                _streamName = null;
+                dispose();
+            });
+            _trait.readyToReceive = true;
+
+
+        }
+
+
+        private function prepareShareHandler(event:ScreenShareEvent):void {
+
+
+            _activeUser = App.room.usersByID[event.uid];
+            if (!_activeUser) return;
+
+
+            if (user.sid === event.uid) {
+
+                currentState = iamp.name;
+
+                statusText.text = translate("prepare_me", "screenshare");
+
+
+            } else {
+                currentState = prepare.name;
+
+                statusText.text = translate("prepare", "screenshare", _activeUser.fullName);
+
+            }
+
+        }
+
+
+        private function startShareHandler(event:ScreenShareEvent):void {
+
+            if (user.sid === event.uid) {
+                currentState = iams.name;
+                statusText.text = translate("share_me", "screenshare");
+                return;
+            }
+
+
+            receive(event.stream);
+
+        }
+
+
+        private function onStartShare(event:MouseEvent):void {
+
+            CONFIG::AIR{
+
+                var opts:TBShareOptions = new TBShareOptions(config("service::rtmp_media", ""), user.sid);
+
+                opts.app = "tbshare/" + App.room.id.toString();
+                opts.fps = 2;
+                opts.maxWidth = 1024;
+                opts.maxHeight = 768;
+                _share = new TBShare(opts);
+                _share.addEventListener(ErrorEvent.ERROR, onAneError);
+
+                Disposer.addItem(_share);
+
+                CONFIG::debug{
+                    var res:Boolean = _share.startShare(File.applicationDirectory.nativePath);
+                }
+
+
+                CONFIG::release{
+                    var res:Boolean = _share.startShare(File.applicationDirectory.nativePath);
+                }
+
+                if (res) {
+                    _trait.output({uid: user.sid, type: "prepare"}, Recipients.ALL, null, true);
+                } else {
+                    _share.dispose();
+                }
+
+            }
+
+        }
+
+
+        CONFIG::AIR{
+
+            private function onAneError(event:ErrorEvent):void {
+
+                Logger.log(event.text, "ane_error");
+
+            }
+
+        }
+
+
+        protected function onStopShare(event:MouseEvent):void {
+
+            CONFIG::AIR{
+                _share && _share.stopShare();
+
+                _trait.output({uid: 0, type: "stop"}, Recipients.ALL, null, true);
+            }
+        }
+
+
+        private var _sizeInited:Boolean = false;
+        private var alertType:String;
+
+        private function receive(stream:String):void {
+
+            label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
+
+            _netStream = new NetStream(App.service.media_connection);
+
+            _netStream.addEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler);
+            _netStream.addEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
+            _netStream.addEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
+
+            var ns_client:Object = new Object();
+
+            ns_client.onMetaData = function (metadata:Object):void {
+                if (!metadata)
+                    return;
+
+                if (metadata.msgtype && metadata.msgtype == "mouse") {
+                    _vc.toggleCursor(new Point(metadata.posx, metadata.posy));
+                }
+
+                if (!_sizeInited && _vc && _vc.width > 0 && _vc.videoWidth > 0) {
+                    //TODO: наверное это костыль, меняем размер один раз и только поле того как инициализировалось видео и получило размер стрима
+                    _vc && _vc.setActualSize(_vc.width, _vc.height);
+                    _sizeInited = true;
+                }
+
+            };
+
+            _netStream.client = ns_client;
+
+            _netStream.receiveAudio(false);
+
+            _streamName = stream;
+
+            CONFIG::LIVE{
+
+                _netStream.backBufferTime = 0;
+                _netStream.play(stream);
+            }
+
+
+            CONFIG::RECORDING{
+                _netStream.bufferTime = 2;
+                registerStreamRec(new LocalStream(_netStream, _activeUser.sid), stream);
+                if (App.room.recordModel.state === RecordingStates.PLAYING) _netStream.play(stream);
+
+            }
+
+
+        }
+
+        private function objToString(obj:Object):String {
+            var res:String = "";
+
+            for (var st:String in obj) {
+                res += String(st + ": " + obj[st] + ", ");
+            }
+
+            return res;
+        }
+
+
+        private function createVideoContainer():void {
+
+            currentState = sharing.name;
+
+            _vc = new VideoContainerShare();
+
+            _vc.stream = _netStream;
+            _vc.from = _activeUser.sid;
+
+            _vc.percentHeight = 100;
+            _vc.percentWidth = 100;
+
+            addElement(_vc);
+
+        }
+
+
+        private function streamErrorHandler(e:ErrorEvent):void {
+            Logger.log("share stream error");
+        }
+
+        private function streamPlayOnStatusHandler(e:NetStatusEvent):void {
+            //Logger.log(e.info.code,"share_stream");
+
+
+            switch (e.info.code) {
+                case('NetConnection.Connect.Closed'):
+                case('NetStream.Connect.Closed'):
+                case('NetStream.Play.Failed'):
+                case('NetStream.Play.Stop'):
+                {
+                    //dispose();
+                    setTimeout(restartStream, RESTART_STREAM_TIME);
+                    _sizeInited = false;
+                    break;
+                }
+                case "NetStream.Play.Start":
+
+                    createVideoContainer();
+                    break;
+                case "NetStream.Play.StreamNotFound":
+                {
+                    //dispose();
+                    _sizeInited = false;
+                    break;
+                }
+
+                case "NetStream.Video.DimensionChange":
+                {
+                    _vc && _vc.setActualSize(_vc.width, _vc.height);
+                    break;
+                }
+
+            }
+        }
+
+
+        private function restartStream():void {
+
+            if (_activeUser && _streamName) {
+
+                Logger.log('Restart stream: ' + _streamName, 'Share');
+
+                var _id:Number = _activeUser.sid;
+
+                dispose();
+
+                currentState = prepare.name;
+                _activeUser = App.room.usersByID[_id];
+
+                receive(_streamName);
+            }
+
+        }
+
+
+        override public function hideContainer():void {
+
+            super.hideContainer();
+
+            dispose();
+        }
+
+
+        public function dispose():void {
+
+            _netStream && _netStream.dispose();
+
+            if (_vc) {
+                _vc.dispose();
+                this.containsElement(_vc) && removeElement(_vc);
+                _vc = null;
+            }
+
+            statusText && (statusText.text = "");
+
+            _activeUser = null;
+            label = translate('label', 'screenshare');
+
+            CONFIG::AIR{
+
+                _share && _share.dispose();
+
+            }
+
+
+            currentState = idle.name;
+
+
+        }
+
+        public function localize():void {
+
+            if (!_activeUser)
+                label = translate('label', 'screenshare');
+            else
+                label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
+
+            start && (start.label = translate('start', 'screenshare'));
+            stopshareBtn && (stopshareBtn.label = translate('stop_share', 'screenshare'));
+            noAppLbl && (noAppLbl.text = translate('need_app', 'screenshare'));
+            additionalAlert && (additionalAlert.text = translate(alertType, 'screenshare'));
+            noAppBtn && (noAppBtn.label = translate('run_app', 'screenshare'));
+            descTxt && (descTxt.text = translate('desc', 'screenshare'));
+
+        }
+
+
+        override public function set permission(value:int):void {
+
+            super.permission = value;
+
+            _isOwner = Permissions.docsAvailable(value);
+        }
+        ]]>
+	</fx:Script>
+    <s:Label id="statusText" horizontalCenter="0" excludeFrom="idle,sharing" verticalCenter="-60"/>
+
+    <s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="prepare,iampreparing">
+        <s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
+    </s:VGroup>
+
+    <s:Group id="idleGroup" width="400" height="260" horizontalCenter="0" verticalCenter="0" includeIn="idle"
+             visible="{_isOwner}">
+        <s:VGroup horizontalCenter="0" top="50" id="appGroup" initialize="with(appGroup){visible = _available;}">
+            <s:Group horizontalCenter="0" width="320">
+
+                <components:CustomSkinableButton id="start" width="270" click="onStartShare(event)"
+                                                 horizontalCenter="0"
+                                                 skinClass="ru.teachbase.skins.StandartButtonWithIcon"
+                                                 initialize="with(start){label=translate('start','screenshare');iconUp=ru.teachbase.utils.helpers.style('screenshare','buttonIcon');iconDown=ru.teachbase.utils.helpers.style('screenshare','buttonIcon');iconOver=ru.teachbase.utils.helpers.style('screenshare','buttonIcon');visible = _available; enabled = _available}"
+                        />
+                <s:RichText id="descTxt" initialize="with(descTxt){text = translate('desc','screenshare')}" width="100%"
+                            y="{start.y + start.height + 22}" textAlign="center" fontSize="13"/>
+
+            </s:Group>
+        </s:VGroup>
+        <s:HGroup id="noAppGroup" top="50" horizontalCenter="0" initialize="with(noAppGroup){visible = !_available;}"
+                  width="400" gap="30">
+            <s:BitmapImage source="{style('screenshare','alert')}"/>
+            <s:VGroup width="100%" gap="12">
+                <s:RichText id="noAppLbl" initialize="with(noAppLbl){text = translate('need_app','screenshare')}"
+                            width="100%" textAlign="left" fontSize="13"/>
+                <s:RichText id="additionalAlert" width="100%" textAlign="left" visible="false" includeInLayout="false"
+                            fontSize="13"/>
+                <components:CustomSkinableButton id="noAppBtn"
+                                                 click="launchOrLoadApp(event)"
+                                                 skinClass="ru.teachbase.skins.StandartButton"
+                                                 width="120"
+                                                 visible="false"/>
+            </s:VGroup>
+        </s:HGroup>
+    </s:Group>
+    <s:Image source="{style('modulecontainer','bottomBackground')}" left="0" bottom="0" scaleMode="stretch" height="46"
+             includeIn="iamsharing,iampreparing" width="100%"/>
+    <s:Button includeIn="iamsharing,iampreparing" fontSize="13" id="stopshareBtn" width="214"
+              initialize="with(stopshareBtn){label = translate('stop_share','screenshare');}" fontWeight="normal"
+              left="7" bottom="7" click="onStopShare(event)"
+              skinClass="ru.teachbase.module.screenshare.skins.StopShareButtonSkin"/>
+
+
+</module:ModuleInstance>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+          implements="ru.teachbase.utils.interfaces.ILocalable"
+          initialize="Localizer.addItem(this)"
+          horizontalAlign="center"
+          verticalAlign="contentJustify"
+          height="100%" gap="1"
+        >
+    <fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import mx.collections.ArrayCollection;
+        import mx.events.CollectionEvent;
+
+        import ru.teachbase.components.module.ModuleContainer;
+
+        import ru.teachbase.manage.LayoutModelManager;
+        import ru.teachbase.manage.Manager;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        private var _dataProvider:ArrayCollection;
+
+        override public function move(x:Number, y:Number):void {
+            if (int(x) !== int(this.x) || int(y) !== int(this.y))
+                Tweener.addTween(this, {x: x, y: y, time: .08, transition: "linear"});
+            else
+                super.move(x, y);
+        }
+
+        [Bindable]
+        public function get dataProvider():ArrayCollection {
+            return _dataProvider;
+        }
+
+        public function set dataProvider(value:ArrayCollection):void {
+            if (_dataProvider === value)
+                return;
+
+            detachDataProvider();
+            _dataProvider = value;
+            attachDataProvider();
+            updateList();
+        }
+
+
+        public function localize():void {
+
+            updateList();
+        }
+
+        private function attachDataProvider():void {
+            if (!_dataProvider) return;
+            _dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE, dataProviderChangeHandler);
+        }
+
+        private function detachDataProvider():void {
+            if (!_dataProvider) return;
+            _dataProvider.removeEventListener(CollectionEvent.COLLECTION_CHANGE, dataProviderChangeHandler);
+        }
+
+        protected function updateList():void {
+            // temp!!
+            removeAllElements();
+
+            if (!dataProvider || !dataProvider.source || !dataProvider.source.length)
+                return;
+
+            const mmanager:LayoutModelManager = Manager.getManagerInstance(LayoutModelManager) as LayoutModelManager;
+
+            if (!mmanager.moduleContainer) {
+                callLater(updateList);
+                return;
+            }
+
+            const data:Array = dataProvider.source;
+            for (var i:int; i < data.length; ++i) {
+                var btn:ActionBarButtonDraggle = new ActionBarButtonDraggle();
+                if (data[i].icon)
+                //btn.setStyle('icon', data[i].icon);
+                    btn.icon = data[i].icon;
+                btn.iconOver = data[i].iconHover;
+
+                if (data[i].moduleID)
+                    btn.toolTip = translate('tooltip', data[i].NAME);
+                else
+                    btn.label = data[i].name;
+
+                btn.module = data[i];
+                btn.enabled = btn.module.available;
+                btn.drag.container = mmanager.moduleContainer as ModuleContainer;
+                btn.drag.bounds = (mmanager.moduleContainer as ModuleContainer).dropSpace;
+
+                addElement(btn);
+            }
+        }
+
+        private final function dataProviderChangeHandler(e:CollectionEvent):void {
+            updateList();
+        }
+        ]]>
+	</fx:Script>
+	<fx:Declarations>
+	</fx:Declarations>
+</s:HGroup>
