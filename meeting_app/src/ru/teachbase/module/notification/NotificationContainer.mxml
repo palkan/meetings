@@ -13,8 +13,6 @@
         import mx.collections.ArrayList;
         import mx.events.CollectionEvent;
 
-        import ru.teachbase.core.Core;
-
         [Bindable]
         private var _dataProvider:ArrayList;
 
@@ -22,7 +20,7 @@
             _dataProvider = value;
             if (_dataProvider.length == 0) {
                 this.height = 1;
-                Core.removeFromTop(this);
+                //  Core.removeFromTop(this);
                 return;
             }
             _dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE, onChange);

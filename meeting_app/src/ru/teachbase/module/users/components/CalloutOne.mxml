@@ -18,24 +18,13 @@
 	
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.core.App;
+        import ru.teachbase.constants.UserRoles;
         import ru.teachbase.events.GlobalEvent;
-        import ru.teachbase.manage.RoomModelManager;
-        import ru.teachbase.manage.SessionManager;
-        import ru.teachbase.manage.SessionManager;
+        import ru.teachbase.model.App;
         import ru.teachbase.model.User;
-        import ru.teachbase.model.constants.UserRoles;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.helpers.m;
         import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
 
         private var _user:User;
 
@@ -51,9 +40,9 @@
 
         private function changeRole():void {
             if (_user.role == UserRoles.ADMIN) {
-                (m(SessionManager) as SessionManager).setUserRole(_user.sid, "user");
+                App.session.setUserRole(_user.sid, "user");
             } else {
-                (m(SessionManager) as SessionManager).setUserRole(_user.sid, "admin");
+                App.session.setUserRole(_user.sid, "admin");
             }
             close();
         }
@@ -88,11 +77,11 @@
 			
 		<s:VGroup gap="0" includeIn="normal" height="100%">
 			<s:Button id="setRole" fontSize="11" click="changeRole()" skinClass="ru.teachbase.skins.CalloutButtonSkin" 
-					  initialize="(_user.role === UserRoles.ADMIN) ? setRole.label = translate('set_user','users') : setRole.label = translate('set_admin','users'); setRole.includeInLayout=App.room.user.role == 'admin'"/>
+					  initialize="(_user.role === UserRoles.ADMIN) ? setRole.label = translate('set_user','users') : setRole.label = translate('set_admin','users'); setRole.includeInLayout=App.user.isAdmin()"/>
 			<s:Button id="startPC" fontSize="11" skinClass="ru.teachbase.skins.CalloutButtonSkin" 
 					  initialize="startPC.label=translate('start_private','users');" click="startPrivateChat(event)"/>
 			<s:Button id="deleteUser" fontSize="11" skinClass="ru.teachbase.skins.CalloutButtonSkin" 
-					  initialize="deleteUser.label=translate('Delete'); deleteUser.includeInLayout=App.room.user.role == 'admin'" click="{currentState = deleteConfirmation.name;}"/>
+					  initialize="deleteUser.label=translate('Delete'); deleteUser.includeInLayout=App.user.isAdmin()" click="{currentState = deleteConfirmation.name;}"/>
 		</s:VGroup>
 		<s:VGroup  gap="4" width="100%" height="100%" top="10" left="10" right="10" bottom="10" includeIn="deleteConfirmation">
 			<s:Label id="main_text" color="0xE8E8E8" fontSize="12" width="200" initialize="main_text.text=translate('are_you_sure_delete','users',_user.fullName)"/>
@@ -100,12 +89,12 @@
 				<components:CustomSkinableButton width="77" height="22"  color='0xE8E8E8'
 												 id="delBut"
 												 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-												 initialize="with(delBut){label=translate('Delete');iconUp=ru.teachbase.utils.helpers.style('users','deleteUserOkBg');iconOver=ru.teachbase.utils.helpers.style('users','deleteUserOkBgHover');}"
-												 click="(m(SessionManager) as SessionManager).setUserRole(_user.sid, 'disconnect');close();"/>
+												 initialize="with(delBut){label=translate('Delete');iconUp=style('users','deleteUserOkBg');iconOver=style('users','deleteUserOkBgHover');}"
+												 click="App.session.setUserRole(_user.sid, 'disconnect');close();"/>
 				<components:CustomSkinableButton width="86" height="22"  color='0xE8E8E8'
 												 id="cancelBut"
 												 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-												 initialize="with(cancelBut){label=translate('Cancel');iconUp=ru.teachbase.utils.helpers.style('users','deleteUserCancelBg');iconOver=ru.teachbase.utils.helpers.style('users','deleteUserCancelBgHover');}"
+												 initialize="with(cancelBut){label=translate('Cancel');iconUp=style('users','deleteUserCancelBg');iconOver=style('users','deleteUserCancelBgHover');}"
 												 click="close()"/>
 			</s:HGroup>
 		</s:VGroup>

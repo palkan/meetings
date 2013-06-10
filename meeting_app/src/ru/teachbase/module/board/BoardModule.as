@@ -1,6 +1,6 @@
 package ru.teachbase.module.board
 {
-import ru.teachbase.module.base.Module;
+import ru.teachbase.manage.modules.model.Module;
 import ru.teachbase.utils.helpers.*;
 import ru.teachbase.utils.shortcuts.style;
 

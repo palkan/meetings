@@ -2,7 +2,7 @@ package ru.teachbase.module.chat.components
 {
 import flash.events.Event;
 
-import ru.teachbase.model.PrivateChatElement;
+import ru.teachbase.module.chat.model.PrivateChatElement;
 
 public class ChatElementEvent extends Event
 	{

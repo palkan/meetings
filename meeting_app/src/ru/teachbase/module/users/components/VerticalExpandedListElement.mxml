@@ -12,7 +12,8 @@
             import mx.collections.ArrayCollection;
             import mx.events.CollectionEvent;
 
-            import ru.teachbase.core.App;
+            import ru.teachbase.model.App;
+
             import ru.teachbase.model.User;
             import ru.teachbase.utils.Permissions;
 
@@ -53,7 +54,7 @@
                 if (b.iam)
                     return 1;
 
-                if (Permissions.isAdmin(App.room.user.permissions) && (a.requestStatus - b.requestStatus) != 0)
+                if (App.user.isAdmin() && (a.requestStatus - b.requestStatus) != 0)
                     return (a.requestStatus > b.requestStatus) ? -1 : 1;
 
                 if (a.fullName === b.fullName)

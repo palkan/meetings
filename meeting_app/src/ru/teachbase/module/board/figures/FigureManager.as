@@ -11,10 +11,11 @@ import mx.managers.CursorManager;
 import mx.managers.CursorManagerPriority;
 import mx.rpc.Responder;
 
-import ru.teachbase.events.WhiteBoardEvent;
+import ru.teachbase.constants.PacketType;
 import ru.teachbase.features.live.mouse.LiveCursorManager;
-import ru.teachbase.manage.TraitManager;
-import ru.teachbase.model.constants.Recipients;
+import ru.teachbase.manage.rtmp.RTMPListener;
+import ru.teachbase.manage.rtmp.events.RTMPEvent;
+import ru.teachbase.manage.rtmp.model.Recipients;
 import ru.teachbase.module.board.BoardCanvas;
 import ru.teachbase.module.board.components.BoardTextInput;
 import ru.teachbase.module.board.instruments.DrawInstrument;
@@ -24,9 +25,9 @@ import ru.teachbase.module.board.instruments.TextInstrument;
 import ru.teachbase.module.board.style.FillStyle;
 import ru.teachbase.module.board.style.StrokeStyle;
 import ru.teachbase.skins.cursors.BoardCursor;
-import ru.teachbase.traits.BoardTrait;
-import ru.teachbase.utils.helpers.*;
 import ru.teachbase.utils.helpers.getValue;
+import ru.teachbase.utils.shortcuts.rtmp_history;
+import ru.teachbase.utils.shortcuts.rtmp_send;
 import ru.teachbase.utils.shortcuts.style;
 
 /**
@@ -45,7 +46,7 @@ import ru.teachbase.utils.shortcuts.style;
 		
 		private var _currentInstrument:Instrument;
 		
-		private var trait:BoardTrait;
+		private const listener:RTMPListener = new RTMPListener(PacketType.WHITEBOARD);
 		
 		private const sendTimer:Timer = new Timer(800);
 		
@@ -71,13 +72,10 @@ import ru.teachbase.utils.shortcuts.style;
 			_container.manager = this;
 			_instanceId = id;
 			
-			//trait = new BoardTrait(id);
+
+			listener.addEventListener(RTMPEvent.DATA, handleMessage);
 			
-			trait = TraitManager.instance.createTrait(BoardTrait,false,id) as BoardTrait;
-			
-			trait.addEventListener(WhiteBoardEvent.CHANGE,onReceiveChanges);
-			
-			trait.call("get_history",new Responder(receiveHistory,null),"whiteboard", id);
+			rtmp_history(PacketType.WHITEBOARD+"::"+id,new Responder(receiveHistory,null));
 			
 			_cursorManager = new LiveCursorManager(_container, id);
 			
@@ -96,9 +94,9 @@ import ru.teachbase.utils.shortcuts.style;
 		
 		
 		
-		protected function onReceiveChanges(event:WhiteBoardEvent):void
+		protected function handleMessage(e:RTMPEvent):void
 		{
-			receiveChanges(event.value);		
+			receiveChanges(e.packet.data as Array);
 		}
 		
 		//--------------- ctrl ---------------//
@@ -338,7 +336,7 @@ import ru.teachbase.utils.shortcuts.style;
 				_pos++;
 			}
 			
-			trait.readyToReceive = true;
+			listener.readyToReceive = true;
 		}
 		
 		public function receiveChanges(changes:Array):void
@@ -466,7 +464,7 @@ import ru.teachbase.utils.shortcuts.style;
 			if(!changes.length)
 				return;
 			
-			trait.output(changes,Recipients.ALL_EXCLUDE_ME);
+			rtmp_send(PacketType.WHITEBOARD, changes,Recipients.ALL_EXCLUDE_ME);
 			
 			//clean
 			for(var key:* in catchedChanges)

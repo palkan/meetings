@@ -1,7 +1,7 @@
 package ru.teachbase.module.screenshare
 {
-import ru.teachbase.module.base.IModuleContent;
-import ru.teachbase.module.base.Module;
+import ru.teachbase.manage.modules.model.IModuleContent;
+import ru.teachbase.manage.modules.model.Module;
 import ru.teachbase.utils.helpers.*;
 import ru.teachbase.utils.shortcuts.style;
 
@@ -24,7 +24,7 @@ public class ScreenShareModule extends Module
 			instanceID = 1;
 			var _el:ScreenShareContent = new ScreenShareContent();
 			_el.instanceID = instanceID;
-			instances[instanceID] = _el;
+			_instances[instanceID] = _el;
 			return _el;
 		}
 	}

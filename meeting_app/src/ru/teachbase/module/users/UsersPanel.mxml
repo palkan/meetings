@@ -11,13 +11,9 @@
 
     <fx:Script>
 		<![CDATA[
-        import ru.teachbase.core.App;
+        import ru.teachbase.model.App;
         import ru.teachbase.skins.VerticalScrollerSkin;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.helpers.translate;
         import ru.teachbase.utils.shortcuts.translate;
 
         internal function clear():void {
@@ -41,11 +37,11 @@
         <s:VGroup id="usersVerticalGroup" verticalAlign="top" width="100%" gap="0"
                   resize="myScrollerAddedToStageHandler(event)">
             <components1:VerticalExpandedListElement id="ownersList" width="100%" usersType="admin"
-                                                     initialize="ownersList.label = translate('admins','users');ownersList.dataProvider=App.room.usersList;"/>
+                                                     initialize="ownersList.label = translate('admins','users');ownersList.dataProvider=App.meeting.usersList;"/>
 
             <components1:VerticalExpandedListElement id="usersList"
                                                      width="100%"
-                                                     initialize="usersList.label=translate('users','users');usersList.dataProvider=App.room.usersList;"
+                                                     initialize="usersList.label=translate('users','users');usersList.dataProvider=App.meeting.usersList;"
                                                      usersType="user"
                     />
 

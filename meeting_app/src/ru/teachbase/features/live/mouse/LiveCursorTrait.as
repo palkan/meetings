@@ -2,7 +2,7 @@ package ru.teachbase.features.live.mouse
 {
 import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.model.Packet;
-import ru.teachbase.model.constants.PacketType;
+import ru.teachbase.constants.PacketType;
 import ru.teachbase.traits.ChainTrait;
 
 /**

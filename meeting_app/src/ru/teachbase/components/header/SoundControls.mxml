@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+          xmlns:c="ru.teachbase.components.*"
+          creationComplete="creationCompleteHandler(event)"
+          implements="ru.teachbase.utils.interfaces.ILocalable">
+    <fx:Declarations>
+        <s:Callout id="volumeCallout"
+                   width="80"
+                   skinClass="ru.teachbase.skins.actionbar.AudioCalloutSkin"
+                   verticalPosition="auto"
+                   horizontalPosition="middle"
+                   mouseDownOutside="volumeCallout.close(true);"
+                   open="onVolumeOpen(event)"
+                   close="onVolumeClose(event)"
+                   backgroundAlpha="0">
+            <s:layout>
+                <s:VerticalLayout gap="0"
+                                  horizontalAlign="center"
+                        />
+            </s:layout>
+            <s:VSlider id="volumeSlider"
+                       minimum="0"
+                       maximum="100"
+                       stepSize="1"
+                       verticalCenter="0"
+                       showDataTip="true"
+                       change="volumeSliderChangeHandler(event)"
+                       skinClass="ru.teachbase.skins.actionbar.VerticalAudioSliderSkin"
+                    />
+        </s:Callout>
+    </fx:Declarations>
+
+    <fx:Script><![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.model.App;
+        import ru.teachbase.utils.shortcuts.cookie;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        private function volumeSliderChangeHandler(e:Event):void {
+            SoundMixer.soundTransform = new SoundTransform(volumeSlider.value / 100);
+            App.user.settings.volumeLevel = volumeSlider.value;
+            cookie('volume', App.user.settings.volumeLevel);
+        }
+
+
+        private function onVolumeOpen(evt:Event):void {
+            volumeButton.selected = true;
+            volumeSlider.value = App.user.settings.volumeLevel;
+
+            //TODO: hide slider on timeout
+
+        }
+
+        private function onVolumeClose(evt:Event):void {
+            volumeButton.selected = false;
+            volumeCallout.close(true);
+        }
+
+        public function localize():void {
+            volumeButton && (volumeButton.toolTip = translate("volume", 'actionbar'));
+            cameraButton && (cameraButton.toolTip = translate("camera", 'actionbar'));
+            microphoneButton && (microphoneButton.toolTip = translate("mic", 'actionbar'));
+            cameraButtonOff && (cameraButtonOff.toolTip = translate("camera_req", 'actionbar'));
+            microphoneButtonOff && (microphoneButtonOff.toolTip = translate("mic_req", 'actionbar'));
+            recordButton && (recordButton.toolTip = translate("record", 'actionbar'));
+        }
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+
+            //TODO: user update listeners
+
+        }
+        ]]></fx:Script>
+
+    <c:ActionBarButton id="volumeButton"
+                       initialize="with(volumeButton){
+                                          icon=style('actionBar','audioIco');
+                                          iconOver=style('actionBar','audioIcoOver');
+                                          iconSelected=style('actionBar','audioIco');
+                                          toolTip=translate('volume','actionbar');
+                                          }"
+                       click="volumeCallout.open(volumeButton);"
+                       skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+            >
+    </c:ActionBarButton>
+
+    <c:ActionBarButton id="cameraButton"
+                       focusSkin="{null}"
+                       skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                       initialize="with(cameraButton){
+                                        toolTip=translate('camera','actionbar');
+                                        icon=style('actionBar','cameraIco');
+                                        iconOver=style('actionBar','cameraIcoOver');
+                                        iconSelected=style('actionBar','cameraIcoSelected');
+                                        }"
+            >
+    </c:ActionBarButton>
+    <c:ActionBarButton id="cameraButtonOff"
+                       focusSkin="{null}"
+                       skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                       initialize="with(cameraButtonOff){
+                                        toolTip=translate('camera_req','actionbar');
+                                        icon=style('actionBar','cameraIcoDisabled');
+                                        iconOver=style('actionBar','cameraIcoDisabledHover');
+                                        iconSelected=style('actionBar','cameraIcoDisabledHover');
+                                        }"
+            >
+    </c:ActionBarButton>
+
+    <c:ActionBarButton id="microphoneButton"
+                       focusSkin="{null}"
+                       skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                       initialize="with(microphoneButton){
+                                    toolTip=translate('mic','actionbar');
+                                    icon=style('actionBar','micIco');
+                                    iconOver=style('actionBar','micIcoOver');
+                                    iconSelected=style('actionBar','micIcoSelected');}"
+            >
+    </c:ActionBarButton>
+    <c:ActionBarButton id="microphoneButtonOff"
+                       focusSkin="{null}"
+                       skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                       initialize="with(microphoneButtonOff){
+                                    toolTip=translate('mic_req','actionbar');
+                                    iconSelected=style('actionBar','micIcoDisabledHover');
+                                    iconOver=style('actionBar','micIcoDisabledHover');
+                                    icon=style('actionBar','micIcoDisabled');}"
+            >
+    </c:ActionBarButton>
+
+    <c:ActionBarButton id="recordButton"
+                       skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                       focusSkin="{null}"
+                       initialize="with(recordButton){
+                                    toolTip=translate('record','actionbar');
+                                    icon=style('actionBar','reccordIco');
+                                    iconOver=style('actionBar','reccordIcoOver');
+                                    iconSelected=style('actionBar','reccordIcoSelected');}"
+            >
+    </c:ActionBarButton>
+</s:HGroup>

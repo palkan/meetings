@@ -9,8 +9,8 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.events.documents.ControlEvent;
-        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.events.ControlEvent;
+        import ru.teachbase.module.documents.model.WorkplaceMethod;
         import ru.teachbase.utils.Strings;
         import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.shortcuts.style;

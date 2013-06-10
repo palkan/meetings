@@ -6,17 +6,9 @@ import flash.events.Event;
 import flash.events.IOErrorEvent;
 import flash.events.ProgressEvent;
 import flash.net.FileReference;
-import flash.net.URLRequest;
-import flash.net.URLVariables;
 
-import mx.rpc.Responder;
-
-import ru.teachbase.core.App;
 import ru.teachbase.events.FileStatusEvent;
-import ru.teachbase.model.FileItem;
-import ru.teachbase.net.HTTPService;
-import ru.teachbase.traits.FileTrait;
-import ru.teachbase.utils.Logger;
+import ru.teachbase.module.documents.model.FileItem;
 
 [Event(name="start", type="ru.teachbase.events.FileStatusEvent")]
 	[Event(name="cancel", type="ru.teachbase.events.FileStatusEvent")]
@@ -31,7 +23,7 @@ import ru.teachbase.utils.Logger;
 		
 		private var _busy:Boolean = false;
 		
-		private var trait:FileTrait = TraitManager.instance.createTrait(FileTrait) as FileTrait;;
+		//private var trait:FileTrait = TraitManager.instance.createTrait(FileTrait) as FileTrait;;
 		
 		private var _item:FileItem;
 		
@@ -50,10 +42,10 @@ import ru.teachbase.utils.Logger;
 		{
 			
 			_initialized = true;
-			trait.addEventListener(Event.COMPLETE,conversionCompleteHandler);
+			/*trait.addEventListener(Event.COMPLETE,conversionCompleteHandler);
 			trait.addEventListener(FileStatusEvent.START, startHandler);
 			trait.addEventListener(FileStatusEvent.PROGRESS, conversionProgressHandler);
-			trait.addEventListener(ErrorEvent.ERROR, errorHandler);
+			trait.addEventListener(ErrorEvent.ERROR, errorHandler);          */
 		}
 		
 		protected function conversionCompleteHandler(event:Event):void
@@ -102,14 +94,14 @@ import ru.teachbase.utils.Logger;
 		 * 
 		 */
 		public function convert(item:FileItem):void{
-			if(!App.service.http)
+			/*if(!App.service.http)
 				return;
 			
 			
 			_filename = item.title;
 			_item = item;
 			App.service.http.request("convert",new Responder(success, failure),{fid:item.id});
-			
+			                                                                      */
 		}
 		
 		
@@ -122,13 +114,13 @@ import ru.teachbase.utils.Logger;
 		
 		
 		public function grabImage(item:FileItem):void{
-			if(!App.service.http)
+		/*	if(!App.service.http)
 				return;
 			
 			_filename = item.title;
 			_item = item;
 			App.service.http.request("save_image",new Responder(success, failure),{url:item.url});
-			
+			*/
 		}
 		
 		
@@ -155,7 +147,7 @@ import ru.teachbase.utils.Logger;
 		private function selectHandler(event:Event = null):void 
 		{
 			
-			event && file.removeEventListener(Event.SELECT, selectHandler);
+		/*	event && file.removeEventListener(Event.SELECT, selectHandler);
 			event && file.removeEventListener(Event.CANCEL,cancelHandler);
 			
 			if(!App.service.http)
@@ -174,13 +166,13 @@ import ru.teachbase.utils.Logger;
 			var vars:URLVariables = HTTPService.generateVars();
 			req.data = vars;
 								
-			file.upload(req);
+			file.upload(req);         */
 			
 		}
 		
 		private function dataHandler(event:DataEvent):void{
 			
-			file.removeEventListener(IOErrorEvent.IO_ERROR,ioErrorHandler);
+		/*	file.removeEventListener(IOErrorEvent.IO_ERROR,ioErrorHandler);
 			file.removeEventListener(ProgressEvent.PROGRESS,progressHandler);
 			file.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA,dataHandler);
 			
@@ -196,7 +188,7 @@ import ru.teachbase.utils.Logger;
 				dispatcher.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR,false,false,"Failed to upload document to library. Unknown error"));	
 			}
 			
-			_busy = false;
+			_busy = false;  */
 
 		}
 		
@@ -236,7 +228,6 @@ import ru.teachbase.utils.Logger;
 		
 		
 		private function completeHandler(event:Event):void {
-			Logger.log('complete',"FILE");
 			file.removeEventListener(Event.COMPLETE,completeHandler);
 		}
 		
@@ -263,7 +254,6 @@ import ru.teachbase.utils.Logger;
 				else
 					dispatcher.dispatchEvent(new FileStatusEvent(FileStatusEvent.COMPLETE,obj));			
 			}else if(obj.status === "error"){
-				Logger.log(obj.text,"FILE_ERROR");
 				dispatcher.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR,false,false,obj.message));
 			}else
 				dispatcher.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR,false,false,"Failed to upload document to library. Unknown error"));

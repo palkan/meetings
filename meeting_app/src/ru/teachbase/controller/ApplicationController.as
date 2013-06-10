@@ -13,18 +13,23 @@ import flash.text.Font;
 
 import ru.teachbase.assets.fonts.Pragmatica;
 import ru.teachbase.components.web.MainApplication;
-import ru.teachbase.events.CoreEvent;
+import ru.teachbase.events.AppEvent;
 import ru.teachbase.events.ErrorCodeEvent;
 import ru.teachbase.manage.Initializer;
 import ru.teachbase.manage.LocaleManager;
-import ru.teachbase.manage.NotificationManager;
+import ru.teachbase.manage.layout.LayoutManager;
+import ru.teachbase.manage.modules.ModulesManager;
+import ru.teachbase.manage.notifications.NotificationManager;
 import ru.teachbase.manage.SkinManager;
+import ru.teachbase.manage.publish.PublishManager;
 import ru.teachbase.manage.rtmp.RTMPManager;
-import ru.teachbase.model.constants.ErrorCodes;
+import ru.teachbase.constants.ErrorCodes;
+import ru.teachbase.manage.session.SessionManager;
+import ru.teachbase.manage.streams.StreamManager;
 import ru.teachbase.utils.GlobalError;
 import ru.teachbase.utils.shortcuts.translate;
 
-[Event(type="ru.teachbase.events.CoreEvent",name="")]
+[Event(type="ru.teachbase.events.AppEvent",name="")]
 
 public class ApplicationController extends EventDispatcher{
 
@@ -79,7 +84,7 @@ public class ApplicationController extends EventDispatcher{
                 break;
         }
 
-        hasEventListener(CoreEvent.CORE_LOAD_ERROR) && dispatchEvent(new CoreEvent(CoreEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
+        hasEventListener(AppEvent.CORE_LOAD_ERROR) && dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
     }
 
 
@@ -90,7 +95,7 @@ public class ApplicationController extends EventDispatcher{
                 SkinManager,    // loading skin
                 RTMPManager,    // connecting to rtmp server
                 SessionManager, // login, get user info (profile, role, permissions), get room info (id, settings, users etc) --> Session Model
-                ModuleManager,  // loading modules models, initialize active modules
+                ModulesManager,  // loading modules models, initialize active modules
                 LayoutManager,  // loading layout, positioning modules
                 StreamManager,  // subscribe to existing streams
                 PublishManager, // (local) mic/cam publishing
@@ -104,19 +109,19 @@ public class ApplicationController extends EventDispatcher{
 
         removeInitializerListeners();
         _view.draw();
-        dispatchEvent(new CoreEvent(CoreEvent.CORE_LOAD_COMPLETE));
+        dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_COMPLETE));
     }
 
     private function managersProgressHandler(e:ProgressEvent):void {
 
-        dispatchEvent(new CoreEvent(CoreEvent.LOADING_STATUS, false, false, "Managers initializing ... "+(e.bytesLoaded * 100 / e.bytesTotal).toPrecision(0)+"%"))
+        dispatchEvent(new AppEvent(AppEvent.LOADING_STATUS, false, false, "Managers initializing ... "+(e.bytesLoaded * 100 / e.bytesTotal).toPrecision(0)+"%"))
 
     }
 
     private function managersErrorHandler(e:ErrorEvent):void {
 
         removeInitializerListeners();
-        dispatchEvent(new CoreEvent(CoreEvent.CORE_LOAD_ERROR, false, false, e.text, true));
+        dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, e.text, true));
     }
 
     private function addInitializerListeners():void{

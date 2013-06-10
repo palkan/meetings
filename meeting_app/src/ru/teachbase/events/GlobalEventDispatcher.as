@@ -5,12 +5,12 @@ import flash.events.EventDispatcher;
 
 internal final class GlobalEventDispatcher extends EventDispatcher
 	{
-		__tbevents static const instance:GlobalEventDispatcher = new GlobalEventDispatcher();
+		tb_events static const instance:GlobalEventDispatcher = new GlobalEventDispatcher();
 				
 		public function GlobalEventDispatcher()
 		{
 			
-			if(__tbevents::instance)				
+			if(tb_events::instance)
 				throw new IllegalOperationError("Singleton Error. GlobalEventDispatcher");
 			
 		}

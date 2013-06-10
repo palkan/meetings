@@ -7,8 +7,8 @@
 		<![CDATA[
         import mx.core.IVisualElementContainer;
 
-        import ru.teachbase.events.documents.ControlEvent;
-        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.events.ControlEvent;
+        import ru.teachbase.module.documents.model.WorkplaceMethod;
         import ru.teachbase.utils.workplace.ControlHost;
 
         import spark.components.Button;

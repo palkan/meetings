@@ -26,6 +26,9 @@
             <entry library-name="flexunit" library-level="application">
               <dependency linkage="Test" />
             </entry>
+            <entry library-name="FlashComponents" library-level="application">
+              <dependency linkage="Merged" />
+            </entry>
           </entries>
           <sdk name="flex_sdk_4.6" />
         </dependencies>
@@ -54,6 +57,7 @@
     <orderEntry type="module" module-name="assets_lib" exported="" />
     <orderEntry type="library" exported="" name="Tweener" level="application" />
     <orderEntry type="library" exported="" name="flexunit" level="application" />
+    <orderEntry type="library" exported="" name="FlashComponents" level="application" />
   </component>
 </module>
 

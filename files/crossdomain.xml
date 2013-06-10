@@ -1,0 +1,7 @@
+<?xml version="1.0"?><!DOCTYPE cross-domain-policySYSTEM "http://www.macromedia.com/xml/dtds/cross-domain-policy.dtd">
+<cross-domain-policy>
+<allow-access-from domain="webils.ru" />
+<allow-access-from domain="*.webils.ru" />
+<allow-access-from domain="teachbase.ru" />
+<allow-access-from domain="*.teachbase.ru" />
+</cross-domain-policy>

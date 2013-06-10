@@ -11,7 +11,7 @@
          rollOut="{if(currentState == normal.name)  CursorManager.removeAllCursors()}"
         >
     <fx:Metadata>
-        [Event(name="module_resize", type="ru.teachbase.events.ModuleEvent")]
+        [Event(name="module_resize", type="ru.teachbase.components.module.ModuleEvent")]
     </fx:Metadata>
     <fx:Declarations>
         <dragdrop:DragBehavior id="drag"
@@ -60,7 +60,7 @@
         import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
         import ru.teachbase.behaviours.interfaces.IDropContainer;
         import ru.teachbase.behaviours.dragdrop.DragEvent;
-        import ru.teachbase.events.ModuleEvent;
+        import ru.teachbase.components.module.ModuleEvent;
         import ru.teachbase.skins.cursors.HorizontalResizerCursor;
 
         [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]

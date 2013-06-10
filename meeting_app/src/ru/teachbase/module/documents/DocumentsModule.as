@@ -3,11 +3,11 @@ package ru.teachbase.module.documents
 import mx.collections.ArrayCollection;
 import mx.rpc.Responder;
 
-import ru.teachbase.manage.LayoutManager;
+import ru.teachbase.manage.layout.LayoutManager;
 import ru.teachbase.manage.TraitManager;
-import ru.teachbase.model.DocChangeData;
-import ru.teachbase.module.base.IModuleContent;
-import ru.teachbase.module.base.Module;
+import ru.teachbase.module.documents.model.DocChangeData;
+import ru.teachbase.manage.modules.model.IModuleContent;
+import ru.teachbase.manage.modules.model.Module;
 import ru.teachbase.traits.DocTrait;
 import ru.teachbase.utils.helpers.*;
 import ru.teachbase.utils.shortcuts.style;

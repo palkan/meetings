@@ -16,38 +16,33 @@
         import mx.events.FlexEvent;
         import mx.rpc.Responder;
 
-        import ru.teachbase.core.App;
-        import ru.teachbase.events.ChatEvent;
+        import ru.teachbase.constants.NotificationTypes;
+        import ru.teachbase.constants.PacketType;
         import ru.teachbase.events.GlobalEvent;
-        import ru.teachbase.manage.TraitManager;
-        import ru.teachbase.model.ChatMessage;
-        import ru.teachbase.model.ModuleSettings;
-        import ru.teachbase.model.Packet;
-        import ru.teachbase.model.PrivateChatElement;
+        import ru.teachbase.manage.modules.model.ModuleSettings;
+        import ru.teachbase.manage.rtmp.RTMPClient;
+        import ru.teachbase.manage.rtmp.RTMPListener;
+        import ru.teachbase.manage.rtmp.events.RTMPEvent;
+        import ru.teachbase.manage.rtmp.model.Packet;
+        import ru.teachbase.manage.rtmp.model.Recipients;
+        import ru.teachbase.model.App;
         import ru.teachbase.model.User;
-        import ru.teachbase.model.constants.NotificationTypes;
-        import ru.teachbase.model.constants.Recipients;
         import ru.teachbase.module.chat.components.ChatElementEvent;
+        import ru.teachbase.module.chat.events.ChatEvent;
+        import ru.teachbase.module.chat.model.ChatMessage;
+        import ru.teachbase.module.chat.model.PrivateChatElement;
         import ru.teachbase.skins.VerticalScrollerBlankSkin;
         import ru.teachbase.skins.VerticalScrollerSkin;
         import ru.teachbase.traits.ChatTrait;
         import ru.teachbase.traits.PrivateChatTrait;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
         import ru.teachbase.utils.helpers.notify;
+        import ru.teachbase.utils.shortcuts.rtmp_history;
+        import ru.teachbase.utils.shortcuts.rtmp_send;
         import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
 
-        private var trait:ChatTrait;
-        private var privateChatTrait:PrivateChatTrait;
+        private const listener:RTMPListener = new RTMPListener(PacketType.CHAT);
 
         private var _stopTyperTimer:Timer = new Timer(5000, 1);
         private var _stopListenerTimer:Timer = new Timer(5000, 1);
@@ -58,7 +53,7 @@
         [Bindable]
         private var _usersChats:ArrayCollection
 
-        private const user:User = App.room.user;
+        private const user:User = App.user;
         private var _isTyping:Boolean = false;
         private var _rawText:String = "";
 
@@ -99,23 +94,16 @@
                 _usersChats.filterFunction = filterFunction;
             }
 
-            trait = TraitManager.instance.createTrait(ChatTrait, false, this.instanceID) as ChatTrait;
-            privateChatTrait = TraitManager.instance.createTrait(PrivateChatTrait, false, this.instanceID) as PrivateChatTrait;
-
-            trait.initialize();
-            privateChatTrait.initialize();
+            listener.initialize();
 
             new ChatMessage();
             _stopTyperTimer.addEventListener(TimerEvent.TIMER, onStopType);
             _stopListenerTimer.addEventListener(TimerEvent.TIMER, onStopListenerTimer);
 
-            trait.addEventListener(ChatEvent.MESSAGE, onMessage);
-            trait.addEventListener(ChatEvent.CLEAR, clearChat);
-
-            privateChatTrait.addEventListener(ChatEvent.MESSAGE, onPrivateMessage);
+            listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
             showScrollM = true;
-            trait.call("get_history", new mx.rpc.Responder(onMessagesRecieved, null), "chat", this.instanceID);
+            rtmp_history("chat", new mx.rpc.Responder(historyHandler, null));
 
             setsDP.push(new ModuleSettings("copy_chat", ModuleSettings.FUN, getRawText));
             setsDP.push(new ModuleSettings("clear_chat", ModuleSettings.FUN, clearChatHandler));
@@ -135,11 +123,18 @@
             } else {
                 m = new ChatMessage(user.sid, ChatMessage.TYPE_STOPPED, "", String(_curRecipientId));
             }
-            trait.output(m, Recipients.ALL_EXCLUDE_ME, null, false);
+
+            __send(m);
         }
 
+
+        private function __send(m:ChatMessage):void{
+
+            rtmp_send(PacketType.CHAT,m,Recipients.ALL_EXCLUDE_ME,null,false);
+        }
+
+
         private function typeStarted(evt:TextEvent):void {
-            CONFIG::LIVE{
                 if (evt.text.charCodeAt(0) == 13) {
                     return;
                 }
@@ -156,13 +151,11 @@
                     m = new ChatMessage(user.sid, ChatMessage.TYPE_STARTED, "", String(_curRecipientId));
                 }
 
-                trait.output(m, Recipients.ALL_EXCLUDE_ME, null, false);
-            }
+              __send(m);
         }
 
         private function inputFieldEnterHandler(e:Event):void {
 
-            CONFIG::LIVE{
                 if (inputField.text == "") {
                     return;
                 }
@@ -171,13 +164,12 @@
                 inputField.text = '';
 
                 if (currentState == publicChatState.name) {
-                    trait.output(m, Recipients.ALL);
+                    rtmp_send(PacketType.CHAT,m,Recipients.ALL,null,false);
                     onStopType();
                 } else {
                     m.to = _curRecipientId;
-                    privateChatTrait.output(m, [user.sid, _curRecipientId], null, false);
+                    rtmp_send(PacketType.CHAT,m,[user.sid, _curRecipientId],null,false);
                 }
-            }
         }
 
         private function addPrivateMessage(m:ChatMessage, userId:Number = 0):PrivateChatElement {
@@ -204,6 +196,26 @@
                 pc.chat.push(m);
 
             return pc;
+
+        }
+
+
+        protected function handleMessage(e:RTMPEvent):void{
+            const m:ChatMessage = e.packet.data as ChatMessage;
+
+            if(!m) return;
+
+            switch(m.type){
+
+                case ChatMessage.MESSAGE:
+                    addMessage(m);
+                    break;
+                case ChatMessage.TYPE_STARTED:
+                case ChatMessage.TYPE_STOPPED:
+                case ChatMessage.CLEAR:
+                break;
+            }
+
         }
 
         public function addMessage(m:ChatMessage):void {
@@ -239,7 +251,7 @@
         }
 
         public function clearChatHandler():void {
-            trait.output(new ChatMessage(0, ChatMessage.CLEAR), Recipients.ALL);
+            rtmp_send(PacketType.CHAT, new ChatMessage(0, ChatMessage.CLEAR), Recipients.ALL);
         }
 
 
@@ -265,7 +277,7 @@
             } else {
                 pc.unreadMessages++;
                 newEventsField.text = String(totalUnreaded);
-                notify(NotificationTypes.CHAT_NOTIFICATION, event.message.body, App.room.usersByID[event.message.uid], true);
+                notify(NotificationTypes.CHAT_NOTIFICATION, event.message.body, App.meeting.usersByID[event.message.uid], true);
             }
         }
 
@@ -273,7 +285,7 @@
             if (event.message.type == ChatMessage.MESSAGE) {
                 addMessage(event.message);
             } else if (event.message.type == ChatMessage.TYPE_STARTED) {
-                var $user:User = App.room.usersByID[event.message.uid]
+                var $user:User = App.meeting.usersByID[event.message.uid]
                 if ((event.message.body == "public" && currentState == publicChatState.name) || ( currentState == privateChatState.name && Number(event.message.body) == user.sid))
                     typingText.text = translate("writing", "chat", $user.fullName);
                 _stopListenerTimer.start();
@@ -288,18 +300,17 @@
             typingText.text = '';
         }
 
-        private function onMessagesRecieved(arr:Array):void {
+        private function historyHandler(arr:Array):void {
             for each(var p:Packet in arr) {
 
                 var mes:ChatMessage = p.data as ChatMessage;
                 if (mes.type == ChatMessage.MESSAGE) {
-                    mes.timestampS = Math.floor(p.timeS / 1000);
+                    mes.timestampS = p.timeS;
                     addMessage(mes);
                 }
             }
 
-            trait.readyToReceive = true;
-            privateChatTrait.readyToReceive = true;
+            listener.readyToReceive = true;
 
         }
 
@@ -323,7 +334,7 @@
             CONFIG::LIVE{
                 _curRecipientId = uid;
 
-                const user:User = App.room.usersByID[_curRecipientId];
+                const user:User = App.meeting.usersByID[_curRecipientId];
                 label = translate('label', 'chat') + ": " + user.fullName;
 
                 var pc:PrivateChatElement = addPrivateMessage(null, uid);
@@ -427,7 +438,7 @@
     <components:CustomSkinableButton id="publicChatButton"
                                      width="100%" height="25"
                                      skinClass="ru.teachbase.module.chat.components.PublicChatButtonSkin"
-                                     initialize="with(publicChatButton) {iconUp=ru.teachbase.utils.helpers.style('users','toggleButtonBg'); iconOver=ru.teachbase.utils.helpers.style('users','toggleButtonBg'); iconDown=ru.teachbase.utils.helpers.style('users','toggleButtonBg');label=translate('public_label','chat') }"
+                                     initialize="with(publicChatButton) {iconUp=style('users','toggleButtonBg'); iconOver=style('users','toggleButtonBg'); iconDown=style('users','toggleButtonBg');label=translate('public_label','chat') }"
                                      click="onPublicChatClick()"
                                      includeIn="usersListState, privateChatState"/>
 
@@ -485,7 +496,7 @@
 
         <components:CustomSkinableButton id="roomsView" top="7" left="7"
                                          focusSkin="{null}"
-                                         initialize="with(roomsView) {iconUp=ru.teachbase.utils.helpers.style('chat','usersButton'); iconOver=ru.teachbase.utils.helpers.style('chat','usersButton'); iconDown=ru.teachbase.utils.helpers.style('chat','usersButton'); toolTip=translate('rooms_button', 'chat');}"
+                                         initialize="with(roomsView) {iconUp=style('chat','usersButton'); iconOver=style('chat','usersButton'); iconDown=style('chat','usersButton'); toolTip=translate('rooms_button', 'chat');}"
                                          click="roomsBottonClick(event)"
                                          skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
         <s:Group includeIn="privateChatState, publicChatState" width="100%">
@@ -516,7 +527,7 @@
             </s:TextInput>
             <components:CustomSkinableButton id="sendMessageButton" top="7" right="7"
                                              click="inputFieldEnterHandler(event)" height="30"
-                                             initialize="with(sendMessageButton){iconUp=ru.teachbase.utils.helpers.style('chat','sendMessageButton');iconOver=ru.teachbase.utils.helpers.style('chat','sendMessageButton');iconDown=ru.teachbase.utils.helpers.style('chat','sendMessageButton'); toolTip=translate('send_button','chat')}"
+                                             initialize="with(sendMessageButton){iconUp=style('chat','sendMessageButton');iconOver=style('chat','sendMessageButton');iconDown=style('chat','sendMessageButton'); toolTip=translate('send_button','chat')}"
                                              skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
 
         </s:Group>
@@ -551,7 +562,7 @@
                                              top="13" right="15"
                                              click="searchInRooms()"
                                              height="18" width="18"
-                                             initialize="with(findButton){iconUp=ru.teachbase.utils.helpers.style('chat','magnifier');iconOver=ru.teachbase.utils.helpers.style('chat','magnifier');iconDown=ru.teachbase.utils.helpers.style('chat','magnifier');}"
+                                             initialize="with(findButton){iconUp=style('chat','magnifier');iconOver=style('chat','magnifier');iconDown=style('chat','magnifier');}"
                                              skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
 
         </s:Group>

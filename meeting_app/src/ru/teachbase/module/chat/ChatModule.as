@@ -1,9 +1,7 @@
 package ru.teachbase.module.chat
 {
-import ru.teachbase.manage.LayoutManager;
-import ru.teachbase.module.base.IModuleContent;
-import ru.teachbase.module.base.Module;
-import ru.teachbase.utils.helpers.*;
+import ru.teachbase.manage.modules.model.IModuleContent;
+import ru.teachbase.manage.modules.model.Module;
 import ru.teachbase.utils.shortcuts.style;
 
 /**
@@ -25,13 +23,7 @@ import ru.teachbase.utils.shortcuts.style;
 			singleton = true;
 			
 		}
-		
-		//------------ initialize ------------//
-		
-		override public function initializeModule(manager:LayoutManager):void
-		{
-			super.initializeModule(manager);
-		}
+
 		
 		//--------------- ctrl ---------------//
 		
@@ -41,7 +33,7 @@ import ru.teachbase.utils.shortcuts.style;
 			instanceID = 1;
 			const result:ChatContent = new ChatContent();
 			result.instanceID = instanceID;
-			instances[instanceID] = result;
+			_instances[instanceID] = result;
 			return result;
 		}
 		

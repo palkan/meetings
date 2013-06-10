@@ -15,10 +15,10 @@
         import ru.teachbase.behaviours.interfaces.IDragCoordinateSpace;
         import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
         import ru.teachbase.behaviours.dragdrop.DragEvent;
-        import ru.teachbase.model.LayoutChangeData;
+        import ru.teachbase.manage.layout.model.LayoutChangeData;
         import ru.teachbase.layout.LayoutElementData;
-        import ru.teachbase.model.constants.PacketType;
-        import ru.teachbase.module.base.Module;
+        import ru.teachbase.constants.PacketType;
+        import ru.teachbase.manage.modules.model.Module;
         import ru.teachbase.utils.helpers.dispatchTraitEvent;
 
         [Bindable]

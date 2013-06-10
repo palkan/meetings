@@ -11,9 +11,9 @@
         import mx.core.IVisualElementContainer;
         import mx.core.UIComponent;
 
-        import ru.teachbase.events.documents.ChangeSlideEvent;
-        import ru.teachbase.events.documents.ControlEvent;
-        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.events.ChangeSlideEvent;
+        import ru.teachbase.module.documents.events.ControlEvent;
+        import ru.teachbase.module.documents.model.WorkplaceMethod;
         import ru.teachbase.module.documents.components.HorizontalThumbPanel;
         import ru.teachbase.module.documents.components.NavigateButtons;
         import ru.teachbase.utils.workplace.ControlHost;

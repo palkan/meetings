@@ -2,7 +2,7 @@ package ru.teachbase.components
 {
 import flash.display.DisplayObject;
 
-import ru.teachbase.module.base.Module;
+import ru.teachbase.manage.modules.model.Module;
 
 import spark.components.ToggleButton;
 

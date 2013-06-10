@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         width="100%" height="14">
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="progressComplete", type="flash.events.Event")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+        import ru.teachbase.utils.shortcuts.style;
+
+        private var _timer:Timer = new Timer(100, 0);
+
+        public function start():void {
+            _timer.addEventListener(TimerEvent.TIMER, onTimer);
+            _timer.start();
+        }
+
+        public function pause():void {
+
+        }
+
+        public function get isStarted():Boolean {
+            return _timer.running;
+        }
+
+        public function reset():void {
+            thumbMaskRect.width = 0;
+            _timer.stop();
+            _timer.removeEventListener(TimerEvent.TIMER, onTimer);
+        }
+
+        private function onTimer(evt:Event):void {
+            thumbMaskRect.width += 2;
+            if (thumbMaskRect.width >= this.width) {
+                reset();
+                dispatchEvent(new Event('progressComplete'));
+            }
+        }
+        ]]>
+	</fx:Script>
+	<s:Group left="1" top="1" right="1" bottom="1" id="thumbMask" width="1">
+		<s:Rect left="0" top="0" bottom="0" width="1" id="thumbMaskRect">
+			<s:fill>
+				<s:SolidColor color="0xFFFFFF" alpha="0"/>
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+	
+	<s:HGroup id="bg" gap="0" width="100%">
+		<s:BitmapImage source="{style('video','settingsProgressbarBgLeft')}"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBgCenter')}" fillMode="repeat" width="100%"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBgCight')}"/>
+	</s:HGroup>
+	
+	<s:HGroup id="thumb" width="100%" gap="0" mask="{thumbMask}">
+		<s:BitmapImage source="{style('video','settingsProgressbarBarLeft')}"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBarCenter')}" fillMode="repeat" width="100%"/>
+		<s:BitmapImage source="{style('video','settingsProgressbarBarRight')}"/>
+	</s:HGroup>
+</s:Group>

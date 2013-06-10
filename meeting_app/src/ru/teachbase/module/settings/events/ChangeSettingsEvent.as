@@ -2,7 +2,7 @@ package ru.teachbase.module.settings.events
 {
 import flash.events.Event;
 
-import ru.teachbase.model.Setting;
+import ru.teachbase.module.settings.model.Setting;
 
 public class ChangeSettingsEvent extends Event
 	{

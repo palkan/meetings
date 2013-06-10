@@ -11,7 +11,7 @@
         import mx.core.UIComponent;
         import mx.events.FlexEvent;
 
-        import ru.teachbase.model.SlideAsset;
+        import ru.teachbase.module.documents.model.SlideAsset;
         import ru.teachbase.module.documents.components.SlideItem;
 
         protected var _slideItem:SlideItem;

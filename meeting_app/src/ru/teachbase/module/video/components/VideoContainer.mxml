@@ -12,18 +12,7 @@
 		<![CDATA[
         import mx.events.FlexEvent;
 
-        import ru.teachbase.core.App;
-        import ru.teachbase.manage.PublishManager;
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.model.App;
         import ru.teachbase.utils.shortcuts.style;
 
         private var video:Video = null;
@@ -81,7 +70,7 @@
         private function onPauseCamera(event:Event = null):void {
             _paused = true;
             video && video.attachCamera(null);
-            (m(PublishManager) as PublishManager).pauseCameraSharing()
+            App.publisher.pauseCameraSharing()
 
         }
 
@@ -89,7 +78,7 @@
             _paused = false;
             video && camera && video.attachCamera(camera);
 
-            (m(PublishManager) as PublishManager).playCameraSharing()
+            App.publisher.playCameraSharing()
         }
 
         private function onStreamPause():void {
@@ -104,7 +93,7 @@
 
 
         public function set from(userId:Number):void {
-            userName = App.room.getUserNameById(userId);
+            //userName = App.meeting.getUserNameById(userId);
             this.userId = userId;
         }
 

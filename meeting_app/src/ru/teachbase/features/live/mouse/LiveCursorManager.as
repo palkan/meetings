@@ -4,11 +4,13 @@ package ru.teachbase.features.live.mouse
 import flash.display.Sprite;
 import flash.events.MouseEvent;
 
-import ru.teachbase.core.App;
-import ru.teachbase.events.ChangeEvent;
-import ru.teachbase.model.Packet;
-import ru.teachbase.model.constants.Recipients;
+import ru.teachbase.constants.PacketType;
+import ru.teachbase.manage.rtmp.RTMPListener;
+import ru.teachbase.manage.rtmp.events.RTMPEvent;
+import ru.teachbase.manage.rtmp.model.Recipients;
+import ru.teachbase.model.App;
 import ru.teachbase.module.board.BoardCanvas;
+import ru.teachbase.utils.shortcuts.rtmp_send;
 
 /**
 	 * @author webils (created: May 14, 2012)
@@ -20,7 +22,7 @@ import ru.teachbase.module.board.BoardCanvas;
 		private static const FIXED_WIDTH:int = 400;
 		
 		private var _display:Sprite;
-		private var  trait:LiveCursorTrait;
+		private const listener:RTMPListener = new RTMPListener(PacketType.CURSOR);
 		private var _share:Boolean;
 		private var _id:int;
 		public var showMe:Boolean = true;
@@ -36,9 +38,8 @@ import ru.teachbase.module.board.BoardCanvas;
 			_id = id;
 			container = cont;
 			
-			trait = new LiveCursorTrait(id);
-			
-			trait.addEventListener(ChangeEvent.CHANGED,traitInputHandler);
+			listener.initialize();
+            listener.addEventListener(RTMPEvent.DATA, handleMessage);
 		}
 		
 				
@@ -55,11 +56,11 @@ import ru.teachbase.module.board.BoardCanvas;
 		//	_display.mouseEnabled = false;
 			container.removeEventListener(MouseEvent.CLICK, userInputHandler);
 			
-			var result:LiveCursor = cursors[App.room.user.sid];
+			var result:LiveCursor = cursors[App.user.sid];
 			
 			if(result){
 				result.deactivate();
-				trait.output({remove:true}, showMe ? Recipients.ALL : Recipients.ALL_EXCLUDE_ME);
+				rtmp_send(PacketType.CURSOR, {remove:true}, showMe ? Recipients.ALL : Recipients.ALL_EXCLUDE_ME);
 			}
 			
 		}
@@ -103,18 +104,17 @@ import ru.teachbase.module.board.BoardCanvas;
 			var _canvasWidth:Number = container.formatBounds.width;
 			var _k:Number = FIXED_WIDTH / _canvasWidth;
 			
-			trait.output({x: container.mouseX * _k, y: container.mouseY * _k}, showMe ? Recipients.ALL : Recipients.ALL_EXCLUDE_ME);
+			rtmp_send(PacketType.CURSOR, {x: container.mouseX * _k, y: container.mouseY * _k}, showMe ? Recipients.ALL : Recipients.ALL_EXCLUDE_ME);
 		}
 		
-		private function traitInputHandler(e:ChangeEvent):void
+		private function handleMessage(e:RTMPEvent):void
 		{
 			
-			const p:Packet = e.value as Packet;
+
+			const cursor:LiveCursor = getOrCreateCursor(e.packet.from);
 			
-			const cursor:LiveCursor = getOrCreateCursor(p.from);
 			
-			
-			if(p.data.remove){
+			if(e.packet.data.remove){
 				cursor.deactivate();
 				return;
 			}
@@ -122,7 +122,7 @@ import ru.teachbase.module.board.BoardCanvas;
 			
 			var _k:Number = container.formatBounds.width / FIXED_WIDTH;
 			
-			cursor.move(_k * p.data.x, _k * p.data.y);
+			cursor.move(_k * e.packet.data.x, _k * e.packet.data.y);
 			
 			const active:Array = new Array();
 			for each(var c:LiveCursor in cursors)

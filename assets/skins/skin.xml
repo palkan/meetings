@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<skin>
+	<components>
+	
+	
+		<component name="wb">
+			<elements>
+				<element name="undo" src="undo.png"/>
+				<element name="redo" src="redo.png"/>
+				<element name="undoDisabled" src="undo_disabled.png"/>
+				<element name="redoDisabled" src="redo_disabled.png"/>
+				<element name="undoOver" src="undo_over.png"/>
+				<element name="redoOver" src="redo_over.png"/>
+				<element name="buttonUp" src="toolbarButtonBackUp.png"/>
+				<element name="buttonOver" src="toolbarButtonBackOver.png"/>
+				<element name="buttonDisabled" src="toolbarButtonBackDisabled.png"/>
+				<element name="buttonBotUp" src="toolbarButBotBackUp.png"/>
+				<element name="buttonBotOver" src="toolbarButBotBackOver.png"/>
+				<element name="buttonBotDisabled" src="toolbarButBotBackDisabled.png"/>
+				<element name="buttonListUp" src="toolbarListUp.png"/>
+				<element name="buttonListOver" src="toolbarListOver.png"/>
+				<element name="buttonListRightUp" src="toolbarListRightUp.png"/>
+				<element name="buttonListRightOver" src="toolbarListRightOver.png"/>
+				<element name="deleteBucket" src="eraserBucket.png"/>
+				<element name="redo" src="redo.png"/>
+				<element name="pencil" src="pencil.png"/>
+				<element name="marker" src="marker.png"/>
+				<element name="line" src="line.png"/>
+				<element name="pointer" src="pointer.png"/>
+				<element name="pointerBig" src="pointerBig.png"/>
+				<element name="circle" src="circle.png"/>
+				<element name="rectangle" src="rectangle.png"/>
+				<element name="eraser" src="eraser.png"/>
+				<element name="pencilCursor" src="pencilCursor.png"/>
+				<element name="markerCursor" src="markerCursor.png"/>
+				<element name="eraserCursor" src="eraserCursor.png"/>
+				<element name="text" src="text.png"/>
+				<element name="stroke_1" src="stroke_1.png"/>
+				<element name="stroke_2" src="stroke_2.png"/>
+				<element name="stroke_3" src="stroke_3.png"/>
+				<element name="stroke_4" src="stroke_4.png"/>
+				<element name="color_1" src="color_1.png"/>
+				<element name="color_2" src="color_2.png"/>
+				<element name="color_3" src="color_3.png"/>
+				<element name="color_4" src="color_4.png"/>
+				<element name="color_5" src="color_5.png"/>
+				<element name="color_6" src="color_6.png"/>
+				<element name="color_7" src="color_7.png"/>
+				<element name="color_8" src="color_8.png"/>	
+				<element name="handle" src="handle_up.png"/>
+				<element name="handleOver" src="handle_over.png"/>	
+				<element name="handleIcon" src="handle_icon.png"/>						
+			</elements>
+		</component>
+		<component name="cursor">
+			<elements>
+				<element name="resizeh" src="resizeh.png"/>
+				<element name="resizev" src="resizev.png"/>
+			</elements>
+		</component>
+		<component name="globalsettings">
+			<settings>
+				<setting name="background" value="0x00FFFF"></setting>
+			</settings>
+			<elements>
+				<element name="bgicon" src="global_bg.png"></element>
+				<element name="buttonHover" src="button_hover.png"></element>
+				<element name="buttonOut" src="button_out.png"></element>
+				<element name="buttonSelected" src="button_selected.png"></element>
+				<element name="gearOut" src="gear_button_out.png"></element>
+				<element name="gearOver" src="gear_button_over.png"></element>
+				
+				<element name="radioButtonBg" src="radio_button_bg.png"></element>
+				<element name="radioButtonDot" src="radio_button_dot.png"></element>
+				
+				<element name="break" src="break.png"></element>
+								
+				<element name="dropdownOut" src="dropdown_out.png"></element>
+	
+				<element name="standartButtonLeftClick" src="standart_button_left_click.png"></element>
+				<element name="standartButtonLeftHover" src="standart_button_left_hover.png"></element>
+				<element name="standartButtonLeft" src="standart_button_left.png"></element>
+				
+				<element name="standartButtonMiddleClick" src="standart_button_middle_click.png"></element>
+				<element name="standartButtonMiddleHover" src="standart_button_middle_hover.png"></element>
+				<element name="standartButtonMiddle" src="standart_button_middle.png"></element>
+				
+				<element name="standartButtonRightHover" src="standart_button_right_hover.png"></element>
+				<element name="standartButtonRight" src="standart_button_right.png"></element>
+				<element name="standartButtonRigthClick" src="standart_button_rigth_click.png"></element>
+								
+			</elements>
+		</component>
+		<component name="chat">
+			<settings>
+				<element name="icon" src="module_button.png"></element>
+				<element name="iconHover" src="module_button_hover.png"></element>
+				<setting name="background" value="0x00FFFF"></setting >
+			</settings>
+			<elements>
+				<element name="sendMessageButton" src="send_message.png"></element>
+				<element name="usersButton" src="users_button.png"></element>
+				<element name="redCircle" src="red_circle.png"></element>
+				<element name="magnifier" src="magnifier.png"></element>
+				<element name="bottomLine" src="bottom_line.png"></element>
+			</elements>
+		</component>
+		<component name="screenshare">
+			<settings>
+			</settings>
+			<elements>
+				<element name="icon" src="module_button.png"></element>
+				<element name="iconHover" src="module_button_hover.png"></element>
+				<element name="buttonIcon" src="buttonIcon.png"></element>
+				<element name="back" src="back.png"></element>
+				<element name="alert" src="alert.png"></element>
+				<element name="stop_btn_back" src="stop_button_back.png"></element>
+				<element name="stop_btn_left" src="stop_button_left.png"></element>
+				<element name="stop_btn_right" src="stop_button_right.png"></element>
+				<element name="stop_btn_back_hover" src="stop_button_back.png"></element>
+				<element name="stop_btn_left_hover" src="stop_button_left.png"></element>
+				<element name="stop_btn_right_hover" src="stop_button_right.png"></element>
+				<element name="cropButton" src="cropButton.png"></element>
+				<element name="cropButtonSelected" src="cropButtonSelected.png"></element>
+				<element name="scaleButton" src="scaleButton.png"></element>
+				<element name="scaleButtonSelected" src="scaleButtonSelected.png"></element>
+			</elements>
+		</component>
+		<component name="docs">
+			<settings>
+				<setting name="background" value="0x00FFFF"></setting>
+			</settings>
+			<elements>
+				<element name="icon" src="module_button.png"></element>
+				<element name="iconHover" src="module_button_hover.png"></element>
+				<element name="hideButtonBottomPanel" src="hide_bottom_panel_button.png"></element>
+				<element name="bottomSeparator" src="bottom_separator.png"></element>
+				<element name="bottomNumbersBackground" src="bottom_numbers_bg.png"></element>
+	
+				<element name="bottomPrevDown" src="bottom_prev_slide_down.png"></element>
+				<element name="bottomPrevOver" src="bottom_prev_slide_over.png"></element>
+				<element name="bottomPrevUp" src="bottom_prev_slide_up.png"></element>
+				
+				<element name="bottomNextDown" src="bottom_next_slide_down.png"></element>
+				<element name="bottomNextOver" src="bottom_next_slide_over.png"></element>
+				<element name="bottomNextUp" src="bottom_next_slide_up.png"></element>
+				
+				<element name="bottomZoomInDown" src="bottom_zoomin_button_down.png"></element>
+				<element name="bottomZoomInOver" src="bottom_zoomin_button_over.png"></element>
+				<element name="bottomZoomInUp" src="bottom_zoomin_button_up.png"></element>
+				
+				<element name="bottomZoomOutDown" src="bottom_zoomout_button_down.png"></element>
+				<element name="bottomZoomOutOver" src="bottom_zoomout_button_over.png"></element>
+				<element name="bottomZoomOutUp" src="bottom_zoomout_button_up.png"></element>
+				
+				<element name="bottomRotateDown" src="bottom_rotate_button_down.png"></element>
+				<element name="bottomRotateOver" src="bottom_rotate_button_over.png"></element>
+				<element name="bottomRotateUp" src="bottom_rotate_button_up.png"></element>
+				
+				<element name="leftHideButtonOver" src="left_hide_button_over.png"></element>
+				<element name="leftHideButtonUp" src="left_hide_button_up.png"></element>
+				
+				<element name="thumbListBg" src="thumblist_bg.png"></element>
+				
+				<element name="whitebordButton" src="whitebord_button.png"></element>
+				<element name="whitebordButtonHover" src="whitebord_button_hover.png"></element>
+				<element name="whitebordButtonDown" src="whitebord_button_down.png"></element>
+
+				<element name="uploadFile" src="upload_file.png"></element>
+				<element name="uploadFileHover" src="upload_file_hover.png"></element>
+				<element name="uploadFileDown" src="upload_file_down.png"></element>
+				
+				<!--  small menu -->
+				<element name="bottomSmallZoomInDown" src="bottom_small_zoom_in_down.png"></element>
+				<element name="ottomSmallZoomInOver" src="bottom_small_zoom_in_over.png"></element>
+				<element name="bottomSmallZoomInUp" src="bottom_small_zoom_in_up.png"></element>
+				
+				<element name="bottomSmallZoomOutDown" src="bottom_small_zoom_out_down.png"></element>
+				<element name="bottomSmallZoomOutOver" src="bottom_small_zoom_out_over.png"></element>
+				<element name="bottomSmallZoomOutUp" src="bottom_small_zoom_out_up.png"></element>
+				
+				<element name="bottomSmallNumbersBg" src="bottom_small_numbers_bg.png"></element>	
+				
+				<!-- doc selectoin  -->		
+				<element name="treeTriangleNormal" src="tree_triangle_normal.png"></element>			
+				<element name="treeTriangleExpanded" src="tree_triangle_expanded.png"></element>			
+				<element name="treeFolderNormal" src="tree_folder_normal.png"></element>			
+				<element name="treeFolderExpanded" src="tree_folder_expanded.png"></element>
+							
+				<element name="corner" src="ugolok-over.png"></element>			
+				
+				<element name="buttonbarButtonFirst" src="buttonbar_button_first.png"></element>			
+				<element name="buttonbarButtonFirstHover" src="buttonbar_button_first_hover.png"></element>				
+				
+				<element name="buttonbarButtonMiddle" src="buttonbar_button_middle.png"></element>			
+				<element name="buttonbarButtonMiddleHover" src="buttonbar_button_middle_hover.png"></element>				
+				
+				<element name="buttonbarButtonLast" src="buttonbar_button_last.png"></element>			
+				<element name="buttonbarButtonLastHover" src="buttonbar_button_last_hover.png"></element>				
+				
+				<element name="img-avi" src="img-avi.png"></element>				
+				<element name="img-bmp" src="img-bmp.png"></element>				
+				<element name="img-doc" src="img-doc.png"></element>				
+				<element name="img-docx" src="img-docx.png"></element>				
+				<element name="img-file" src="img-file.png"></element>				
+				<element name="img-flv" src="img-flv.png"></element>				
+				<element name="img-gif" src="img-gif.png"></element>				
+				<element name="img-jpg" src="img-jpg.png"></element>				
+				<element name="img-mov" src="img-mov.png"></element>				
+				<element name="img-mp3" src="img-mp3.png"></element>				
+				<element name="img-mp4" src="img-mp4.png"></element>				
+				<element name="img-mpg" src="img-mpg.png"></element>				
+				<element name="img-odp" src="img-odp.png"></element>				
+				<element name="img-ods" src="img-ods.png"></element>				
+				<element name="img-odt" src="img-odt.png"></element>				
+				<element name="img-pdf" src="img-pdf.png"></element>				
+				<element name="img-png" src="img-png.png"></element>				
+				<element name="img-ppt" src="img-ppt.png"></element>				
+				<element name="img-pptx" src="img-pptx.png"></element>				
+				<element name="img-wav" src="img-wav.png"></element>				
+				<element name="img-xls" src="img-xls.png"></element>				
+				<element name="img-xlsx" src="img-xlsx.png"></element>				
+				
+				<element name="google" src="google.png"></element>
+				<element name="youTube" src="youTube.png"></element>
+				
+				<element name="findFieldLeft" src="find_field_left.png"></element>
+				<element name="findFieldMiddle" src="find_field_middle.png"></element>
+				<element name="findFieldRights" src="find_field_rights.png"></element>
+			</elements>
+		</component>
+		
+		<component name="notes">
+			<settings>
+				<setting name="background" value="0x00FFFF"></setting>
+			</settings>
+			<elements>
+				<element name="icon" src="module_button.png"></element>
+				<element name="iconHover" src="module_button_hover.png"></element>
+			</elements>
+		</component>
+		
+		<component name="users">
+			<settings>
+				<setting name="background" value="0x00FFFF"></setting>
+			</settings>
+			<elements>
+				<element name="icon" src="module_button.png"></element>
+				<element name="iconHover" src="module_button_hover.png"></element>
+				<element name="background" src="bg.png"></element>
+				<element name="backgroundHover" src="bgHover.png"></element>
+				
+				<element name="closeButton" src="closeButton.png"></element>
+				<element name="closeButtonHover" src="closeButtonHover.png"></element>
+				
+				<element name="screenEnabled" src="screenEnabled.png"></element>
+				<element name="screenDisabled" src="screenDisabled.png"></element>
+				<element name="screenAttempt" src="screenAttempt.png"></element>
+				
+				<element name="micEnabled" src="micEnabled.png"></element>
+				<element name="micDisabled" src="micDisabled.png"></element>
+				<element name="micAttempt" src="micAttempt.png"></element>
+				
+				<element name="camEnabled" src="cameraEnabled.png"></element>
+				<element name="camDisabled" src="cameraDisabled.png"></element>
+				<element name="camAttempt" src="cameraAttempt.png"></element>
+				
+				<element name="toggleButtonBg" src="toggleButtonBg.png"></element>
+				
+				<element name="toggleClosed" src="toggleClosed.png"></element>
+				<element name="toggleOppend" src="toggleOppend.png"></element>
+				
+				<element name="deleteUserOkBg" src="deleteUserOkBg.png"></element>
+				<element name="deleteUserOkBgHover" src="deleteUserOkBgHover.png"></element>
+				
+				<element name="deleteUserCancelBg" src="deleteUserCancelBg.png"></element>
+				<element name="deleteUserCancelBgHover" src="deleteUserCancelBgHover.png"></element>
+
+				<element name="calloutButtonBackground" src="calloutButtonBackground.png"></element>
+						
+			</elements>
+		</component>
+		
+		<component name="video">
+			<settings>
+				<setting name="background" value="0xFF00FF"></setting>
+			</settings>
+			<elements>
+				<element name="icon" src="module_button.png"></element>
+				<element name="iconHover" src="module_button_hover.png"></element>
+				<element name="closeButton" src="close_button.png"></element>
+				<element name="cameraButton" src="camera_button.png"></element>
+				<element name="cameraButtonPaused" src="camera_button_paused.png"></element>
+				<element name="playButtonPused" src="play_button_paused.png"></element>
+				<element name="playButton" src="play_button.png"></element>
+				
+				<element name="bigCameraButton" src="big_camera_button.png"></element>
+				<element name="bigCameraButtonHover" src="big_camera_button_hover.png"></element>
+				<element name="bigCameraButtonDown" src="big_camera_button_down.png"></element>
+				
+				<element name="bottomCameraButton" src="bottom_camera_button.png"></element>
+				<element name="bottomCameraButtonHover" src="bottom_camera_button_hover.png"></element>
+				<element name="bottomCameraButtonDown" src="bottom_camera_button_down.png"></element>
+				
+				<element name="settingsAudioButtonOut" src="settings_v_audio_button_out.png"></element>
+				<element name="settingsAudioButtonOver" src="settings_v_audio_button_over.png"></element>
+				<element name="settingsVideoButtonOut" src="settings_v_video_button_out.png"></element>
+				<element name="settingsVideoButtonOver" src="settings_v_video_button_over.png"></element>
+				
+				<element name="settingsPlayButtonOut" src="settings_a_play_button_out.png"></element>
+				<element name="settingsPlayButtonHover" src="settings_a_play_button_hover.png"></element>
+				<element name="settingsPlayButtonDown" src="settings_a_play_button_down.png"></element>
+				
+				<element name="settingsRecordButtonOut" src="settings_a_record_button_out.png"></element>
+				<element name="settingsRecordButtonDown" src="settings_a_record_button_down.png"></element>
+				<element name="settingsRecordButtonHover" src="settings_a_record_button_hover.png"></element>
+				
+				<element name="settingsScrollerThumbLeft" src="settings_a_scroller_thumb.png"></element>
+				
+				<element name="settingsScrollerTrackLeft" src="settings_a_scroller_track_left.png"></element>
+				<element name="settingsScrollerTrackCenter" src="settings_a_scroller_track_center.png"></element>
+				<element name="settingsScrollerTrackRight" src="settings_a_scroller_track_right.png"></element>
+				
+				<element name="settingRadioButton" src="settings_a_radio_button.png"></element>
+				<element name="settingsRadioButtonDot" src="settings_a_radio_button_dot.png"></element>
+				
+				<element name="settingsProgressbarBgLeft" src="settings_progressbar_bg_left.png"></element>
+				<element name="settingsProgressbarBgCenter" src="settings_progressbar_bg_center.png"></element>
+				<element name="settingsProgressbarBgCight" src="settings_progressbar_bg_right.png"></element>
+				
+				<element name="settingsProgressbarBarLeft" src="settings_progressbar_bar_left.png"></element>
+				<element name="settingsProgressbarBarCenter" src="settings_progressbar_bar_center.png"></element>
+				<element name="settingsProgressbarBarRight" src="settings_progressbar_bar_right.png"></element>
+				
+			</elements>
+		</component>
+		
+		<component name="workplace">
+			<settings>
+				<setting name="background" value="0x00FFFF"></setting>
+			</settings>
+			<elements>
+				<!-- element name="icon" src="module_button.png"></element>
+				<element name="iconHover" src="module_button_hover.png"></element-->
+			</elements>
+		</component>
+		
+		<component name="actionbar">
+			<settings>
+				<setting name="background" value="0x00FFFF"></setting>
+			</settings>
+			<elements>
+			
+				<element name="audioIco" src="actionbar_audio_ico.png"></element>
+				<element name="audioIcoOver" src="actionbar_audio_ico_over.png"></element>
+				
+				<element name="cameraIco" src="actionbar_camera_ico.png"></element>
+				<element name="cameraIcoOver" src="actionbar_camera_ico_over.png"></element>
+				<element name="cameraIcoSelected" src="actionbar_camera_ico_selected.png"></element>
+				<element name="cameraIcoDisabled" src="actionbar_camera_ico_disabled.png"></element>
+				<element name="cameraIcoDisabledHover" src="actionbar_camera_ico_disabled_over.png"></element>
+				
+				<element name="micIco" src="actionbar_mic_ico.png"></element>
+				<element name="micIcoOver" src="actionbar_mic_ico_over.png"></element>
+				<element name="micIcoSelected" src="actionbar_mic_ico_selected.png"></element>
+				<element name="micIcoDisabled" src="actionbar_mic_ico_disabled.png"></element>
+				<element name="micIcoDisabledHover" src="actionbar_mic_ico_disabled_over.png"></element>
+				
+				<element name="reccordIco" src="actionbar_rec_ico.png"></element>
+				<element name="reccordIcoOver" src="actionbar_rec_ico_over.png"></element>
+				<element name="reccordIcoSelected" src="actionbar_rec_ico_selected.png"></element>
+				
+				<element name="playIco" src="actionbar_play_ico.png"></element>
+				<element name="playIcoOver" src="actionbar_play_ico_over.png"></element>
+				
+				<element name="pauseIco" src="actionbar_pause_ico.png"></element>
+				<element name="pauseIcoOver" src="actionbar_pause_ico_over.png"></element>
+				
+				<element name="settingsIco" src="actionbar_settings_ico.png"></element>
+				<element name="settingsIcoHover" src="actionbar_settings_ico_hover.png"></element>
+				
+				<element name="exitIco" src="actionbar_exit_ico.png"></element>
+				<element name="exitIcoHover" src="actionbar_exit_ico_hover.png"></element>
+				
+				<element name="fullscreenIco" src="actionbar_fullscreen_ico.png"></element>
+				<element name="fullscreenIcoHover" src="actionbar_fullscreen_ico_hover.png"></element>
+
+				<element name="helpIco" src="actionbar_help_ico.png"></element>
+				<element name="helpIcoHover" src="actionbar_help_ico_hover.png"></element>
+				
+				<element name="logotype" src="actionbar_logotype2.png"></element>
+				<element name="background" src="actionbar_background.png"></element>
+				<element name="separator" src="actionbar_separator.png"></element>
+				<element name="slidedButtonLeft" src="actionbar_slided_menu_button_left.png"></element>
+				<element name="slidedButtonLeftHover" src="actionbar_slided_menu_button_left_hover.png"></element>
+				
+				<element name="slidedButtonRight" src="actionbar_slided_menu_button_right.png"></element>
+				<element name="slidedButtonRightHover" src="actionbar_slided_menu_button_right_hover.png"></element>
+				
+				<element name="layoutButton" src="actionbar_layout_button.png"></element>
+				<element name="layoutButtonHover" src="actionbar_layout_button_hover.png"></element>
+				
+				<element name="audioSliderThumb" src="audio_slider_thumb.png"></element>
+				<element name="audioSliderTrack" src="audio_slider_track.png"></element>
+				
+			</elements>
+		</component>
+		<component name="modulecontainer">
+			<settings>
+				<setting name="background" value="0xEFEFEF"></setting>
+				<setting name="titlTextColor" value="0xDBDBDB"></setting>
+			</settings>
+			<elements>
+				<element name="actionbarLeftCorner" src="actionbar_left_corner.png"></element>
+				<element name="actionbarRightCorner" src="actionbar_right_corner.png"></element>
+				<element name="actionbarCenter" src="actionbar_center.png"></element>
+				
+				<element name="minimizeIcon" src="minimize_icon.png"></element>
+				<element name="minimizeIconOver" src="minimize_icon_over.png"></element>
+				
+				<element name="fullScreenIcon" src="full_screen_icon.png"></element>
+				<element name="fullScreenIconOver" src="full_screen_icon_over.png"></element>
+				
+				<element name="removeIcon" src="remove_icon.png"></element>
+				<element name="removeIconOver" src="remove_icon_over.png"></element>
+				
+				<element name="preferenceIcon" src="preference_icon.png"></element>
+				<element name="preferenceIconOver" src="preference_icon_over.png"></element>
+				
+				<element name="bottomBackground" src="bottom_bg.png"></element>
+				
+				<element name="reload_button" src="reload_icon.png"></element>
+			</elements>
+		</component>
+		<component name="notification">
+			<settings>
+			</settings>
+			<elements>
+				<element name="whiteboard" src="whiteboard_icon.png"></element>
+				<element name="cam" src="cam_icon.png"></element>
+				<element name="mic" src="mic_icon.png"></element> 
+				<element name="break" src="break.png"></element> 
+			</elements>
+		</component>		
+		<component name="videoplayer">
+			<settings>
+			</settings>
+			<elements>
+				<element name="muteButton" src="muteButton.png"></element>
+				<element name="muteButtonOver" src="muteButtonOver.png"></element>
+				<element name="pauseButton" src="pauseButton.png"></element> 
+				<element name="pauseButtonOver" src="pauseButtonOver.png"></element> 
+				<element name="playButton" src="playButton.png"></element> 
+				<element name="playButtonOver" src="playButtonOver.png"></element> 
+				<element name="timeSliderBuffer" src="timeSliderBuffer.png"></element> 
+				<!-- element name="timeSliderCapLeft" src="timeSliderCapLeft.png"></element> 
+				<element name="timeSliderCapRight" src="timeSliderCapRight.png"></element> --> 
+				<element name="timeSliderProgress" src="timeSliderProgress.png"></element> 
+				<element name="timeSliderRail" src="timeSliderRail.png"></element> 
+				<element name="timeSliderThumb" src="timeSliderThumb.png"></element> 
+				<element name="unmuteButton" src="unmuteButton.png"></element> 
+				<element name="unmuteButtonOver" src="unmuteButtonOver.png"></element> 
+				<element name="background" src="background.png"></element> 
+			</elements>
+		</component>		
+	</components>
+</skin>

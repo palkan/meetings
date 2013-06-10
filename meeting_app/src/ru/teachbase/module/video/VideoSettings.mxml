@@ -15,24 +15,12 @@
 		<![CDATA[
         import mx.collections.ArrayList;
 
-        import ru.teachbase.core.App;
-        import ru.teachbase.events.SettingsEvent;
-        import ru.teachbase.manage.PublishManager;
-        import ru.teachbase.model.CameraSettings;
+        import ru.teachbase.manage.publish.PublishManager;
+        import ru.teachbase.module.settings.events.SettingsEvent;
         import ru.teachbase.utils.Configger;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.shortcuts.config;
         import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.helpers.skin;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
         import ru.teachbase.utils.shortcuts.translate;
         import ru.teachbase.utils.system.requestUserMediaAccess;
 
@@ -85,7 +73,7 @@
                 _video.attachCamera(_camera);
                 camList.selectedIndex = int(config(SettingsEvent.CAMERA_ID, 0));
 
-                CameraSettings.setPreset(_camera, null, config(SettingsEvent.CAMERA_QUALITY, CameraSettings.PRESET2));
+                //CameraSettings.setPreset(_camera, null, config(SettingsEvent.CAMERA_QUALITY, CameraSettings.PRESET2));
 
                 _enabled = true;
             }
@@ -117,7 +105,7 @@
                  break;*/
             }
 
-            CameraSettings.setPreset(_camera, null, selected);
+            //CameraSettings.setPreset(_camera, null, selected);
             chagedStatusSend(SettingsEvent.CAMERA_QUALITY, selected);
         }
 
@@ -131,7 +119,7 @@
 
         private function onCamSelected():void {
 
-            if (App.room.sharing.videoSharing) (m(PublishManager) as PublishManager).closeCamera();
+          //  if (App.room.sharing.videoSharing) (m(PublishManager) as PublishManager).closeCamera();
 
             chagedStatusSend(SettingsEvent.CAMERA_ID, String(camList.selectedIndex));
             _camera = Camera.getCamera(String(camList.selectedIndex));

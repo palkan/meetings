@@ -16,7 +16,7 @@
 		<![CDATA[
         import mx.core.IVisualElement;
 
-        import ru.teachbase.model.ModuleSettings;
+        import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.skins.CalloutButtonSkin;
         import ru.teachbase.utils.shortcuts.translate;
 

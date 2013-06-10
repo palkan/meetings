@@ -7,7 +7,7 @@
 
     <fx:Script>
 		<![CDATA[
-        import ru.teachbase.model.PrivateChatElement;
+        import ru.teachbase.module.chat.model.PrivateChatElement;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;

@@ -14,9 +14,9 @@
 		<![CDATA[
         import caurina.transitions.Tweener;
 
-        import ru.teachbase.events.documents.ControlEvent;
-        import ru.teachbase.model.SlideAsset;
-        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.events.ControlEvent;
+        import ru.teachbase.module.documents.model.SlideAsset;
+        import ru.teachbase.module.documents.model.WorkplaceMethod;
         import ru.teachbase.utils.logger.Logger;
         import ru.teachbase.utils.workplace.ControlHost;
 

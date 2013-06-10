@@ -7,6 +7,8 @@ package ru.teachbase.model {
 import org.flexunit.assertThat;
 import org.hamcrest.object.hasProperties;
 
+import ru.teachbase.manage.session.model.CurrentUser;
+
 import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.shortcuts.config;
 

@@ -6,10 +6,10 @@
          xmlns:layout="ru.teachbase.module.board.components.*">
 
     <fx:Metadata>
-		[Event(name="undo_redo", type="ru.teachbase.events.WhiteBoardEvent")]
-		[Event(name="tool", type="ru.teachbase.events.WhiteBoardEvent")]
-		[Event(name="property", type="ru.teachbase.events.WhiteBoardEvent")]
-	</fx:Metadata>
+        [Event(name="undo_redo", type="ru.teachbase.module.board.events.WhiteBoardEvent")]
+        [Event(name="tool", type="ru.teachbase.module.board.events.WhiteBoardEvent")]
+        [Event(name="property", type="ru.teachbase.module.board.events.WhiteBoardEvent")]
+    </fx:Metadata>
 	
 	<fx:Script>
 		<![CDATA[
@@ -17,7 +17,7 @@
 
         import mx.events.FlexEvent;
 
-        import ru.teachbase.events.WhiteBoardEvent;
+        import ru.teachbase.module.board.events.WhiteBoardEvent;
         import ru.teachbase.utils.data.SKArray;
         import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.shortcuts.style;

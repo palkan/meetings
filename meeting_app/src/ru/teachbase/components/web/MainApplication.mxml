@@ -10,7 +10,7 @@
         import mx.events.FlexEvent;
         import mx.graphics.BitmapFillMode;
 
-        import ru.teachbase.components.Header;
+        import ru.teachbase.components.header.Header;
         import ru.teachbase.components.module.ModuleContainer;
         import ru.teachbase.controller.ApplicationController;
         import ru.teachbase.utils.shortcuts.style;
@@ -22,10 +22,10 @@
         private var _container:ModuleContainer;
         private var _header:Header;
 
-        public function draw():void{
+        public function draw():void {
 
             var background:BitmapImage = new BitmapImage();
-            background.source = style('globalsettings','bgicon');
+            background.source = style('globalsettings', 'bgicon');
             background.left = background.right = background.top = background.bottom = 0;
             background.fillMode = BitmapFillMode.REPEAT;
 
@@ -44,11 +44,9 @@
         }
 
 
-        public function lightbox(element:IVisualElement):void{
+        public function lightbox(element:IVisualElement):void {
             //TODO
         }
-
-
         ]]>
 	</fx:Script>
 </s:Group>

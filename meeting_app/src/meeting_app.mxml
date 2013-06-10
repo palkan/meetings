@@ -16,7 +16,7 @@
         import mx.managers.SystemManager;
         import mx.preloaders.Preloader;
 
-        import ru.teachbase.events.CoreEvent;
+        import ru.teachbase.events.AppEvent;
 
         import ru.teachbase.preloader.LogoCustomPreloader;
         import ru.teachbase.utils.Configger;
@@ -24,7 +24,7 @@
 
         private var _main:MainApplication;
 
-        private function onStatus(event:CoreEvent):void {
+        private function onStatus(event:AppEvent):void {
             var pr:LogoCustomPreloader = getPreloader();
             if (!pr)
                 return;
@@ -49,9 +49,9 @@
             _main = new MainApplication();
             _main.percentHeight = 100;
             _main.percentWidth = 100;
-            _main.controller.addEventListener(CoreEvent.CORE_LOAD_COMPLETE, onCoreComplete);
-            _main.controller.addEventListener(CoreEvent.CORE_LOAD_ERROR, onStatus);
-            _main.controller.addEventListener(CoreEvent.LOADING_STATUS, onStatus);
+            _main.controller.addEventListener(AppEvent.CORE_LOAD_COMPLETE, onCoreComplete);
+            _main.controller.addEventListener(AppEvent.CORE_LOAD_ERROR, onStatus);
+            _main.controller.addEventListener(AppEvent.LOADING_STATUS, onStatus);
 
             CONFIG::debug{
                 Configger.setDefaults({external: CONFIG::CONF_URL_D});
@@ -65,10 +65,10 @@
         }
 
 
-        protected function onCoreComplete(event:CoreEvent):void {
-            _main.controller.removeEventListener(CoreEvent.CORE_LOAD_COMPLETE, onCoreComplete);
-            _main.controller.removeEventListener(CoreEvent.CORE_LOAD_ERROR, onStatus);
-            _main.controller.removeEventListener(CoreEvent.LOADING_STATUS, onStatus);
+        protected function onCoreComplete(event:AppEvent):void {
+            _main.controller.removeEventListener(AppEvent.CORE_LOAD_COMPLETE, onCoreComplete);
+            _main.controller.removeEventListener(AppEvent.CORE_LOAD_ERROR, onStatus);
+            _main.controller.removeEventListener(AppEvent.LOADING_STATUS, onStatus);
 
             var pr:LogoCustomPreloader = getPreloader();
             if (!pr)

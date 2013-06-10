@@ -3,7 +3,7 @@ package ru.teachbase.module.settings
 
 import mx.core.INavigatorContent;
 
-import ru.teachbase.model.Setting;
+import ru.teachbase.module.settings.model.Setting;
 import ru.teachbase.module.settings.events.ChangeSettingsEvent;
 
 import spark.components.Group;

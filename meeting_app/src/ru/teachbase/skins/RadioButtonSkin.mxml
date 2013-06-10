@@ -34,10 +34,6 @@
     </fx:Metadata> 
     
     <fx:Script fb:purpose="styling">
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.helpers.skin;
-        import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
 
         static private const exclusions:Array = ["labelDisplay", "dot"];

@@ -14,7 +14,8 @@ import flash.text.TextField;
 import flash.text.TextFieldAutoSize;
 import flash.utils.Timer;
 
-import ru.teachbase.core.App;
+import ru.teachbase.model.App;
+
 import ru.teachbase.utils.shortcuts.style;
 
 /**
@@ -59,7 +60,7 @@ import ru.teachbase.utils.shortcuts.style;
 			graphics.drawRect(0, 0, 10, 10);
 			graphics.endFill();*/
 			
-			field.text = App.room.usersByID[_id] ? App.room.usersByID[_id].fullName : "";
+			field.text = App.meeting.usersByID[_id] ? App.meeting.usersByID[_id].fullName : "";
 			
 		//	activity.addEventListener(TimerEvent.TIMER_COMPLETE, deactivatePrepareHandler);
 		}

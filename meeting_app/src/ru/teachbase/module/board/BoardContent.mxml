@@ -10,7 +10,7 @@
 		<![CDATA[
         import mx.events.FlexEvent;
 
-        import ru.teachbase.events.WhiteBoardEvent;
+        import ru.teachbase.module.board.events.WhiteBoardEvent;
 
         import ru.teachbase.module.board.figures.FigureManager;
         import ru.teachbase.module.board.instruments.Instrument;

@@ -15,23 +15,13 @@
 		<![CDATA[
         import mx.events.ItemClickEvent;
 
-        import ru.teachbase.core.App;
-        import ru.teachbase.events.SettingsEvent;
         import ru.teachbase.manage.LocaleManager;
+        import ru.teachbase.model.App;
+        import ru.teachbase.module.settings.events.SettingsEvent;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.shortcuts.config;
         import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
 
         public static const label:String = 'global_set';
 
@@ -99,10 +89,10 @@
 		</s:Group>
 		
 		<s:Label id="usersLbl" initialize="usersLbl.text=translate('set_label','users')" color="0x6892B5" fontSize="13" paddingLeft="22"
-				 includeInLayout="{Permissions.isAdmin(App.room.user.permissions)}"
-				 visible="{Permissions.isAdmin(App.room.user.permissions)}"/>
-		<s:HGroup paddingLeft="22" includeInLayout="{Permissions.isAdmin(App.room.user.permissions)}" 
-				  visible="{Permissions.isAdmin(App.room.user.permissions)}">
+				 includeInLayout="{App.user.isAdmin()}"
+				 visible="{App.user.isAdmin()}"/>
+		<s:HGroup paddingLeft="22" includeInLayout="{App.user.isAdmin()}"
+				  visible="{App.user.isAdmin()}">
 			<s:CheckBox id="cameraCheckBox" label="" skinClass="ru.teachbase.skins.CheckBoxSkin" click="cameraRequestEnabled(event)"/>
 			<s:Label id="reqLbl" initialize="reqLbl.text=translate('set_requests_off','users')" color="0x515151" fontSize="13" paddingLeft="10"/>
 		</s:HGroup>

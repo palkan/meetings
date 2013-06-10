@@ -20,12 +20,12 @@
         import mx.events.ResizeEvent;
         import mx.graphics.ImageSnapshot;
 
-        import ru.teachbase.events.DocEvent;
-        import ru.teachbase.events.documents.ControlEvent;
-        import ru.teachbase.events.documents.RendererEvent;
-        import ru.teachbase.model.DocChangeData;
-        import ru.teachbase.model.WorkplaceMethod;
-        import ru.teachbase.model.constants.Recipients;
+        import ru.teachbase.module.documents.events.DocEvent;
+        import ru.teachbase.module.documents.events.ControlEvent;
+        import ru.teachbase.module.documents.events.RendererEvent;
+        import ru.teachbase.module.documents.model.DocChangeData;
+        import ru.teachbase.module.documents.model.WorkplaceMethod;
+        import ru.teachbase.constants.Recipients;
         import ru.teachbase.module.board.figures.FigureManager;
         import ru.teachbase.module.documents.renderers.IWorkplaceRenderer;
         import ru.teachbase.traits.DocTrait;
@@ -323,7 +323,7 @@
 	
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.events.WhiteBoardEvent;
+        import ru.teachbase.module.board.events.WhiteBoardEvent;
         import ru.teachbase.module.board.instruments.Instrument;
 
         private var currentInstrumentType:String;

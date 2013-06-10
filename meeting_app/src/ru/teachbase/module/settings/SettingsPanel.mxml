@@ -15,31 +15,23 @@
 
     <fx:Script>
 	<![CDATA[
-        import ru.teachbase.core.Core;
-        import ru.teachbase.manage.SettingsManager;
-        import ru.teachbase.manage.TraitManager;
-        import ru.teachbase.model.Setting;
-        import ru.teachbase.model.constants.PacketType;
-        import ru.teachbase.model.constants.Recipients;
+        import ru.teachbase.constants.PacketType;
         import ru.teachbase.module.settings.events.ChangeSettingsEvent;
+        import ru.teachbase.module.settings.model.Setting;
         import ru.teachbase.skins.SettingsButtonBarSkin;
-        import ru.teachbase.traits.SettingsTrait;
         import ru.teachbase.utils.Configger;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
 
         import spark.events.IndexChangeEvent;
 
-        private var _settingsTrait:SettingsTrait = TraitManager.instance.createTrait(SettingsTrait) as SettingsTrait;
         private var _settingsToSave:Object = new Object();
 
         private function onAdded(evt:Event):void {
             invalidatePosition();
             Localizer.addItem(this);
-            btnBar.dataProvider = (m(SettingsManager) as SettingsManager).panelsList;
+            //     btnBar.dataProvider = (m(SettingsManager) as SettingsManager).panelsList;
             title = translate('global_set', 'settings');
             stage && stage.addEventListener(Event.RESIZE, invalidatePosition, false, 0, true);
         }
@@ -51,22 +43,22 @@
 
         private function closeMe(evt:Event = null):void {
             stage.removeEventListener(Event.RESIZE, invalidatePosition);
-            Core.removePopupFromTop(this);
+            // Core.removePopupFromTop(this);
         }
 
         public function navigateToPanel(id:int):void {
-            while (settingsGroup.numElements > 0) {
-                settingsGroup.removeElementAt(0);
-            }
+            /*while (settingsGroup.numElements > 0) {
+             settingsGroup.removeElementAt(0);
+             }
 
-            const settingsElement:SettingsElement = (m(SettingsManager) as SettingsManager).getSettingsElement(id);
-            if (settingsElement == null) {
-                return;
-            }
-            settingsElement.addEventListener(ChangeSettingsEvent.LOCAL_SETTINGS_CHANGE, onValueChanged);
-            settingsGroup.addElement(settingsElement);
-            btnBar.selectedIndex = id;
-            titleText.text = settingsElement.label ? translate(settingsElement.label, 'settings') : "";
+             const settingsElement:SettingsElement = (m(SettingsManager) as SettingsManager).getSettingsElement(id);
+             if (settingsElement == null) {
+             return;
+             }
+             settingsElement.addEventListener(ChangeSettingsEvent.LOCAL_SETTINGS_CHANGE, onValueChanged);
+             settingsGroup.addElement(settingsElement);
+             btnBar.selectedIndex = id;
+             titleText.text = settingsElement.label ? translate(settingsElement.label, 'settings') : "";   */
         }
 
         private function onValueChanged(evt:ChangeSettingsEvent):void {
@@ -94,8 +86,8 @@
             for each (var setting:Setting in _settingsToSave) {
                 Configger.saveCookie(setting.valueName, setting.value);
                 dispatchTraitEvent(PacketType.SETTINGS_CHANGED, setting);
-                if (setting.callServer)
-                    _settingsTrait.output(setting, Recipients.ALL_EXCLUDE_ME);
+                /* if (setting.callServer)
+                 _settingsTrait.output(setting, Recipients.ALL_EXCLUDE_ME);      */
             }
 
             closeMe();

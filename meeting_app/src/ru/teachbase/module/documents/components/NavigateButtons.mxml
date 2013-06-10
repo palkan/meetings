@@ -12,7 +12,7 @@
 	
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.events.documents.ChangeSlideEvent;
+        import ru.teachbase.module.documents.events.ChangeSlideEvent;
 
         /*public function set isOwner(isO:Boolean):void{
          if(isO &&  SlidesManager.type == SlidesManager.TYPE_PRESENTATION) {

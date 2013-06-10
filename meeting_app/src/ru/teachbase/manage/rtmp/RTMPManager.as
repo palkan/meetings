@@ -14,7 +14,7 @@ import mx.rpc.Responder;
 
 import ru.teachbase.events.ErrorCodeEvent;
 import ru.teachbase.manage.*;
-import ru.teachbase.model.constants.ErrorCodes;
+import ru.teachbase.constants.ErrorCodes;
 import ru.teachbase.constants.NetConnectionStatusCodes;
 import ru.teachbase.net.factory.ConnectionFactory;
 import ru.teachbase.net.factory.FactoryErrorCodes;
@@ -31,8 +31,8 @@ public class RTMPManager extends Manager {
 
     private static const listeners:FuncObject = new FuncObject();
 
-    public function RTMPManager(){
-        super();
+    public function RTMPManager(register:Boolean = false){
+        super(register);
     }
 
 
@@ -74,7 +74,7 @@ public class RTMPManager extends Manager {
      *
      */
 
-    public function call(method:*, responder:IResponder, ...rest):void
+    public function callServer(method:*, responder:IResponder, ...rest):void
     {
         rest.unshift(method, (responder ? new Responder(sendResult, sendError) : null));
         _connection.call.apply(null, rest);
@@ -91,17 +91,30 @@ public class RTMPManager extends Manager {
     }
 
 
+    /**
+     *
+     * @return
+     */
+
+
+    public function getMediaStreamsConnection():NetConnection{
+        return _connection;
+    }
+
 
     tb_rtmp function incomingCall(name, ...args):void{
         (listeners[name] is Function) && listeners[name].apply(null,args);
     }
 
+
+    override public function dispose():void{
+        //TODO: dispose
+    }
     // ---------- API (End) ---------- //
 
     override protected function initialize():void{
 
-        var _netConfig = config('net',false);
-        var _url = _netConfig ? _netConfig.rtmp : false;
+        var _url = config('net.rtmp');
 
         if(!_url){
             _failed = true;
@@ -123,8 +136,8 @@ public class RTMPManager extends Manager {
                 error('Connection timeout',ErrorCodes.TIMEOUT);
                 break;
             case FactoryErrorCodes.REJECTED:
-                if(uint(e.text) & ErrorCodes.APPLICATION)
-                    error('Connection timeout', uint(e.text));
+                if(e.id & ErrorCodes.APPLICATION)
+                    error('Application error', e.id);
                 else
                     error(e.text, ErrorCodes.CONNECTION_FAILED);
                 break;
@@ -171,8 +184,9 @@ public class RTMPManager extends Manager {
         switch(e.info.code){
             case NetConnectionStatusCodes.REJECTED:
                 _initialized = false;
-                if((e.info.text|0) & ErrorCodes.APPLICATION)
-                    error('Connection timeout', uint(e.info.text));
+                //TODO: add errorID to erlang!!!
+                if(e.info.errorId & ErrorCodes.APPLICATION)
+                    error('Application error', uint(e.info.errorId));
                 else
                     error(e.info.text, ErrorCodes.CONNECTION_FAILED);
                 break;

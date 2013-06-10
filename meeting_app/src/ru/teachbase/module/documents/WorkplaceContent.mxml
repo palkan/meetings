@@ -18,16 +18,16 @@
 
         import ru.teachbase.core.App;
         import ru.teachbase.core.Core;
-        import ru.teachbase.events.DocEvent;
+        import ru.teachbase.module.documents.events.DocEvent;
         import ru.teachbase.events.FileStatusEvent;
         import ru.teachbase.manage.FileManager;
         import ru.teachbase.manage.LayoutModelManager;
         import ru.teachbase.manage.TraitManager;
-        import ru.teachbase.model.DocChangeData;
-        import ru.teachbase.model.FileItem;
-        import ru.teachbase.model.ModuleSettings;
+        import ru.teachbase.module.documents.model.DocChangeData;
+        import ru.teachbase.module.documents.model.FileItem;
+        import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.model.User;
-        import ru.teachbase.model.constants.Recipients;
+        import ru.teachbase.constants.Recipients;
         import ru.teachbase.module.documents.components.SelectSourceWindow;
         import ru.teachbase.module.documents.model.WorkplaceRenderers;
         import ru.teachbase.traits.DocTrait;
@@ -367,8 +367,8 @@
 
         }
 
-        override public function hideContainer():void {
-            super.hideContainer();
+        override public function hide():void {
+            super.hide();
             container && container.dispose();
         }
 

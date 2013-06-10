@@ -11,10 +11,9 @@ import flash.net.URLVariables;
 
 import mx.rpc.Responder;
 
-import ru.teachbase.core.App;
-import ru.teachbase.utils.Logger;
+import ru.teachbase.model.App;
 import ru.teachbase.utils.Strings;
-import ru.teachbase.utils.helpers.config;
+import ru.teachbase.utils.shortcuts.config;
 
 /**
 	 * 
@@ -85,7 +84,6 @@ import ru.teachbase.utils.helpers.config;
 			}
 			
 			function ioError(event:ErrorEvent):void{
-				Logger.log(action+": "+event.text,"HTTP_ERRROR");
 			}
 			
 			function loadError(event:ErrorEvent):void{
@@ -100,7 +98,6 @@ import ru.teachbase.utils.helpers.config;
 			}
 			
 			function loadStatus(event:HTTPStatusEvent):void{
-				Logger.log(action+": "+event.status,"HTTP_STATUS");
 				switch (event.status) {
 					case 400:
 						loadError(new ErrorEvent(ErrorEvent.ERROR, false, false, "HTTP Status 400; Bad request."));
@@ -139,8 +136,8 @@ import ru.teachbase.utils.helpers.config;
 		public static function generateVars(params:Object = null):URLVariables{
 			
 			var _vars:URLVariables = new URLVariables();
-			_vars.mid = App.room.id;
-			_vars.uid = (App.room.user) ? App.room.user.id : 0;
+			_vars.mid = App.meeting.id;
+			_vars.uid = (App.user) ? App.user.id : 0;
 			_vars.token = _token;
 			
 			

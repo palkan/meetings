@@ -1,7 +1,7 @@
 package ru.teachbase.module.users
 {
-import ru.teachbase.module.base.IModuleContent;
-import ru.teachbase.module.base.Module;
+import ru.teachbase.manage.modules.model.IModuleContent;
+import ru.teachbase.manage.modules.model.Module;
 import ru.teachbase.utils.helpers.*;
 import ru.teachbase.utils.shortcuts.style;
 
@@ -29,13 +29,13 @@ import ru.teachbase.utils.shortcuts.style;
 			instanceID = 1;
 			var _el:UsersPanel = new UsersPanel();
 			_el.instanceID = instanceID;
-			instances[instanceID] = _el;
+			_instances[instanceID] = _el;
 			return _el;
 		}
 		
 		public function clear():void
 		{
-			for each(var panel:UsersPanel in instances)
+			for each(var panel:UsersPanel in _instances)
 				panel.clear();
 		}
 		

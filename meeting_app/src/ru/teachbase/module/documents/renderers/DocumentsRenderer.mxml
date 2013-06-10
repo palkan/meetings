@@ -11,7 +11,7 @@
         import mx.core.IVisualElementContainer;
         import mx.core.UIComponent;
 
-        import ru.teachbase.model.SlideAsset;
+        import ru.teachbase.module.documents.model.SlideAsset;
         import ru.teachbase.module.documents.components.BottomPanel;
         import ru.teachbase.module.documents.components.DocumentMap;
         import ru.teachbase.module.documents.components.VerticalThumbPanel;

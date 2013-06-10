@@ -16,11 +16,8 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.manage.SessionManager;
+        import ru.teachbase.model.App;
         import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.helpers.m;
-        import ru.teachbase.utils.helpers.s;
-        import ru.teachbase.utils.shortcuts.style;
 
         public static const CONFIRM:String = 'conform';
         public static const CONFIRM2:String = 'conform2';
@@ -72,17 +69,13 @@
         }
 
         private function onOkClick(evt:Event = null):void {
-            CONFIG::LIVE{
-                (m(SessionManager) as SessionManager).setUserRights(_sid, _type, _flag);
-            }
+            App.session.setUserRights(_sid, _type, _flag);
             close();
         }
 
         private function onCancelClick(evt:Event = null):void {
-            CONFIG::LIVE{
-                if (_dialogType == CONFIRM) {
-                    (m(SessionManager) as SessionManager).setRequest(_type, false, _sid);
-                }
+            if (_dialogType == CONFIRM) {
+                App.session.setRequest(_type, false, _sid);
             }
             close();
         }
@@ -90,7 +83,7 @@
 	</fx:Script>
 	<components:CustomSkinableButton id="closeBut" click="close()" width="14" height="14" right="6" top="6"
 									 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-									 initialize="with(closeBut){icon=ru.teachbase.utils.helpers.style('users','closeButton');  iconOver=ru.teachbase.utils.helpers.style('users','closeButtonHover');}"
+									 initialize="with(closeBut){icon=style('users','closeButton');  iconOver=style('users','closeButtonHover');}"
 									 />
 	<s:VGroup width="100%" height="100%" top="9" left="10" right="10" bottom="9" gap="0">
 		<s:HGroup width="100%" height="22">
@@ -100,12 +93,12 @@
 		<s:HGroup width="100%" >
 			<components:CustomSkinableButton id="okButton"  height="22"
 											 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-											 initialize="with(okButton){iconUp=ru.teachbase.utils.helpers.style('users','deleteUserCancelBg');iconOver=ru.teachbase.utils.helpers.style('users','deleteUserCancelBgHover');}"
+											 initialize="with(okButton){iconUp=style('users','deleteUserCancelBg');iconOver=style('users','deleteUserCancelBgHover');}"
 											 click="onOkClick(event)"/>
 			
 			<components:CustomSkinableButton id="cancelButton" width="86" height="22"
 											 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-											 initialize="with(cancelButton){iconUp=ru.teachbase.utils.helpers.style('users','deleteUserCancelBg');iconOver=ru.teachbase.utils.helpers.style('users','deleteUserCancelBgHover');}"
+											 initialize="with(cancelButton){iconUp=style('users','deleteUserCancelBg');iconOver=style('users','deleteUserCancelBgHover');}"
 											 click="onCancelClick(event)"/>
 		</s:HGroup>
 	</s:VGroup>

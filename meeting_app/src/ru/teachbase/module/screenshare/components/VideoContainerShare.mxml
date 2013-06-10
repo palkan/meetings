@@ -17,13 +17,12 @@
         import mx.events.FlexEvent;
 
         import ru.teachbase.components.NavigatorWindow;
-        import ru.teachbase.core.App;
+
         import ru.teachbase.events.ChangeEvent;
         import ru.teachbase.features.live.mouse.SimpleLiveCursorManager;
+        import ru.teachbase.model.App;
         import ru.teachbase.module.screenshare.ShareVideoModes;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
@@ -62,12 +61,12 @@
         private var modes:ArrayCollection = new ArrayCollection(['scale', 'crop']);
 
         public function set from(userId:Number):void {
-            titleName = translate("user_share_title", "screenshare", App.room.getUserNameById(userId));
+         //   titleName = translate("user_share_title", "screenshare", App.meeting.getUserNameById(userId));
             this.userId = userId;
         }
 
         public function localize():void {
-            titleName = translate("user_share_title", "screenshare", App.room.getUserNameById(userId));
+           // titleName = translate("user_share_title", "screenshare", App.meeting.getUserNameById(userId));
         }
 
         public function get from():Number {

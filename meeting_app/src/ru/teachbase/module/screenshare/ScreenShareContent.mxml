@@ -21,33 +21,18 @@
         import mx.events.FlexEvent;
         import mx.rpc.Responder;
 
-        import ru.teachbase.core.App;
-        import ru.teachbase.events.ScreenShareEvent;
-        import ru.teachbase.manage.TraitManager;
-        import ru.teachbase.model.LocalStream;
-        import ru.teachbase.model.Packet;
+        import ru.teachbase.manage.rtmp.RTMPListener;
+        import ru.teachbase.manage.rtmp.model.Packet;
+        import ru.teachbase.model.App;
+        import ru.teachbase.module.screenshare.events.ScreenShareEvent;
         import ru.teachbase.model.User;
-        import ru.teachbase.model.constants.PacketType;
-        import ru.teachbase.model.constants.Recipients;
-        import ru.teachbase.model.constants.RecordingStates;
+        import ru.teachbase.constants.PacketType;
         import ru.teachbase.module.screenshare.components.VideoContainerShare;
-        import ru.teachbase.traits.ScrShareTrait;
         import ru.teachbase.utils.BrowserUtils;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.shortcuts.config;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.logger.Logger;
         import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.extensions.AIRLauncher;
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.debug;
+        import ru.teachbase.utils.shortcuts.*;
 
         CONFIG::AIR{
             import ru.teachbase.ane.*;
@@ -57,11 +42,11 @@
 
         private const RESTART_STREAM_TIME:int = 2000;
 
-        private var _trait:ScrShareTrait = TraitManager.instance.createTrait(ScrShareTrait) as ScrShareTrait;
+        private const listener:RTMPListener = new RTMPListener(PacketType.SCREEN_SHARING);
 
         private var _activeUser:User;
 
-        private const user:User = App.room.user;
+        private const user:User = App.user;
 
         private var _available:Boolean = false;
 
@@ -93,7 +78,7 @@
             Localizer.addItem(this);
 
 
-            _trait.call("get_history", new mx.rpc.Responder(stateHandler, null), PacketType.SCREEN_SHARING);
+            rtmp_history(PacketType.SCREEN_SHARING, new mx.rpc.Responder(stateHandler, null));
 
             CONFIG::AIR{
 
@@ -122,12 +107,12 @@
                 noAppGroup && (noAppGroup.visible = true);
                 appGroup && (appGroup.visible = false);
 
-                Logger.log(Capabilities.os, 'os');
+                debug('OS: ',Capabilities.os);
 
-                if (Capabilities.os.search("Windows") > -1) {
+              /*  if (Capabilities.os.search("Windows") > -1) {
 
-                    _launcher = new AIRLauncher('teachbase.meetings.desktop', '', [App.room.user.status === "guest", App.room.id, (App.room.user.status === "guest") ? App.room.user.fullName : App.room.user.id, App.room.user.role, CONFIG::debug]);
-                    Logger.log([App.room.user.status === "guest", App.room.id, (App.room.user.status === "guest") ? App.room.user.fullName : App.room.user.id, App.room.user.role, CONFIG::debug].join(";"), "ENTRY_ARGS");
+                    _launcher = new AIRLauncher('teachbase.meetings.desktop', '', [App.user.status === "guest", App.meeting.id, (App.user.status === "guest") ? App.user.fullName : App.room.user.id, App.room.user.role, CONFIG::debug]);
+                    Logger.log([App.user.status === "guest", App.meeting.id, (App.user.status === "guest") ? App.room.user.fullName : App.room.user.id, App.room.user.role, CONFIG::debug].join(";"), "ENTRY_ARGS");
                     _launcher.addEventListener(Event.COMPLETE, onLauncherComplete);
                     _launcher.init();
 
@@ -138,7 +123,7 @@
                     noAppBtn.visible = false;
 
 
-                }
+                }*/
 
             }
 
@@ -150,7 +135,6 @@
 
             private function onLauncherComplete(e:Event):void {
 
-                Logger.log(_launcher.status, 'launcher_status');
 
                 if (_launcher.status & AIRLauncher.APP_INSTALLED) {
                     noAppBtn.label = translate('run_app', 'screenshare');
@@ -198,7 +182,7 @@
             }
 
 
-            _trait.addEventListener(ScreenShareEvent.START_SHARE, startShareHandler);
+          /*  _trait.addEventListener(ScreenShareEvent.START_SHARE, startShareHandler);
             _trait.addEventListener(ScreenShareEvent.PREPARE_SHARE, prepareShareHandler);
             _trait.addEventListener(ScreenShareEvent.STOP_SHARE, function (e:Event) {
                 _streamName = null;
@@ -206,14 +190,14 @@
             });
             _trait.readyToReceive = true;
 
-
+           */
         }
 
 
         private function prepareShareHandler(event:ScreenShareEvent):void {
 
 
-            _activeUser = App.room.usersByID[event.uid];
+            _activeUser = App.meeting.usersByID[event.uid];
             if (!_activeUser) return;
 
 
@@ -272,11 +256,11 @@
                     var res:Boolean = _share.startShare(File.applicationDirectory.nativePath);
                 }
 
-                if (res) {
+                /*if (res) {
                     _trait.output({uid: user.sid, type: "prepare"}, Recipients.ALL, null, true);
                 } else {
                     _share.dispose();
-                }
+                } */
 
             }
 
@@ -287,7 +271,6 @@
 
             private function onAneError(event:ErrorEvent):void {
 
-                Logger.log(event.text, "ane_error");
 
             }
 
@@ -299,7 +282,7 @@
             CONFIG::AIR{
                 _share && _share.stopShare();
 
-                _trait.output({uid: 0, type: "stop"}, Recipients.ALL, null, true);
+                //_trait.output({uid: 0, type: "stop"}, Recipients.ALL, null, true);
             }
         }
 
@@ -311,7 +294,7 @@
 
             label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
 
-            _netStream = new NetStream(App.service.media_connection);
+            _netStream = new NetStream(App.rtmp.getMediaStreamsConnection());
 
             _netStream.addEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler);
             _netStream.addEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
@@ -348,14 +331,6 @@
             }
 
 
-            CONFIG::RECORDING{
-                _netStream.bufferTime = 2;
-                registerStreamRec(new LocalStream(_netStream, _activeUser.sid), stream);
-                if (App.room.recordModel.state === RecordingStates.PLAYING) _netStream.play(stream);
-
-            }
-
-
         }
 
         private function objToString(obj:Object):String {
@@ -387,7 +362,6 @@
 
 
         private function streamErrorHandler(e:ErrorEvent):void {
-            Logger.log("share stream error");
         }
 
         private function streamPlayOnStatusHandler(e:NetStatusEvent):void {
@@ -430,14 +404,14 @@
 
             if (_activeUser && _streamName) {
 
-                Logger.log('Restart stream: ' + _streamName, 'Share');
+                debug('Restart stream: ' + _streamName);
 
                 var _id:Number = _activeUser.sid;
 
                 dispose();
 
                 currentState = prepare.name;
-                _activeUser = App.room.usersByID[_id];
+                _activeUser = App.meeting.usersByID[_id];
 
                 receive(_streamName);
             }
@@ -445,9 +419,9 @@
         }
 
 
-        override public function hideContainer():void {
+        override public function hide():void {
 
-            super.hideContainer();
+            super.hide();
 
             dispose();
         }
@@ -519,7 +493,7 @@
                 <components:CustomSkinableButton id="start" width="270" click="onStartShare(event)"
                                                  horizontalCenter="0"
                                                  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
-                                                 initialize="with(start){label=translate('start','screenshare');iconUp=ru.teachbase.utils.helpers.style('screenshare','buttonIcon');iconDown=ru.teachbase.utils.helpers.style('screenshare','buttonIcon');iconOver=ru.teachbase.utils.helpers.style('screenshare','buttonIcon');visible = _available; enabled = _available}"
+                                                 initialize="with(start){label=translate('start','screenshare');iconUp=style('screenshare','buttonIcon');iconDown=style('screenshare','buttonIcon');iconOver=style('screenshare','buttonIcon');visible = _available; enabled = _available}"
                         />
                 <s:RichText id="descTxt" initialize="with(descTxt){text = translate('desc','screenshare')}" width="100%"
                             y="{start.y + start.height + 22}" textAlign="center" fontSize="13"/>

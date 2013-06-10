@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<locale lang="ru">
+	<components>
+		<component name="global">
+			<elements>
+				<element name="loading"><![CDATA[загрузка... ]]></element>
+				<element name="hide">cкрыть</element>
+				<element name="show">показать</element>
+				<element name="open"><![CDATA[открыть]]></element>
+				<element name="cancel"><![CDATA[oтменить]]></element>
+				<element name="close"><![CDATA[закрыть]]></element>
+				<element name="delete"><![CDATA[удалить]]></element>
+				<element name="confirm"><![CDATA[подтвердить]]></element>
+				<element name="decline"><![CDATA[отклонить]]></element>
+				<element name="accept"><![CDATA[принять]]></element>
+				<element name="or">или</element>
+				<element name="and">и</element>
+				<element name="turn_on">включить</element>
+				<element name="turn_off">выключить</element>
+				<element name="save">сохранить</element>
+			</elements>
+		</component>
+		<component name="module_settings">
+			<elements>
+				<element name="clear_chat"><![CDATA[Очистить чат]]></element>
+				<element name="copy_chat"><![CDATA[Копировать чат]]></element>
+				<element name="minimize"><![CDATA[Свернуть окно]]></element>
+				<element name="clear_workplace"><![CDATA[Очистить рабочую область]]></element>
+				<element name="save_screenshot"><![CDATA[Сохранить скриншот]]></element>
+			</elements>
+		</component>
+		<component name="chat">
+			<elements>
+				<element name="label"><![CDATA[Чат]]></element>
+				<element name="tooltip"><![CDATA[чат]]></element>
+				<element name="me"><![CDATA[Я]]></element>
+				<element name="writing"><![CDATA[${1} пишет...]]></element>
+				<element name="rooms_button"><![CDATA[Список пользователей]]></element>
+				<element name="search_field"><![CDATA[Поиск...]]></element>
+				<element name="message_field"><![CDATA[Сообщение...]]></element>
+				<element name="send_button"><![CDATA[Отправить]]></element>
+				<element name="public_label"><![CDATA[Общий чат]]></element>
+			</elements>
+		</component>
+		<component name="actionbar">
+			<elements>
+				<element name="volume"><![CDATA[громкость]]></element>
+				<element name="camera"><![CDATA[вкл./выкл. камеру]]></element>
+				<element name="mic"><![CDATA[вкл./выкл. микрофон]]></element>
+				<element name="camera_req"><![CDATA[запросить доступ к камере]]></element>
+				<element name="mic_req"><![CDATA[запросить доступ к микрофону]]></element>
+				<element name="record"><![CDATA[вкл./выкл. запись встречи]]></element>
+				<element name="play"><![CDATA[воспроизведение]]></element>
+				<element name="pause"><![CDATA[пауза]]></element>
+				<element name="settings"><![CDATA[настройки]]></element>
+				<element name="fullscreen"><![CDATA[вкл./выкл. полноэкранный режим]]></element>
+				<element name="close"><![CDATA[выйти]]></element>
+			</elements>
+		</component>
+		<component name="wb">
+			<elements>
+			</elements>
+		</component>
+		<component name="users">
+			<elements>
+				<element name="label"><![CDATA[Пользователи]]></element>
+				<element name="tooltip"><![CDATA[список пользователей]]></element>
+				<element name="me"><![CDATA[${1} (Я)]]></element>
+				<element name="admins">Администраторы</element>
+				<element name="users">Участники</element>
+				<element name="set_user">Сделать участником</element>
+				<element name="set_admin">Сделать администратором</element>
+				<element name="start_private">Начать личный чат</element>
+				<element name="are_you_sure_delete"><![CDATA[Вы уверены, что хотите удалить ${1} из списка участников?]]></element>
+				<element name="sure_to_change_right_cam"><![CDATA[Точно ${1} камеру?]]></element>
+				<element name="sure_to_change_right_mic"><![CDATA[Точно ${1} микрофон?]]></element>
+				<element name="sure_to_change_right_doc"><![CDATA[Точно ${1} рабочую область?]]></element>
+				<element name="request_cam"><![CDATA[Запрос на подключение веб камеры]]></element>
+				<element name="requset_mic"><![CDATA[Запрос на подключение микрофона]]></element>
+				<element name="set_label">Модуль участники</element>
+				<element name="set_requests_off"><![CDATA[Отмена возможности запроса камеры
+и микрофона]]></element>
+			</elements>
+		</component>
+		<component name="video">
+			<elements>
+				<element name="label"><![CDATA[Видео]]></element>
+				<element name="tooltip"><![CDATA[видео]]></element>
+			</elements>
+		</component>
+		<component name="screenshare">
+			<elements>
+				<element name="label"><![CDATA[Демонстрация экрана]]></element>
+				<element name="tooltip"><![CDATA[демонстрация экрана]]></element>
+				<element name="start"><![CDATA[Начать демонстрацию]]></element>
+				<element name="prepare_me"><![CDATA[Запускается приложение для демонстрации экрана]]></element>
+				<element name="prepare"><![CDATA[${1} готовится транслировать рабочий стол]]></element>
+				<element name="user_share_title"><![CDATA[Рабочий стол - ${1}]]></element>
+				<element name="stop_share"><![CDATA[Остановить демонстацию]]></element>
+				<element name="share_me"><![CDATA[Сейчас вы транслируете свой рабочий стол]]></element>
+				<element name="need_app"><![CDATA[Для работы с функцией Демонстрация рабочего стола, которая позволяем демонстрировать участникам все что происходит  у Вас на экране, Вам необходимо запустить приложение]]></element>
+				<element name="desc"><![CDATA[Вы можете демонстрировать участникам то что происходит у вас на экране монитора]]></element>
+				<element name="run_app"><![CDATA[Запустить]]></element>
+				<element name="install_app"><![CDATA[Установить]]></element>
+				<element name="chrome_alert"><![CDATA[К сожалению, Ваш браузер не поддерживается приложением для трансляции рабочего стола. Используйте Internet Explorer или Mozilla Firefox]]></element>
+				<element name="no_win_alert"><![CDATA[К сожалению, функция демонстрации рабочего стола доступна только для операционной системы Windows]]></element>
+				<element name="no_java_alert"><![CDATA[На Вашем компьютере не установлена Java RE. Установите Java RE для использования функции демонстарции рабочего стола]]></element>
+			</elements>
+		</component>
+		<component name="docs">
+			<elements>
+				<element name="label"><![CDATA[Рабочая область]]></element>
+				<element name="tooltip"><![CDATA[рабочая область]]></element>
+				<element name="loading"><![CDATA[${1} загружает документ...]]></element>
+				<element name="whiteboard"><![CDATA[белая доска]]></element>
+				<element name="recent_docs"><![CDATA[Недавно открытые]]></element>
+				<element name="load_files"><![CDATA[Загрузить файл]]></element>
+				<element name="choose_files"><![CDATA[Выбрать файл]]></element>
+				<element name="from_pc"><![CDATA[Из компьютера]]></element>
+				<element name="from_lib"><![CDATA[Из библиотеки]]></element>
+				<element name="from_web"><![CDATA[Из интернета]]></element>
+				<element name="select_desc"><![CDATA[<p>Вы можете загружать документы и картинки:</p> <list><li>из Вашего компьютера;</li> <li>из Библиотеки материалов;</li> <li>из интернет-ресурсов;</li></list>]]></element>
+				<element name="only_users"><![CDATA[Данная возможность доступна только авторизованным пользователям]]></element>
+				<element name="drop"><![CDATA[Вы можете перенести и «бросить» файлы прямо сюда]]></element>
+			</elements>
+		</component>
+		<component name="settings">
+			<elements>
+				<element name="common_set"><![CDATA[Общие настройки]]></element>
+				<element name="sound_set"><![CDATA[Настройки звука]]></element>
+				<element name="video_set"><![CDATA[Настройки видео]]></element>
+				<element name="global_set"><![CDATA[Настройки интерфейса]]></element>
+				<element name="level_check"><![CDATA[Проверка громкости динамиков]]></element>
+				<element name="if_no_sound"><![CDATA[Если вы не слышите звука после нажатия
+кнопки, проверьте подключение колонок
+или наушников]]></element>
+				<element name="level_setter"><![CDATA[Регулятор громкости динамиков]]></element>
+				<element name="mic_choose"><![CDATA[Выбор микрофона]]></element>
+				<element name="mic_level_setter"><![CDATA[Регулятор громкости микрофона]]></element>
+				<element name="mic_check"><![CDATA[Проверка работы микрофона]]></element>
+				<element name="if_no_sound_rec"><![CDATA[Если вы не слышите звука после записи,
+проверьте подключение колонок
+или наушников]]></element>
+				<element name="attention_rec"><![CDATA[Внимание идёт запись голоса]]></element>
+				<element name="silence_set"><![CDATA[Настройка тишины]]></element>
+				<element name="auto"><![CDATA[Автоматическая]]></element>
+				<element name="silence_level_set"><![CDATA[Настройка уровня тишины]]></element>
+				<element name="silence_setter"><![CDATA[Регулятор уровня тишины]]></element>
+				<element name="turn_on_cam"><![CDATA[Включить веб-камеру]]></element>
+				<element name="cam_choose"><![CDATA[Выбор камеры]]></element>
+				<element name="translation"><![CDATA[Трансляция изображения]]></element>
+				<element name="no_translation"><![CDATA[В данный момент
+изображение не транслируется]]></element>
+				<element name="quality_choose"><![CDATA[Выбор качества]]></element>
+				<element name="q_low"><![CDATA[Низкое]]></element>
+				<element name="q_med"><![CDATA[Среднее]]></element>
+				<element name="q_normal"><![CDATA[Нормальное]]></element>
+				<element name="q_high"><![CDATA[Высокое]]></element>
+				<element name="lang_choose"><![CDATA[Язык интерфейса]]></element>
+			</elements>
+		</component>
+		<component name="notifications">
+			<elements>
+				<element name="set_label"><![CDATA[Уведомления]]></element>
+				<element name="set_receive"><![CDATA[Получать уведомления]]></element>
+				<element name="req_doc"><![CDATA[${1} запрашивает право
+на рабочую область]]></element>
+				<element name="req_mic"><![CDATA[${1} запрашивает право
+на включение микрофона]]></element>
+				<element name="req_cam"><![CDATA[${1} запрашивает право
+на включение веб-камеры]]></element>
+				<element name="enter_room"><![CDATA[${1} вошёл в комнату]]></element>
+				<element name="leave_room"><![CDATA[${1} вышел из комнаты]]></element>
+				<element name="start_rec"><![CDATA[Встреча записывается]]></element>
+				<element name="stop_rec"><![CDATA[Запись встречи остановлена]]></element>
+				<element name="new_message"><![CDATA[Вам сообщение от ${1} ${2}]]></element>
+			</elements>
+		</component>		
+		<component name="error">
+			<elements>
+				<element name="kickedoff"><![CDATA[Вас удалили из списка участников встречи]]></element>
+				<element name="limit"><![CDATA[Превышен лимит количества пользователей на встрече]]></element>
+				<element name="main_server"><![CDATA[Ошибка при подключении к основному серверу приложения]]></element>
+				<element name="media_server"><![CDATA[Ошибка при подключении к серверу трансляции]]></element>
+				<element name="recording_not_found"><![CDATA[Не удается найти запись встречи]]></element>
+				<element name="connection_timeout"><![CDATA[Превышено время ожидания подключения]]></element>
+				<element name="meeting_finished"><![CDATA[Встреча завершена администратором]]></element>
+				<element name="authorization_failed"><![CDATA[Ошибка авторизации. Вы не допущены на вcтречу]]></element>
+				<element name="config_failed"><![CDATA[Не удается загрузить конфигурационные настройки]]></element>
+				<element name="YT_policy"><![CDATA[Политика безопастности YouTube
+запрещает просмотр данного видео]]></element>
+				<element name="YT_removed"><![CDATA[Данное видео удалено с YouTube]]></element>
+			</elements>
+		</component>		
+	</components>
+</locale>

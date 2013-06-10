@@ -1,0 +1,22 @@
+package ru.teachbase.module.documents.events
+{
+import flash.events.Event;
+
+import ru.teachbase.module.documents.model.FileItem;
+
+public class FileEvent extends Event
+	{
+		public static const FILE_CLICK_EVENT:String = "file_click_event";
+		private var _fileItem:FileItem;
+		
+		public function FileEvent(type:String, fileDiscription:FileItem, bubbles:Boolean=false, cancelable:Boolean=false)
+		{
+			super(type, bubbles, cancelable);
+			_fileItem = fileDiscription;
+		}
+		
+		public function get fileItem():FileItem {
+			return _fileItem; 
+		}
+	}
+}

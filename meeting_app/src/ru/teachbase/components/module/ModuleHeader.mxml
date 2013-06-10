@@ -7,7 +7,7 @@
     <fx:Script><![CDATA[
         import mx.events.FlexEvent;
 
-        import ru.teachbase.events.ModuleEvent;
+        import ru.teachbase.components.module.ModuleEvent;
 
         import ru.teachbase.utils.shortcuts.style;
 

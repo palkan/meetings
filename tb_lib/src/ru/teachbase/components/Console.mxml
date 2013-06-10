@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+          xmlns:s="library://ns.adobe.com/flex/spark"
+          implements="ru.teachbase.utils.interfaces.IConsole"
+          gap="0"
+        >
+    <fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        public function addMessage(text:String):void {
+
+            main_txt.text += text + "\n";
+
+        }
+
+
+        protected function cmd_enterHandler(event:FlexEvent):void {
+            cmd.text = '';
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:Scroller width="100%" height="100%" id="scroller" updateComplete="scroller.verticalScrollBar.value = scroller.verticalScrollBar.maximum">
+		<s:RichEditableText id="main_txt"  width="100%" backgroundAlpha=".9" backgroundColor="0x000000" color="0x00FF00" fontSize="10" editable="false"/>
+	</s:Scroller>
+	<s:HGroup gap="0" width="100%">
+		<s:Label text=">" verticalAlign="middle" color="0xffffff" backgroundColor="0x000000" width="14" fontSize="10" height="20"/><s:TextInput contentBackgroundColor="0x000000" focusSkin="{null}" height="20" id="cmd" width="100%" color="0xFFFFFF" enter="cmd_enterHandler(event)" fontSize="10"/>
+	</s:HGroup>  
+</s:VGroup>

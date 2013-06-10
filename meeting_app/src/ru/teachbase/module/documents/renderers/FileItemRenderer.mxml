@@ -8,8 +8,8 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.events.documents.FileEvent;
-        import ru.teachbase.model.FileItem;
+        import ru.teachbase.module.documents.events.FileEvent;
+        import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.helpers.skin;
         import ru.teachbase.utils.shortcuts.style;

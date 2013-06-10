@@ -23,10 +23,10 @@
 
         import ru.teachbase.core.App;
         import ru.teachbase.core.Core;
-        import ru.teachbase.events.TreeEvent;
-        import ru.teachbase.events.documents.FileEvent;
+        import ru.teachbase.components.tree.TreeEvent;
+        import ru.teachbase.module.documents.events.FileEvent;
         import ru.teachbase.manage.LayoutModelManager;
-        import ru.teachbase.model.FileItem;
+        import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.module.documents.DocumentsModule;
         import ru.teachbase.module.documents.WorkplaceContent;
         import ru.teachbase.skins.VerticalScrollerSkin;

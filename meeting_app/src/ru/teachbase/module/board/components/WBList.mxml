@@ -20,7 +20,7 @@
 
         import mx.events.FlexEvent;
 
-        import ru.teachbase.events.WhiteBoardEvent;
+        import ru.teachbase.module.board.events.WhiteBoardEvent;
         import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.shortcuts.style;
 

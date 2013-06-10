@@ -10,8 +10,8 @@
         import mx.core.IVisualElementContainer;
         import mx.events.FlexEvent;
 
-        import ru.teachbase.events.documents.ControlEvent;
-        import ru.teachbase.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.events.ControlEvent;
+        import ru.teachbase.module.documents.model.WorkplaceMethod;
         import ru.teachbase.module.documents.components.VideoPlayerControls;
         import ru.teachbase.utils.logger.Logger;
         import ru.teachbase.utils.workplace.ControlHost;

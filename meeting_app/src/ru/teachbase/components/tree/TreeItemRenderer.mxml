@@ -10,7 +10,7 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.events.TreeEvent;
+        import ru.teachbase.components.tree.TreeEvent;
         import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;

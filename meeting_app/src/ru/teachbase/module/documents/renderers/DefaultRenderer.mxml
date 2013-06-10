@@ -8,14 +8,14 @@
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
 	<fx:Metadata>
-		[Event(name="init", type="ru.teachbase.events.documents.RendererEvent")]
-	</fx:Metadata>
+        [Event(name="init", type="ru.teachbase.module.documents.events.RendererEvent")]
+    </fx:Metadata>
 	<fx:Script>
 		<![CDATA[
         import mx.core.IVisualElementContainer;
         import mx.events.FlexEvent;
 
-        import ru.teachbase.events.documents.RendererEvent;
+        import ru.teachbase.module.documents.events.RendererEvent;
 
         protected var _editable:Boolean;
         protected var _disposed:Boolean;

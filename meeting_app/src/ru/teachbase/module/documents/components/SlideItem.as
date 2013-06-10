@@ -18,9 +18,9 @@ import flash.system.SecurityDomain;
 
 import mx.core.UIComponent;
 
-import ru.teachbase.events.documents.CustomEvents;
-import ru.teachbase.events.documents.MoveEvent;
-import ru.teachbase.model.SlideAsset;
+import ru.teachbase.module.documents.events.CustomEvents;
+import ru.teachbase.module.documents.events.MoveEvent;
+import ru.teachbase.module.documents.model.SlideAsset;
 import ru.teachbase.utils.logger.Logger;
 import ru.teachbase.utils.StaticTextUtil;
 

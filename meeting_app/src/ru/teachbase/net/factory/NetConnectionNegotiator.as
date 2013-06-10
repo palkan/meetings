@@ -14,6 +14,7 @@ import flash.utils.Timer;
 
 import ru.teachbase.events.ErrorCodeEvent;
 import ru.teachbase.constants.NetConnectionStatusCodes;
+import ru.teachbase.utils.shortcuts.error;
 
 [Event(name="complete", type="flash.events.Event")]
 
@@ -115,7 +116,7 @@ internal class NetConnectionNegotiator extends EventDispatcher {
             case NetConnectionStatusCodes.REJECTED:
             {
                 clear();
-                dispatchEvent(new ErrorCodeEvent(ErrorEvent.ERROR, false, false, e.info.text, FactoryErrorCodes.REJECTED));
+                dispatchEvent(new ErrorCodeEvent(ErrorEvent.ERROR, false, false, e.info.text, FactoryErrorCodes.REJECTED, uint(e.info.errorId)));
                 break;
             }
             case NetConnectionStatusCodes.FAILED:

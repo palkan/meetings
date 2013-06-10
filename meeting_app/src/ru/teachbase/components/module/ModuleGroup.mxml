@@ -2,7 +2,8 @@
 <s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
                       xmlns:s="library://ns.adobe.com/flex/spark"
                       xmlns:components="ru.teachbase.components.module.*" xmlns:dragdrop="ru.teachbase.behaviours.dragdrop.*"
-                      implements="ru.teachbase.module.base.IModulePanel,
+                      implements="ru.teachbase.manage.modules.model.IModulePanel,
+                                  ru.teachbase.layout.model.ITreeLayoutElement,
 		                          ru.teachbase.behaviours.interfaces.IDraggle"
                       minWidth="140" minHeight="100"
                       creationComplete="creationCompleteHandler(event)"
@@ -10,7 +11,12 @@
                       skinClass="ru.teachbase.skins.module.ModuleSkin"
         >
     <fx:Metadata>
-        [Event(name="", type="ru.teachbase.events.ModuleEvent")]
+        [Event(name="", type="ru.teachbase.components.module.ModuleEvent")]
+        [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragStart", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragCancel", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragEnd", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragDrop", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
     </fx:Metadata>
     <fx:Declarations>
         <dragdrop:DragDropBehavior id="drag"
@@ -22,6 +28,7 @@
                                    dispatchToTarget="true"
                                    container="{container}"
                                    bounds="{dropSpace}"
+
                 />
     </fx:Declarations>
 
@@ -29,24 +36,42 @@
 		<![CDATA[
         import mx.events.FlexEvent;
 
+        import ru.teachbase.behaviours.dragdrop.DragBehavior;
+        import ru.teachbase.behaviours.dragdrop.DragEvent;
+        import ru.teachbase.behaviours.interfaces.IDragCoordinateSpace;
+        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
+        import ru.teachbase.behaviours.interfaces.IDropContainer;
         import ru.teachbase.components.*;
-
-        import ru.teachbase.module.base.IModuleContent;
+        import ru.teachbase.manage.modules.model.IModuleContent;
         import ru.teachbase.utils.shortcuts.style;
 
-        private var _title:String;
+        private var _id:uint;
 
+        private var _title:String;
         protected var _content:Vector.<IModuleContent>;
+        private var _currentContent:IModuleContent;
+        private var _locked:Boolean = false;
+
+
+        private var _layoutIndex:String = '';
+
+        [Bindable]
+        public var dropSpace:IDragCoordinateSpace;
+
+        [Bindable]
+        public var container:IDropContainer;
 
         private var instancesToLoad:Boolean = false;
 
         private var __initialized:Boolean = false;
 
-        private var _currentContent:IModuleContent;
-
         private var _p_enabled:Boolean = true;
 
         private var _expanded:Boolean = false;
+
+        protected var snapshot_catch:IDraggleSnapshot;
+
+        //------------ init handlers ----------------//
 
         private function creationCompleteHandler(e:FlexEvent):void {
             width = Math.max(minWidth, width);
@@ -65,6 +90,22 @@
             this.setStyle("backgroundColor", style('modulecontainer', 'background', 'string'));
         }
 
+
+
+        //------------ implementations ---------------//
+
+
+        //------------ IModulePanel
+
+
+        public function get elementId():uint {
+            return _id;
+        }
+
+        public function set elementId(value:uint):void {
+            _id = value;
+        }
+
         public function set content(value:Array):void {
 
             if (!value || !(value is Array)) {
@@ -77,7 +118,6 @@
             _content = new Vector.<IModuleContent>();
 
             const size:int = value.length;
-
 
             // convert our array to vector (stop if we find a non-IModuleContent element or pass thru all
 
@@ -93,109 +133,16 @@
                 instancesToLoad = true;
         }
 
-        public function get _initialized():Boolean {
-            return __initialized;
-        }
-        ]]>
-	</fx:Script>
 
-    <!-- ITreeLayoutElement implementation -->
-    <fx:Script>
-		<![CDATA[
-        private var _id:uint;
-        private var _layoutIndex:String = '';
-        private var _active:Boolean;
-
-        public function get elementID():uint {
-            return _id;
+        public function get locked():Boolean {
+            return _locked;
         }
 
-        public function set elementID(value:uint):void {
-            _id = value;
+        public function set locked(value:Boolean):void {
+            _locked = value;
+            drag.active = _locked;
         }
 
-        public function get layoutIndex():String {
-            return _layoutIndex;
-        }
-
-        public function set layoutIndex(value:String):void {
-            _layoutIndex = value;
-        }
-
-        public function hide():void {
-            for each (var el:IModuleContent in _content) {
-                el.hide();
-            }
-        }
-
-
-        public function get active():Boolean {
-            return _active;
-        }
-
-        public function set active(value:Boolean):void {
-            _active = value;
-            if (!value)
-                hide();
-        }
-        ]]>
-	</fx:Script>
-
-
-    <!-- drag responses -->
-    <fx:Script>
-		<![CDATA[
-        import ru.teachbase.behaviours.interfaces.IDragCoordinateSpace;
-        import ru.teachbase.behaviours.interfaces.IDropContainer;
-        import ru.teachbase.behaviours.dragdrop.DragEvent;
-
-        [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-        [Event(name="dragStart", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-        [Event(name="dragCancel", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-        [Event(name="dragEnd", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-        [Event(name="dragDrop", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-
-
-        [Bindable]
-        public var dropSpace:IDragCoordinateSpace;
-
-        [Bindable]
-        public var container:IDropContainer;
-
-        private function dragPrepareHandler(e:DragEvent):void {
-        }
-
-        private function dragStartHandler(e:DragEvent):void {
-        }
-
-        private function dragEndHandler(e:DragEvent):void {
-        }
-
-        ]]>
-	</fx:Script>
-
-    <!-- implementation -->
-    <fx:Script>
-		<![CDATA[
-        import ru.teachbase.behaviours.dragdrop.DragBehavior;
-        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
-
-        protected var snapshot_catch:IDraggleSnapshot;
-
-        public function getSnapshot():IDraggleSnapshot {
-
-            snapshot_catch = snapshot_catch || new DraggleSnapshot(this);
-
-            return snapshot_catch;
-        }
-
-        public function get dragBehavior():DragBehavior {
-            return drag;
-        }
-
-        public function get dragState():String {
-            return currentState;
-        }
 
         public function get title():String {
             return _title;
@@ -213,6 +160,63 @@
         public function set currentContent(value:IModuleContent):void {
             _currentContent = value;
         }
+
+
+        //------------- ITreeLayoutElement
+
+
+        public function get layoutIndex():String {
+            return _layoutIndex;
+        }
+
+        public function set layoutIndex(value:String):void {
+            _layoutIndex = value;
+        }
+
+        public function get _initialized():Boolean {
+            return __initialized;
+        }
+
+
+        //------------- IDraggle
+
+        public function getSnapshot():IDraggleSnapshot {
+
+            snapshot_catch = snapshot_catch || new DraggleSnapshot(this);
+
+            return snapshot_catch;
+        }
+
+        public function get dragBehavior():DragBehavior {
+            return drag;
+        }
+
+        public function get dragState():String {
+            return currentState;
+        }
+
+
+        //--------------- API ------------------//
+
+
+        public function hide():void {
+            for each (var el:IModuleContent in _content) {
+                el.hide();
+            }
+        }
+
+
+        //---------------- handlers --------------//
+
+        private function dragPrepareHandler(e:DragEvent):void {}
+
+        private function dragStartHandler(e:DragEvent):void {}
+
+        private function dragEndHandler(e:DragEvent):void {}
+
+
+        //----------------- get/set ---------------//
+
 
         public function set p_enabled(value:Boolean):void {
 

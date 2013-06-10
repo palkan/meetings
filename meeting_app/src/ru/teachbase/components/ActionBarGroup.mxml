@@ -15,9 +15,9 @@
         import mx.events.CollectionEvent;
 
         import ru.teachbase.components.module.ModuleContainer;
-
-        import ru.teachbase.manage.LayoutModelManager;
         import ru.teachbase.manage.Manager;
+        import ru.teachbase.manage.layout.LayoutManager;
+        import ru.teachbase.model.App;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.shortcuts.translate;
 
@@ -68,9 +68,9 @@
             if (!dataProvider || !dataProvider.source || !dataProvider.source.length)
                 return;
 
-            const mmanager:LayoutModelManager = Manager.getManagerInstance(LayoutModelManager) as LayoutModelManager;
+            const mmanager:LayoutManager = App.layout;
 
-            if (!mmanager.moduleContainer) {
+            if (!mmanager.container) {
                 callLater(updateList);
                 return;
             }
@@ -90,8 +90,8 @@
 
                 btn.module = data[i];
                 btn.enabled = btn.module.available;
-                btn.drag.container = mmanager.moduleContainer as ModuleContainer;
-                btn.drag.bounds = (mmanager.moduleContainer as ModuleContainer).dropSpace;
+                btn.drag.container = mmanager.container as ModuleContainer;
+                btn.drag.bounds = (mmanager.container as ModuleContainer).dropSpace;
 
                 addElement(btn);
             }
