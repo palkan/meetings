@@ -18,6 +18,7 @@ import ru.teachbase.manage.session.model.Meeting;
 import ru.teachbase.model.App;
 import ru.teachbase.utils.helpers.getValue;
 import ru.teachbase.utils.helpers.isArray;
+import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.rtmp_call;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.warning;
@@ -43,13 +44,15 @@ public class ModulesManager extends Manager {
 
         _listener.addEventListener(RTMPEvent.DATA, handleMessage);
         _listener.initialize();
-        rtmp_history("modules",new Responder(handleHistory,function (...args):void{ _failed = true;}));
+        rtmp_history(PacketType.MODULE,new Responder(handleHistory,function (...args):void{ error("Modules history load failed");_failed = true;}));
     }
 
 
     //------------- API -----------------//
 
     /**
+     *
+     * Call before adding new module to layout or display list.
      *
      * @param module
      * @param callback
@@ -65,8 +68,29 @@ public class ModulesManager extends Manager {
 
     }
 
+    /**
+     *
+     * Call before remove module from layout or display list.
+     *
+     * @param instance
+     * @param callback
+     */
+
+    public function unregisterModuleInstance(instance:ModuleInstanceData,callback:Function = null):void{
+
+        rtmp_call("unregister_module", new Responder(callback, moduleUnRegisterFailed), instance.moduleId, instance.instanceId);
+
+        function moduleUnRegisterFailed(error:*):void{
+            warning("Module unregister failed:",error);
+        }
+
+    }
+
 
     override public function dispose():void{
+        if(_disposed) return;
+        _listener.dispose();
+        super.dispose();
         //TODO:
     }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
                xmlns:s="library://ns.adobe.com/flex/spark"
-               preloader="ru.teachbase.components.LogoCustomPreloader"
+               preloader="ru.teachbase.preloader.LogoCustomPreloader"
                preinitialize="preinitHandler(event)"
         >
     <fx:Metadata>
@@ -21,14 +21,18 @@
         import ru.teachbase.preloader.LogoCustomPreloader;
         import ru.teachbase.utils.Configger;
         import ru.teachbase.components.web.MainApplication;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.logger.LoggerLevel;
 
         private var _main:MainApplication;
 
+        private var _preloader:LogoCustomPreloader;
+
         private function onStatus(event:AppEvent):void {
-            var pr:LogoCustomPreloader = getPreloader();
-            if (!pr)
+          //  var pr:LogoCustomPreloader = getPreloader();
+            if (!_preloader)
                 return;
-            pr.setPreloaderLoadingText(event.statusText, event.isFatal);
+            _preloader.setPreloaderLoadingText(event.statusText, event.isFatal);
         }
 
         private function getPreloader():LogoCustomPreloader {
@@ -46,6 +50,12 @@
         }
 
         protected function preinitHandler(event:FlexEvent):void {
+
+            _preloader = getPreloader();
+            _preloader.manualComplete = true;
+
+            _preloader.setVersion(CONFIG::VERSION);
+
             _main = new MainApplication();
             _main.percentHeight = 100;
             _main.percentWidth = 100;
@@ -55,6 +65,7 @@
 
             CONFIG::debug{
                 Configger.setDefaults({external: CONFIG::CONF_URL_D});
+                Logger.LEVEL = LoggerLevel.DEBUG;
             }
 
             CONFIG::release{
@@ -70,10 +81,10 @@
             _main.controller.removeEventListener(AppEvent.CORE_LOAD_ERROR, onStatus);
             _main.controller.removeEventListener(AppEvent.LOADING_STATUS, onStatus);
 
-            var pr:LogoCustomPreloader = getPreloader();
-            if (!pr)
+           // var pr:LogoCustomPreloader = getPreloader();
+            if (!_preloader)
                 return;
-            pr.complete();
+            _preloader.complete();
         }
         ]]>
 	</fx:Script>

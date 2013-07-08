@@ -58,7 +58,7 @@ use namespace flash_proxy;
 		{
 			const nameStr:String = String(name);
 
-			if(!storage.hasOwnProperty(name) && nameStr.indexOf('on') === 0 && nameStr.length > 2)
+			if(!storage.hasOwnProperty(name))
 			{
 				const proxyClosure:Object = function (...rest:Array):*
 				{

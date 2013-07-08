@@ -140,7 +140,8 @@
 
         public function set locked(value:Boolean):void {
             _locked = value;
-            drag.active = _locked;
+            drag.active = !_locked;
+            titleBar && (titleBar.locked = value);
         }
 
 
@@ -220,7 +221,7 @@
 
         public function set p_enabled(value:Boolean):void {
 
-            titleBar.p_enabled = value;
+            titleBar && (titleBar.p_enabled = value);
 
             for each (var el:IModuleContent in _content) {
                 el.p_enabled = value;

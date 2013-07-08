@@ -128,14 +128,16 @@ public class Meeting{
     }
 
 
-    public function removeUser(sid:Number):Boolean {
+    public function removeUser(sid:Number):User {
 
         if (usersByID[sid] == undefined)
-            return false;
+            return null;
+
+        const usr:User = usersByID[sid];
 
         usersList.removeItemAt(usersList.getItemIndex(usersByID[sid]));
         usersByID[sid] = undefined;
-        return true;
+        return usr;
     }
 
 
@@ -184,20 +186,29 @@ public class Meeting{
 
     }
 
+    /**
+     * @see ru.teachbase.manage.session.model.MeetingState
+     */
+
     public function get state():uint {
         return _state;
     }
 
-    tb_internal function set state(value:uint):void{
-
+    tb_internal function setState(value:uint):void{
+        _state = value;
     }
+
+    /**
+     * @see ru.teachbase.manage.session.model.MeetingSettings
+     */
 
     public function get settings():uint {
         return _settings;
     }
 
-    tb_internal function set settings(value:uint):void{
+    tb_internal function setSettings(value:uint):void{
 
+        _settings = value;
     }
 }
 }

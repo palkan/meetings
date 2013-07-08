@@ -1,43 +1,106 @@
 package ru.teachbase.model {
-import flash.events.Event;
+import flash.events.EventDispatcher;
 
 import ru.teachbase.constants.UserRoles;
-
+import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.utils.Permissions;
 import ru.teachbase.utils.system.registerClazzAlias;
 
 registerClazzAlias(User);
 
 /**
- * @author Webils (created: Apr 27, 2012)
+ *  Dispatched when some of the properties below is changed:
+ *  <code>shareStatus, requestStatus, permissions, role</code>
+ *
+ *  @eventType ru.teachbase.events.ChangeEvent.CHANGED
  */
 
-    //TODO: add guest property or permission
+[Event(type="ru.teachbase.events.ChangeEvent", name="tb:changed")]
 
-public class User {
+
+/**
+ * Class representing user model.
+ */
+
+public class User extends EventDispatcher{
+
+    /**
+     * Teachbase user id
+     *
+     * @default null
+     */
+
     public var id:int;
+
+    /**
+     *  RTMP session id
+     *
+     *  @default null
+     */
+
+
+    /**
+     * Unique guest id
+     */
+
+    public var guest_id:String;
+
     public var sid:Number;
 
+    /**
+     *  User name
+     *
+     *   @default null
+     */
+
     public var name:String;
+
+    /**
+     * User full name
+     *
+     *  @default null
+     */
+
     public var fullName:String;
+
+    /**
+     *
+     * User's full name suffix (if there are several users with identical full names)
+     *
+     *  @default null
+     */
+
     public var suffix:int;
+
+    /**
+     * User's avatar URL
+     *
+     *  @default null
+     */
 
     public var avatarURL:String;
 
+
+    /**
+     * Is <code>true</code> iff this is a current user
+     *
+     *  @default null
+     */
+
     public var iam:Boolean = false;
 
-    private var _role:String = UserRoles.USER;
+    protected var _shareStatus:uint;
 
-    private var _shareStatus:uint;
+    protected var _requestStatus:uint = 0;
 
-    private var _requestStatus:uint = 0;
-
-    private var _shareRights:uint = 0;
-
-    private var _permissions:uint = 0;
+    protected var _permissions:uint = 0;
 
     //------------ constructor ------------//
 
+
+    /**
+     * Create new user model
+     */
 
     public function User() {
     }
@@ -47,6 +110,11 @@ public class User {
 
     //--------------- ctrl ---------------//
 
+    /**
+     *
+     * @return <code>true</code> if User is administrator
+     */
+
     public function isAdmin():Boolean {
         return Permissions.isAdmin(_permissions);
     }
@@ -54,96 +122,67 @@ public class User {
     //------------ get / set -------------//
 
 
+    /**
+     * User's role ("admin" or "user") as String
+     */
+
     public function get role():String {
-        return _role;
+        return isAdmin() ? UserRoles.ADMIN : UserRoles.USER;
     }
 
-    /**
-     * @private
-     */
-    public function set role(value:String):void {
-
-        if (_role === value)
-            return;
-
-        _role = value;
-
-        if (value == "admin")
-            _permissions = Permissions.ADMIN;
-        else {
-            _permissions = 0;
-            _shareRights = 0;
-        }
-    }
 
     /**
-     * "cam,mic,scr" is available devices for share
-     * @see ru.teachbase.constants.SharingDeviceFlag
+     * Define whether user share cam|mic|doc (using Permissions bitmask)
+     * @default null
+     * @see ru.teachbase.utils.Permissions
      */
-
-    [Bindable(event="userShareRightsUPD")]
-    public function get shareRights():uint {
-        return _shareRights;
-    }
-
-    /**
-     * @private
-     */
-    public function set shareRights(value:uint):void {
-
-        if (role == "admin")
-            return;
-
-        _permissions -= _shareRights;
-
-        _shareRights = value;
-
-        _permissions += _shareRights;
-
-        if (_requestStatus & value) {
-            _requestStatus = 0;
-        }
-
-        dispatchEvent(new Event("userShareRightsUPD"));
-    }
-
-    /**
-     * "cam,mic,scr" now sharing
-     * @see ru.teachbase.constants.SharingDeviceFlag
-     */
-    [Bindable(event="userShareStatusUPD")]
     public function get shareStatus():uint {
         return _shareStatus;
     }
 
     public function set shareStatus(value:uint):void {
+        var _old:uint = _shareStatus;
         _shareStatus = value;
-        dispatchEvent(new Event("userShareStatusUPD"));
+        dispatchEvent(new ChangeEvent(this,"shareStatus",value,_old));
     }
 
-    [Bindable(event="userRequestStatusUPD")]
+    /**
+     * Define whether user requests cam|mic|doc (using Permissions bitmask)
+     *
+     * @default null
+     * @see ru.teachbase.utils.Permissions
+     */
+
     public function get requestStatus():uint {
         return _requestStatus;
     }
 
     public function set requestStatus(value:uint):void {
+        var _old:uint = _requestStatus;
         _requestStatus = value;
-        dispatchEvent(new Event("userRequestRightsUPD"));
+        dispatchEvent(new ChangeEvent(this,"requestStatus",value,_old));
     }
 
     /**
-     * User's rights: role|cam|mic|doc, e.g. <i>admin</i> always has 2#1111 (15).
-     * User can have 2#0010 (2) - only mic available.
+     * User's rights: guest|role|cam|mic|doc, e.g. <i>admin</i> always has 2#*1111 (15).
+     * User can have 2#10010 (2) - only mic available and guest.
+     * @default null
+     * @see ru.teachbase.utils.Permissions
      */
 
-    [Bindable(event="userPermissionsUPD")]
     public function get permissions():uint {
         return _permissions;
     }
 
     public function set permissions(value:uint):void {
+        var _old:uint = _permissions;
+
+        // check if we requested some rights and cancel request status
+
+        if((value & _requestStatus)>0) requestStatus = 0;
+
         _permissions = value;
-        dispatchEvent(new Event("userPermissionsUPD"));
+        dispatchEvent(new ChangeEvent(this,"permissions",value,_old));
     }
 }
 }

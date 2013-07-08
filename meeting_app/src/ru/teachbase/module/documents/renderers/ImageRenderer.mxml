@@ -72,23 +72,23 @@
             var req:URLRequest = new URLRequest(value);
             imgLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImgLoaded);
             imgLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function (e:*):void {
-                Logger.log("IO_ERROR error caught  ", "img");
+       //         Logger.log("IO_ERROR error caught  ", "img");
 
             });
             imgLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function (e:*):void {
-                Logger.log("SECURITY_ERROR error caught ", "img");
+  //              Logger.log("SECURITY_ERROR error caught ", "img");
 
             });
 
 
             imgLoader.contentLoaderInfo.addEventListener(HTTPStatusEvent.HTTP_STATUS, function (e:HTTPStatusEvent):void {
-                Logger.log("HTTP_STATUS: " + e.status.toString(), 'img');
+    //            Logger.log("HTTP_STATUS: " + e.status.toString(), 'img');
             });
 
             try {
                 imgLoader.load(req, context);
             } catch (evt:*) {
-                Logger.log("can't loading img", "img");
+//                Logger.log("can't loading img", "img");
             }
         }
 
@@ -98,7 +98,7 @@
             busyIndicator.visible = false;
             var btm:Bitmap = imgLoader.content as Bitmap;
             if (!btm) {
-                Logger.log('no bitmap in image', 'img');
+      //          Logger.log('no bitmap in image', 'img');
                 return;
             }
             _bitmap = btm;

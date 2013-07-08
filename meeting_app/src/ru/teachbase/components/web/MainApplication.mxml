@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark"
-         initialize="controller.initialize()"
-         currentState="connecting"
+         creationComplete="controller.setView(this);controller.initialize()"
          minWidth="1000" minHeight="600">
     <fx:Script>
 		<![CDATA[
         import mx.core.IVisualElement;
-        import mx.events.FlexEvent;
         import mx.graphics.BitmapFillMode;
 
         import ru.teachbase.components.header.Header;
@@ -17,7 +15,7 @@
 
         import spark.primitives.BitmapImage;
 
-        public const controller:ApplicationController = new ApplicationController(this);
+        public const controller:ApplicationController = new ApplicationController();
 
         private var _container:ModuleContainer;
         private var _header:Header;

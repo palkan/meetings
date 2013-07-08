@@ -13,7 +13,7 @@ import ru.teachbase.utils.Configger;
 	 */
 	public function cookie(property:String,setValue:* = 'undefined'):*
 	{
-        if(setValue === 'undefined') setValue = Configger.instance.value(Configger.COOKIE_NS+'/'+property);
+        if(setValue == 'undefined') setValue = Configger.instance.value(Configger.COOKIE_NS+'/'+property);
         else
             property && Configger.saveCookie(property,setValue);
 

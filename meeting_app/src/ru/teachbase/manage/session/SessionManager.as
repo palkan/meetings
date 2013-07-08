@@ -1,5 +1,8 @@
 package ru.teachbase.manage.session {
 import mx.rpc.Responder;
+import mx.utils.ObjectUtil;
+
+import ru.teachbase.constants.ErrorCodes;
 
 import ru.teachbase.constants.PacketType;
 import ru.teachbase.events.GlobalEvent;
@@ -19,6 +22,7 @@ import ru.teachbase.utils.Permissions;
 import ru.teachbase.utils.helpers.getValue;
 import ru.teachbase.utils.helpers.isArray;
 import ru.teachbase.utils.shortcuts.config;
+import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.rtmp_call;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.warning;
@@ -56,10 +60,12 @@ public final class SessionManager extends Manager {
 
         if (config('user_id') && config('meeting_id')) {
             login(config('meeting_id'), config('user_id'));
-        } else if (config('auth_hash')) {
-            loginByHash(config('auth_hash'));
-        } else
+        } else if (config('auth_hash') && config('meeting_id')) {
+            loginByHash(config('auth_hash'),config('meeting_id'));
+        } else{
+            error("Missing login parameters");
             _failed = true;
+        }
     }
 
 
@@ -78,7 +84,7 @@ public final class SessionManager extends Manager {
     public function login(meeting_id:uint, user_id:uint):void {
 
         _onAfterLogin = loadMeetingModel;
-        App.rtmp.callServer("login", new Responder(loginSuccess, loginError), user_id, meeting_id);
+        App.rtmp.callServer("tb_login", new Responder(loginSuccess, loginError), user_id, meeting_id);
 
     }
 
@@ -89,9 +95,10 @@ public final class SessionManager extends Manager {
      * Hash is a key to record in Redis (for example) where all other data is stored.
      *
      * @param hash
+     * @param meeting_id
      */
 
-    public function loginByHash(hash:String):void {
+    public function loginByHash(hash:String,meeting_id:uint):void {
         //TODO
     }
 
@@ -100,10 +107,11 @@ public final class SessionManager extends Manager {
      * Login by session_id (e.g. after reconnect)
      *
      * @param sid
+     * @param meeting_id
      */
 
 
-    public function loginBySessionId(sid:Number = 0):void {
+    public function loginBySessionId(meeting_id:uint, sid:Number = 0):void {
         !sid && (sid = App.user.sid);
         //TODO
     }
@@ -119,7 +127,7 @@ public final class SessionManager extends Manager {
 
         function success(...args):void {
 
-            _model.state = MeetingState.RECORD;
+            _model.tb_internal::setState(MeetingState.RECORD);
 
         }
 
@@ -140,7 +148,7 @@ public final class SessionManager extends Manager {
 
 
         function success(...args):void {
-            _model.state = MeetingState.LIVE;
+            _model.tb_internal::setState(MeetingState.LIVE);
         }
 
         function error(...args):void {
@@ -202,13 +210,27 @@ public final class SessionManager extends Manager {
         rtmp_call("request_status", null, _usr.sid, value);
     }
 
+
     /**
-     * Call this function to add or cancel user's rights (permissions).
+     * Call this function to set current user's shareStatus
+     *
+     * @param value permission mask (use Permissions class constants)
+     *
+     */
+
+
+    public function setShareStatus(value:uint):void {
+        rtmp_call("share_status", null, App.user.sid, value);
+    }
+
+    /**
+     * Call this function to add or cancel user's rights (share permissions).
      *
      * @param sid user session id
-     * @param rights permission mask (use Permissions class constants)
-     * @param flag to cancel permission set to <i>false</i>
+     * @param rights right bit mask
+     * @param flag to cancel permission set to <code>false</code>
      *
+     * @see ru.teachbase.utils.Permissions
      */
 
     public function setUserRights(sid:Number, rights:uint, flag:Boolean = true):void {
@@ -216,15 +238,19 @@ public final class SessionManager extends Manager {
 
         var _usr:User = App.meeting.usersByID[sid] as User;
 
-        if (!_usr || Permissions.hasRight(rights, _usr.shareRights) == flag)
+        // check if we have the user and the user has no such rights
+
+        if (!_usr || Permissions.hasRight(rights, _usr.permissions) == flag)
             return;
 
-        if (flag && rights === Permissions.CAMERA && !Permissions.hasRight(Permissions.MIC, _usr.shareRights))
+
+
+        if (flag && rights === Permissions.CAMERA && !Permissions.micAvailable(_usr.permissions))
             rights += Permissions.MIC;
 
-        rights = _usr.shareRights + (flag ? rights : -rights);
+        rights = _usr.permissions + (flag ? rights : -rights);
 
-        rtmp_call("set_rights", null, sid, rights);
+        rtmp_call("set_permissions", null, sid, rights);
     }
 
 
@@ -237,13 +263,13 @@ public final class SessionManager extends Manager {
         App.user.initialize(args[1] as User);
 
         // set rtmp token
-        App.user.tb_internal::rtmpToken = args[0];
+        App.user.tb_internal::setRtmpToken(args[0]);
 
         _onAfterLogin && _onAfterLogin();
     }
 
-    private function loginError(error:*):void {
-        warning('Login failed', error);
+    private function loginError(err:*):void {
+        error('Login failed', err.hasOwnProperty('errorId') ? uint(err.errorId) : ErrorCodes.AUTHORIZATION_FAILED);
         _failed = true;
     }
 
@@ -252,7 +278,7 @@ public final class SessionManager extends Manager {
         meeting_listener.initialize();
         users_listener.addEventListener(RTMPEvent.DATA, usersChangeHandler);
         meeting_listener.addEventListener(RTMPEvent.DATA, meetingUpdateHandler);
-        rtmp_history("meeting", new Responder(handleHistory, historyFailed));
+        rtmp_history(PacketType.MEETING, new Responder(handleHistory, historyFailed));
     }
 
     protected function usersChangeHandler(e:RTMPEvent):void {
@@ -264,8 +290,11 @@ public final class SessionManager extends Manager {
                 _model.addUser(data.value) && GlobalEvent.dispatch(GlobalEvent.USER_ADD, _model.usersByID[(data.value as User).sid]);
                 break;
             case "userLeave":
-                _model.removeUser(data.id) && GlobalEvent.dispatch(GlobalEvent.USER_LEAVE, data.value);
+            {
+                var user:User = _model.removeUser(data.id);
+                user && GlobalEvent.dispatch(GlobalEvent.USER_LEAVE, user);
                 break;
+            }
             case "userChange":
                 _model.updateUser(data.id, data.property, data.value);
                 break;
@@ -279,18 +308,18 @@ public final class SessionManager extends Manager {
 
         switch (data.type) {
             case "settings":
-                _model.settings = data.value;
+                _model.tb_internal::setSettings(data.value);
                 GlobalEvent.dispatch(GlobalEvent.MEETING_SETTINGS_UPDATE, _model.settings);
                 break;
             case "state":
-                _model.state = data.value;
+                _model.tb_internal::setState(data.value);
                 GlobalEvent.dispatch(GlobalEvent.MEETING_STATE_UPDATE, _model.state);
                 break;
         }
     }
 
-    private function historyFailed(error:*):void {
-        warning('Failed to load history', error);
+    private function historyFailed(err:*):void {
+        error('Failed to load session history');
         _failed = true;
     }
 
@@ -299,8 +328,8 @@ public final class SessionManager extends Manager {
 
         _model.users = getValue(meeting_model, "users", [], isArray);
 
-        _model.state = getValue(meeting_model, "state", MeetingState.LIVE);
-        _model.settings = getValue(meeting_model, "settings", 0);
+        _model.tb_internal::setState(getValue(meeting_model, "state", MeetingState.LIVE));
+        _model.tb_internal::setSettings(getValue(meeting_model, "settings", 0));
 
         meeting_listener.readyToReceive = users_listener.readyToReceive = true;
 
@@ -313,7 +342,7 @@ public final class SessionManager extends Manager {
         meeting_listener.dispose();
 
         // clean model only if it is registered manager
-        __registered && (_model.usersList.length = 0);
+        __registered && (_model.usersList.removeAll());
         __registered && (_model.usersByID = {});
 
         _initialized = false;

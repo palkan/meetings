@@ -2,7 +2,7 @@
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark"
          xmlns:dragdrop="ru.teachbase.behaviours.dragdrop.*"
-         implements="ru.teachbase.behaviours.interfaces.IDraggle"
+         implements="ru.teachbase.behaviours.interfaces.IDraggle, ru.teachbase.layout.model.ILayoutResizer"
          currentState="{drag.state}"
          creationComplete="creationCompleteHandler(event)"
          mouseEnabledWhereTransparent="true"
@@ -12,18 +12,21 @@
         >
     <fx:Metadata>
         [Event(name="module_resize", type="ru.teachbase.components.module.ModuleEvent")]
+        [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragStart", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragCancel", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+        [Event(name="dragEnd", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
     </fx:Metadata>
     <fx:Declarations>
         <dragdrop:DragBehavior id="drag"
                                target="{this}"
-                               direction="{direction}"
                                mouseCoordinateSpace="{this.parentApplication}"
                                dragPrepare="dragPrepareHandler(event)"
                                dragStart="dragStartHandler(event)"
                                dragEnd="dragEndHandler(event)"
                                dispatchToTarget="false"
-                               virtualBounds="{dragBounds}"
                                useCapture="false"
+                               active="false"
                 />
     </fx:Declarations>
 
@@ -39,58 +42,27 @@
         import mx.managers.CursorManager;
         import mx.managers.CursorManagerPriority;
 
+        import ru.teachbase.behaviours.dragdrop.DragBehavior;
+        import ru.teachbase.behaviours.dragdrop.DragEvent;
+        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
+        import ru.teachbase.layout.model.ResizerModel;
+        import ru.teachbase.skins.cursors.HorizontalResizerCursor;
         import ru.teachbase.skins.cursors.VerticalResizerCursor;
 
-        [Bindable]
+
         private var cursorClazz:Class;
+        public var container:DisplayObjectContainer;
+
+        private var _start:int;
+        private var _delta:int;
+
+        private var _model:ResizerModel;
 
         private function creationCompleteHandler(e:FlexEvent):void {
 
             setActualSize(Math.max(minWidth, width), Math.max(minHeight, height));
+            if(_model) model = _model;
         }
-        ]]>
-	</fx:Script>
-
-
-    <!-- drag responses -->
-    <fx:Script>
-		<![CDATA[
-        import ru.teachbase.behaviours.dragdrop.DragBehavior;
-        import ru.teachbase.behaviours.dragdrop.DragDirection;
-        import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
-        import ru.teachbase.behaviours.interfaces.IDropContainer;
-        import ru.teachbase.behaviours.dragdrop.DragEvent;
-        import ru.teachbase.components.module.ModuleEvent;
-        import ru.teachbase.skins.cursors.HorizontalResizerCursor;
-
-        [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-        [Event(name="dragStart", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-        [Event(name="dragCancel", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-        [Event(name="dragEnd", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
-
-        import
-        ru.teachbase.behaviours.DragDirection;
-        [Bindable]
-        public var container:IDropContainer;
-
-        [Bindable]
-        public var animation:Boolean = true;
-
-        private var _delta:int;
-        private var _param:int = 0;
-
-        [Bindable]
-        public var direction:uint;
-
-        private var _start:int;
-        private var _groupParam:int;
-
-
-        public var key:String;
-
-        [Bindable]
-        public var dragBounds:Rectangle;
-        public var gap:int = 0;
 
 
         private function dragPrepareHandler(e:DragEvent):void {
@@ -98,13 +70,13 @@
         }
 
         private function dragStartHandler(e:DragEvent):void {
-            _start = (direction === 0) ? stage.mouseX : stage.mouseY;
+            _start = (_model.direction === 0) ? stage.mouseX : stage.mouseY;
             currentState = dragging.name;
         }
 
         private function dragEndHandler(e:DragEvent):void {
             completeDrag(stage.mouseX, stage.mouseY);
-            dispatchEvent(new ModuleEvent(ModuleEvent.RESIZE, delta));
+            dispatchEvent(new ModuleEvent(ModuleEvent.RESIZE, _delta));
             currentState = normal.name;
             CursorManager.removeAllCursors();
         }
@@ -112,9 +84,9 @@
 
         private function completeDrag(x:int, y:int):void {
 
-            var _d:int = (direction === 0) ? x - _start : y - _start;
+            var _d:int = (_model.direction === 0) ? x - _start : y - _start;
 
-            _delta = int(_d * 100 / _groupParam);
+            _delta = int(_d * 100 / _model.groupParam);
 
         }
 
@@ -133,50 +105,57 @@
             return currentState;
         }
 
-        public function get delta():int {
-            return _delta;
-        }
-
-        public function set delta(value:int):void {
-            _delta = value;
-        }
-
 
         public function setDirection(value:uint):void {
-            direction = value;
 
             if (value === 0) {
                 cursorClazz = HorizontalResizerCursor;
-                setActualSize(gap, param);
+                setActualSize(_model.gap, _model.param);
             } else {
                 cursorClazz = VerticalResizerCursor;
-                setActualSize(param, gap);
+                setActualSize(_model.param, _model.gap);
             }
 
         }
 
-        public function get param():int {
 
-            return _param;
-        }
-
-        public function set param(value:int):void {
-            if (direction === 0)
-                setActualSize(gap, value);
+        public function setParam(value:int):void {
+            if (_model.direction === 0)
+                setActualSize(_model.gap, value);
             else
-                setActualSize(value, gap);
-
-
-            _param = value;
+                setActualSize(value, _model.gap);
         }
 
-        public function get groupParam():int {
-            return _groupParam;
+
+        public function hide():void{
+            this.visible = false;
+            this.drag.active = false;
         }
 
-        public function set groupParam(value:int):void {
-            _groupParam = value;
+
+        public function set model(value:ResizerModel):void{
+
+            _model = value;
+
+            setDirection(_model.direction);
+            setParam(_model.param);
+
+            drag.virtualBounds = _model.dragBounds;
+            drag.direction = _model.direction;
+
+            drag.active = true;
+
+            this.x = _model.position.x;
+            this.y = _model.position.y;
+
+            this.visible = true;
+
         }
+
+        public function get key():String{
+            return _model ? _model.key : '';
+        }
+
         ]]>
 	</fx:Script>
     <s:Rect width="100%" height="100%" x="0" y="0">

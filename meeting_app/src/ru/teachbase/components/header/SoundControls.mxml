@@ -34,15 +34,32 @@
     <fx:Script><![CDATA[
         import mx.events.FlexEvent;
 
+        import ru.teachbase.events.ChangeEvent;
+        import ru.teachbase.events.GlobalEvent;
+        import ru.teachbase.manage.session.model.CurrentUser;
+        import ru.teachbase.manage.session.model.MeetingSettings;
+        import ru.teachbase.manage.session.model.MeetingState;
         import ru.teachbase.model.App;
-        import ru.teachbase.utils.shortcuts.cookie;
+        import ru.teachbase.utils.DelayedWriter;
+        import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
+        private const VOLUME_HIDE_TIME:int = 2000;
+
+        private var _volumeSaver:DelayedWriter;
+        private var _volumeID:uint;
+
+
+        private const user:CurrentUser = App.user;
+
         private function volumeSliderChangeHandler(e:Event):void {
             SoundMixer.soundTransform = new SoundTransform(volumeSlider.value / 100);
-            App.user.settings.volumeLevel = volumeSlider.value;
-            cookie('volume', App.user.settings.volumeLevel);
+
+            _volumeSaver.write(volumeSlider.value);
+
+            clearInterval(_volumeID);
+            _volumeID = setTimeout(onVolumeClose,VOLUME_HIDE_TIME);
         }
 
 
@@ -50,11 +67,11 @@
             volumeButton.selected = true;
             volumeSlider.value = App.user.settings.volumeLevel;
 
-            //TODO: hide slider on timeout
+            _volumeID = setTimeout(onVolumeClose,VOLUME_HIDE_TIME);
 
         }
 
-        private function onVolumeClose(evt:Event):void {
+        private function onVolumeClose(evt:Event = null):void {
             volumeButton.selected = false;
             volumeCallout.close(true);
         }
@@ -70,7 +87,73 @@
 
         private function creationCompleteHandler(e:FlexEvent):void {
 
-            //TODO: user update listeners
+            _volumeSaver = new DelayedWriter(1000, function (value:Number):void {
+                user.settings.volumeLevel = value;
+            });
+
+            user.addEventListener(ChangeEvent.CHANGED, handleUserChanged);
+
+            cameraButton.visible = cameraButton.includeInLayout = user.permissions & Permissions.CAMERA;
+            cameraButtonOff.visible = cameraButtonOff.includeInLayout = !cameraButton.visible;
+
+            microphoneButton.visible = microphoneButton.includeInLayout = user.permissions & Permissions.MIC;
+            microphoneButtonOff.visible = microphoneButtonOff.includeInLayout = !microphoneButton.visible;
+
+
+            recordButton.visible = recordButton.includeInLayout = user.isAdmin() && (App.meeting.settings & MeetingSettings.RECORD);
+            recordButton.selected = App.meeting.state == MeetingState.RECORD;
+
+
+
+            GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, meetingSettingsHandler);
+            GlobalEvent.addEventListener(GlobalEvent.MEETING_STATE_UPDATE, meetingStateHandler);
+
+        }
+
+        private function handleUserChanged(e:ChangeEvent):void {
+
+            this["handleUser_" + e.property](e.value);
+
+        }
+
+
+        private function handleUser_shareStatus(value:uint):void {
+
+            cameraButton.selected = value & Permissions.CAMERA;
+            microphoneButton.selected = value & Permissions.MIC;
+
+        }
+
+
+        private function handleUser_requestStatus(value:uint):void {
+
+            cameraButtonOff.selected = value & Permissions.CAMERA;
+            microphoneButtonOff.selected = value & Permissions.MIC;
+
+        }
+
+
+        private function handleUser_permissions(value:uint):void {
+
+
+            cameraButton.visible = cameraButton.includeInLayout = value & Permissions.CAMERA;
+            cameraButtonOff.visible = cameraButtonOff.includeInLayout = !cameraButton.visible;
+
+            microphoneButton.visible = microphoneButton.includeInLayout = value & Permissions.MIC;
+            microphoneButtonOff.visible = microphoneButtonOff.includeInLayout = !microphoneButton.visible;
+
+            recordButton.visible = recordButton.includeInLayout = user.isAdmin() && (App.meeting.settings & MeetingSettings.RECORD);
+
+        }
+
+
+        private function meetingSettingsHandler(e:GlobalEvent):void {
+            recordButton.visible = recordButton.includeInLayout = user.isAdmin() && (App.meeting.settings & MeetingSettings.RECORD);
+        }
+
+        private function meetingStateHandler(e:GlobalEvent):void {
+
+            recordButton.selected = App.meeting.state == MeetingState.RECORD;
 
         }
         ]]></fx:Script>
@@ -96,6 +179,8 @@
                                         iconOver=style('actionBar','cameraIcoOver');
                                         iconSelected=style('actionBar','cameraIcoSelected');
                                         }"
+                       change="App.publisher.toggleStartCamera()"
+                       preventToggle="true"
             >
     </c:ActionBarButton>
     <c:ActionBarButton id="cameraButtonOff"
@@ -107,6 +192,7 @@
                                         iconOver=style('actionBar','cameraIcoDisabledHover');
                                         iconSelected=style('actionBar','cameraIcoDisabledHover');
                                         }"
+                       preventToggle="true"
             >
     </c:ActionBarButton>
 
@@ -118,6 +204,8 @@
                                     icon=style('actionBar','micIco');
                                     iconOver=style('actionBar','micIcoOver');
                                     iconSelected=style('actionBar','micIcoSelected');}"
+                       change="App.publisher.toggleStartAudio()"
+                       preventToggle="true"
             >
     </c:ActionBarButton>
     <c:ActionBarButton id="microphoneButtonOff"
@@ -128,6 +216,7 @@
                                     iconSelected=style('actionBar','micIcoDisabledHover');
                                     iconOver=style('actionBar','micIcoDisabledHover');
                                     icon=style('actionBar','micIcoDisabled');}"
+                       preventToggle="true"
             >
     </c:ActionBarButton>
 
@@ -139,6 +228,7 @@
                                     icon=style('actionBar','reccordIco');
                                     iconOver=style('actionBar','reccordIcoOver');
                                     iconSelected=style('actionBar','reccordIcoSelected');}"
+                       preventToggle="true"
             >
     </c:ActionBarButton>
 </s:HGroup>

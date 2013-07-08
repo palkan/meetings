@@ -44,6 +44,8 @@ import ru.teachbase.manage.ManagerEvent;
 		private var __waitDependencies:Boolean = false;
         private var __failed:Boolean = false;
         protected var __registered:Boolean = false;
+
+        protected var _disposed:Boolean = false;
 		
 		//------------ constructor ------------//
 
@@ -51,6 +53,7 @@ import ru.teachbase.manage.ManagerEvent;
      *
      * @param registered    define whether to add instance to managersByClass dict
      * @param dependenciesClasses
+     *
      */
 
 		public function Manager(registered:Boolean = false, dependenciesClasses:Array = null)
@@ -130,7 +133,7 @@ import ru.teachbase.manage.ManagerEvent;
 		
 		public function toString():String
 		{
-			return '[manager ' + shortName + (dependencies.length ? ' ( ' + dependencies + ' ) ' : '') + ']';
+			return shortName + (dependencies.length ? ' ( ' + dependencies + ' ) ' : '');
 		}
 		
 		//------------ get / set -------------//
@@ -169,7 +172,7 @@ import ru.teachbase.manage.ManagerEvent;
 		}
 		
 		public function dispose():void{
-			
+			_disposed = true;
 		}
 
 

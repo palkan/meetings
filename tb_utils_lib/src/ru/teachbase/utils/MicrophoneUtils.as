@@ -59,7 +59,7 @@ public class MicrophoneUtils {
         options.echoPath = 128;
         options.nonLinearProcessing = true;
         mic = Microphone.getEnhancedMicrophone(id);
-        if (mic) {
+        if (!mic) {
             mic = Microphone.getEnhancedMicrophone();
         }
 

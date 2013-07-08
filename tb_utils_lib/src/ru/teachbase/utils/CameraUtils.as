@@ -8,11 +8,11 @@ import flash.media.Camera;
 
 public class CameraUtils {
 
-    private static var LOW_QUALITY:Quality = new Quality(60,10,15,160,120);
+    private static var LOW_QUALITY:CameraQuality = new CameraQuality(60,10,15,160,120);
 
-    private static var MEDIUM_QUALITY:Quality = new Quality(75,10,15,320,240);
+    private static var MEDIUM_QUALITY:CameraQuality  = new CameraQuality (75,10,15,320,240);
 
-    private static var HIGH_QUALITY:Quality = new Quality(90,10,15,480,360);
+    private static var HIGH_QUALITY:CameraQuality  = new CameraQuality (90,10,15,480,360);
 
     public static function getCamera(id:String = null):Camera{
 
@@ -42,36 +42,3 @@ public class CameraUtils {
 }
 }
 
-import flash.media.Camera;
-
-internal class Quality{
-
-    public var quality:int;
-    public var key_frame_interval:int;
-    public var fps:int;
-    public var width:int;
-    public var height:int;
-    public var bandwidth:int;
-
-    function Quality(quality:int,kfi:int,fps:int,width:int,height:int,bandwidth:int = 0){
-
-        this.quality = quality;
-        this.key_frame_interval = kfi;
-        this.fps = fps;
-        this.width = width;
-        this.height = height;
-        this.bandwidth = bandwidth;
-
-    }
-
-
-    public function setup(cam:Camera):Camera{
-        if(!cam) return null;
-
-        cam.setKeyFrameInterval(key_frame_interval);
-        cam.setMode(width,height,fps);
-        cam.setQuality(bandwidth,quality);
-
-        return cam;
-    }
-}

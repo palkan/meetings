@@ -10,8 +10,6 @@
 		<![CDATA[
         import ru.teachbase.module.documents.events.FileEvent;
         import ru.teachbase.module.documents.model.FileItem;
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.helpers.skin;
         import ru.teachbase.utils.shortcuts.style;
 
         [Bindable]

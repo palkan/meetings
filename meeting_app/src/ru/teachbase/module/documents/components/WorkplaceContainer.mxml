@@ -20,21 +20,25 @@
         import mx.events.ResizeEvent;
         import mx.graphics.ImageSnapshot;
 
-        import ru.teachbase.module.documents.events.DocEvent;
+        import ru.teachbase.constants.PacketType;
+        import ru.teachbase.manage.rtmp.RTMPListener;
+        import ru.teachbase.manage.rtmp.events.RTMPEvent;
+        import ru.teachbase.manage.rtmp.model.Recipients;
+        import ru.teachbase.module.board.events.WhiteBoardEvent;
+        import ru.teachbase.module.board.figures.FigureManager;
+        import ru.teachbase.module.board.instruments.Instrument;
         import ru.teachbase.module.documents.events.ControlEvent;
+        import ru.teachbase.module.documents.events.DocEvent;
         import ru.teachbase.module.documents.events.RendererEvent;
         import ru.teachbase.module.documents.model.DocChangeData;
         import ru.teachbase.module.documents.model.WorkplaceMethod;
-        import ru.teachbase.constants.Recipients;
-        import ru.teachbase.module.board.figures.FigureManager;
         import ru.teachbase.module.documents.renderers.IWorkplaceRenderer;
-        import ru.teachbase.traits.DocTrait;
-        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.shortcuts.rtmp_send;
         import ru.teachbase.utils.workplace.ControlHost;
 
         private var _renderer:IWorkplaceRenderer;
 
-        private var _trait:DocTrait;
+        private var _listener:RTMPListener;
 
         private var _history:DocChangeData;
 
@@ -55,6 +59,10 @@
         private const maxScale:int = 4;
         private const minScale:Number = 1 / maxScale;
 
+
+        private var currentInstrumentType:String;
+        private var currentInstrument:Instrument;
+
         protected function init(event:FlexEvent):void {
 
             currentState = normal.name;
@@ -65,7 +73,8 @@
         public function dispose():void {
 
             _renderer && _renderer.dispose();
-            board && board.dispose() && figure_mgr.dispose();
+            board && board.dispose();
+            figure_mgr && figure_mgr.dispose();
 
             _renderer = null;
 
@@ -74,7 +83,7 @@
             removeAllElements();
 
             this.removeEventListener(ControlEvent.CHANGE, changeHandler);
-            _trait && _trait.removeEventListener(DocEvent.CHANGE, traitInputHandler);
+            _listener && _listener.removeEventListener(RTMPEvent.DATA, handleMessage);
         }
 
 
@@ -144,14 +153,12 @@
 
         private function dispatchToServer(event:ControlEvent):void {
 
-            if (_trait)
-                _trait.output({type: "change", method: event.method, data: event.args, host: event.handler}, Recipients.ALL_EXCLUDE_ME);
+            rtmp_send(PacketType.WHITEBOARD, {type: "change", method: event.method, data: event.args, host: event.handler}, Recipients.ALL_EXCLUDE_ME);
 
         }
 
 
         public function takeSnapshot():void {
-
 //				var _jpegEncoder:JPEGEncoder = new JPEGEncoder(100);
             controls.visible = false;
             var _imgSnap:ImageSnapshot = ImageSnapshot.captureImage(this, 0);//,_jpegEncoder);
@@ -235,7 +242,7 @@
 
         }
 
-        protected function traitInputHandler(event:DocEvent):void {
+        protected function handleMessage(event:DocEvent):void {
             changeHandler(new ControlEvent(ControlEvent.CHANGE, event.data.method, event.data.data as Array, false, event.data.host));
         }
 
@@ -279,9 +286,6 @@
             _renderer.hasControls && _renderer.initControls(controls) && addControlsListener();
             _renderer.removeEventListener(RendererEvent.INITIALIZED, rendererInited);
 
-            Logger.log('renderer inited: ' + _renderer.ratio.toString(), 'Workplace');
-            if (_trait)
-                _trait.readyToReceive = true;
             resizeHandler();
         }
 
@@ -306,29 +310,19 @@
         }
 
 
-        public function set trait(value:DocTrait):void {
-            _trait = value;
-            _trait && _trait.addEventListener(DocEvent.CHANGE, traitInputHandler);
+        public function set listener(value:RTMPListener):void {
+            _listener = value;
+            _listener && _listener.addEventListener(RTMPEvent.DATA, handleMessage);
         }
 
         public function set history(value:DocChangeData):void {
             if (value.slide || value.rotation)
                 _history = value;
         }
-        ]]>
-	</fx:Script>
-	
-	
-	<!-- board fucntions -->
-	
-	<fx:Script>
-		<![CDATA[
-        import ru.teachbase.module.board.events.WhiteBoardEvent;
-        import ru.teachbase.module.board.instruments.Instrument;
 
-        private var currentInstrumentType:String;
-        private var currentInstrument:Instrument;
-
+        public function get listener():RTMPListener {
+            return _listener;
+        }
 
         protected function onPropertyChanged(event:WhiteBoardEvent):void {
             if (event.propertyId == "stroke")

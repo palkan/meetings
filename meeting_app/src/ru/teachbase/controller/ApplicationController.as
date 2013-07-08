@@ -26,6 +26,7 @@ import ru.teachbase.manage.rtmp.RTMPManager;
 import ru.teachbase.constants.ErrorCodes;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.manage.streams.StreamManager;
+import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.GlobalError;
 import ru.teachbase.utils.shortcuts.translate;
 
@@ -35,9 +36,7 @@ public class ApplicationController extends EventDispatcher{
 
     private var _view:MainApplication;
 
-    public function ApplicationController(view:MainApplication) {
-
-        _view = view;
+    public function ApplicationController() {
 
         // security options
 
@@ -85,25 +84,51 @@ public class ApplicationController extends EventDispatcher{
         }
 
         hasEventListener(AppEvent.CORE_LOAD_ERROR) && dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
+
+
+        //TODO: show error state in MainApplication
+    }
+
+
+    public function setView(view:MainApplication):void{
+        _view = view;
     }
 
 
     public function initialize(){
 
+        Configger.instance.addEventListener(Event.COMPLETE, configLoaded);
+
+        Configger.loadConfig();
+
+    }
+
+
+
+    protected function configLoaded(e:Event):void{
+        initializeManagers();
+    }
+
+
+    public function initializeManagers(){
+
+        addInitializerListeners();
+
         Initializer.initializeManagers(
-                LocaleManager,  // loading locales
-                SkinManager,    // loading skin
-                RTMPManager,    // connecting to rtmp server
-                SessionManager, // login, get user info (profile, role, permissions), get room info (id, settings, users etc) --> Session Model
-                ModulesManager,  // loading modules models, initialize active modules
-                LayoutManager,  // loading layout, positioning modules
-                StreamManager,  // subscribe to existing streams
-                PublishManager, // (local) mic/cam publishing
-                NotificationManager // (local) notifications
+                LocaleManager.instance,  // loading locales
+                SkinManager.instance,    // loading skin
+                new RTMPManager(true),    // connecting to rtmp server
+                new SessionManager(true), // login, get user info (profile, role, permissions), get room info (id, settings, users etc) --> Session Model
+                new ModulesManager(true),  // loading modules models, initialize active modules
+                new LayoutManager(true),  // loading layout, positioning modules
+                new StreamManager(true),  // subscribe to existing streams
+                new PublishManager(true), // (local) mic/cam publishing
+                new NotificationManager(true) // (local) notifications
         )
 
 
     }
+
 
     private function managersInitializedHandler(e:Event):void{
 
@@ -114,7 +139,7 @@ public class ApplicationController extends EventDispatcher{
 
     private function managersProgressHandler(e:ProgressEvent):void {
 
-        dispatchEvent(new AppEvent(AppEvent.LOADING_STATUS, false, false, "Managers initializing ... "+(e.bytesLoaded * 100 / e.bytesTotal).toPrecision(0)+"%"))
+        dispatchEvent(new AppEvent(AppEvent.LOADING_STATUS, false, false, "Managers initializing ... "+Math.round(e.bytesLoaded * 100 / e.bytesTotal)+"%"))
 
     }
 

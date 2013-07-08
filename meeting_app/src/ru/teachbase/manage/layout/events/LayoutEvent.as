@@ -9,6 +9,7 @@ import ru.teachbase.manage.layout.model.LayoutChangeData;
 public class LayoutEvent extends Event
 	{
 		public static const CHANGE:String = "tb:layout_change";
+        public static const LOCK:String = "tb:layout_lock";
 
 		private var _data:LayoutChangeData;
 		

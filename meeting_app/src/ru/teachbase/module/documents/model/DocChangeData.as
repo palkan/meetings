@@ -25,9 +25,12 @@ registerClazzAlias(DocChangeData);
 		 */
 				
 				
-		public function DocChangeData()
+		public function DocChangeData(object:Object = null)
 		{
-		}
+
+            if(object) fromObject(object);
+
+        }
 		
 		
 		public function fromObject(obj:Object):void{

@@ -5,6 +5,7 @@ import flash.geom.Point;
 import flash.geom.Rectangle;
 
 import ru.teachbase.behaviours.dragdrop.DragDirection;
+import ru.teachbase.layout.model.ILayoutResizer;
 import ru.teachbase.layout.model.ITreeLayoutElement;
 import ru.teachbase.layout.model.LayoutElementData;
 import ru.teachbase.layout.model.LayoutModel;
@@ -23,6 +24,7 @@ import ru.teachbase.utils.data.TreeNode;
 
 
 [Event(type="ru.teachbase.manage.layout.events.LayoutEvent", name="tb:layout_change")]
+[Event(type="ru.teachbase.manage.layout.events.LayoutEvent", name="tb:layout_lock")]
 
 public class LayoutController extends EventDispatcher {
 
@@ -59,14 +61,26 @@ public class LayoutController extends EventDispatcher {
 
     protected var _expandedTarget:ITreeLayoutElement;
 
-    protected var currentModel:LayoutModel;
-    protected var virtualModel:LayoutModel;
+    private var _locked:Boolean = true;
 
     protected var _useVirtual:Boolean = false;
 
     public var maxId:int = 0;
 
+
+    //-------- Resizers ---------//
+
+    /**
+     * Object containing all ResizerModel objects
+     */
+
     private var _resizers:Object;
+
+    private var _resizersFun:Function;
+
+    private var _availableResizers:Vector.<ILayoutResizer> = new <ILayoutResizer>[];
+
+    private var _resizersInUse:Vector.<ILayoutResizer> = new <ILayoutResizer>[];
 
     public function LayoutController() {
     }
@@ -83,7 +97,9 @@ public class LayoutController extends EventDispatcher {
 
         _model = new LayoutModel();
 
-        currentModel = _model;
+        _model = _model;
+
+        _resizers = {};
 
         if (elements && elements.length > 0)
             _model.from_arr(elements);
@@ -101,8 +117,8 @@ public class LayoutController extends EventDispatcher {
 
     public function initElement(element:ITreeLayoutElement):Boolean {
 
-        if (currentModel.elements[element.elementId] == undefined) {
-            currentModel.elements[element.elementId] = element;
+        if (_model.elements[element.elementId] == undefined) {
+            _model.elements[element.elementId] = element;
             maxId = (maxId < element.elementId) ? element.elementId : maxId;
             return true;
         }
@@ -123,21 +139,37 @@ public class LayoutController extends EventDispatcher {
         _container = container;
     }
 
+    /**
+     * Define Resizer generator function.
+     *
+     * fun() -> ILayoutResizer
+     *
+     * @param fun
+     * @see ru.teachbase.layout.model.ILayoutResizer
+     */
+
+
+    public function useResizers(fun:Function):void{
+        _resizersFun = fun;
+        updateDisplayList();
+    }
+
 
     protected function initResizer(groupKey:String, l:uint, width:int, height:int, x:int, y:int, rw:int, rh:int):void {
-        var _r:ResizerModel;
+
+        var r:ResizerModel;
         if (_resizers[groupKey] == undefined) {
-            _r = new ResizerModel(groupKey);
-            _r.dragBounds = new Rectangle();
-            _resizers[groupKey] = _r;
+            r = new ResizerModel(groupKey);
+            _resizers[groupKey] = r;
         }
 
-        _r = _resizers[groupKey] as ResizerModel;
-        _r.direction = l;
-        _r.gap = 2 * _gap;
-        _r.param = (l === 0) ? height : width;
-        _r.groupParam = (l === 1) ? height : width;
-        _r.position = new Point(x, y);
+        r = _resizers[groupKey] as ResizerModel;
+        r.dragBounds = new Rectangle();
+        r.direction = l;
+        r.gap = 2 * _gap;
+        r.param = (l === 0) ? height : width;
+        r.groupParam = (l === 1) ? height : width;
+        r.position = new Point(x, y);
 
         var _y:int = y;
         var _x:int = x;
@@ -154,7 +186,28 @@ public class LayoutController extends EventDispatcher {
             _w = (rw > _minW) ? (rw - _minW) + (x - _x) : (x - _x);
         }
 
-        _r.dragBounds.setTo(_x, _y, _w, _h);
+        r.dragBounds.setTo(_x, _y, _w, _h);
+    }
+
+
+    protected function hideResizers():void{
+        const size:int = _resizersInUse.length;
+
+        for(var i:int=size-1; i>0; i--){
+            _resizersInUse[i].hide();
+            _availableResizers[_availableResizers.length] = _resizersInUse.pop();
+        }
+    }
+
+
+    protected function showResizers():void{
+        var el:ILayoutResizer;
+
+        for each(var m:ResizerModel in _resizers){
+            el = _availableResizers.length ? _availableResizers.pop() : _resizersFun();
+            el.model = m;
+            _resizersInUse.push(el);
+        }
     }
 
 
@@ -166,7 +219,7 @@ public class LayoutController extends EventDispatcher {
 
     public function resizeGroup(key:String, delta:int, dispatch:Boolean = true):void {
         //useVirtual = true;
-        currentModel.resize_group(key, delta);
+        _model.resize_group(key, delta);
 
         dispatch && dispatchLocalChanges("resize",{key:key,d:delta});
 
@@ -185,7 +238,7 @@ public class LayoutController extends EventDispatcher {
         var maxS:int = 1;
         var maxEl:ITreeLayoutElement;
 
-        for each (var el:ITreeLayoutElement in currentModel.elements) {
+        for each (var el:ITreeLayoutElement in _model.elements) {
 
             if (maxS < el.width * el.height) {
                 maxS = el.width * el.height;
@@ -202,7 +255,6 @@ public class LayoutController extends EventDispatcher {
         else
             dir = DragDirection.UP;
 
-        useVirtual = true;
         addElement(element, maxEl, dir);
     }
 
@@ -254,23 +306,21 @@ public class LayoutController extends EventDispatcher {
 
 
         var _data:LayoutElementData = new LayoutElementData(w, h, element.elementId, layout);
-        if (currentModel.num == 0)
-            currentModel.init(_data);
+        if (_model.num == 0)
+            _model.init(_data);
         else if (elementTo.elementId == 0) {
-            currentModel.addAbove(_data, index, layout);
+            _model.addAbove(_data, index, layout);
             if (layout == 0)
                 _data.width = 25;
             else
                 _data.height = 35;
         } else
-            currentModel.add(elementTo.layoutIndex, _data, index, layout);
+            _model.add(elementTo.layoutIndex, _data, index, layout);
 
         var type:String = "move";
 
         if (initElement(element)) {
             type = "add";
-            if (useVirtual)
-                _model.elements[element.elementId] = element;
         }
 
         element.visible = true;
@@ -296,11 +346,11 @@ public class LayoutController extends EventDispatcher {
     public function removeElement(element:ITreeLayoutElement, weak:Boolean = true, dispatch:Boolean = true):void {
         if (_expandedTarget == element) _expanded = false;
 
-        currentModel.remove(element.layoutIndex);
+        _model.remove(element.layoutIndex);
         element.visible = false;
         if (!weak) {
-            element.active = false;
-            delete currentModel.elements[element.elementId];
+            element.includeInLayout = false; //TODO: for what?
+            delete _model.elements[element.elementId];
         }
 
         dispatch && dispatchLocalChanges("remove", {from:element.elementId});
@@ -358,14 +408,14 @@ public class LayoutController extends EventDispatcher {
     tb_internal function removeByID(id:uint):void {
         if (!exists(id))
             return;
-        removeElement(currentModel.elements[id], false, false);
+        removeElement(_model.elements[id], false, false);
     }
 
     tb_internal function add(elementId:uint,to:uint,layout:uint,index:uint):void{
 
         if(!exists(to)) return;
 
-        addElement(currentModel[elementId] as ITreeLayoutElement, currentModel[to] as ITreeLayoutElement, getDropDirectionByLayoutIndex(layout,index),false);
+        addElement(_model[elementId] as ITreeLayoutElement, _model[to] as ITreeLayoutElement, getDropDirectionByLayoutIndex(layout,index),false);
     }
 
     tb_internal function move(from:uint, to:uint, layout:uint, index:uint):void {
@@ -373,15 +423,15 @@ public class LayoutController extends EventDispatcher {
         if (!exists(from) || !exists(to))
             return;
 
-        var fromElement:ITreeLayoutElement = currentModel.elements[from] as ITreeLayoutElement;
+        var fromElement:ITreeLayoutElement = _model.elements[from] as ITreeLayoutElement;
 
-        var data:LayoutElementData = currentModel.tree.find(fromElement.layoutIndex).data as LayoutElementData;
+        var data:LayoutElementData = _model.tree.find(fromElement.layoutIndex).data as LayoutElementData;
 
-        currentModel.remove(fromElement.layoutIndex);
+        _model.remove(fromElement.layoutIndex);
         updateDisplayList();
 
 
-        var toElement:ITreeLayoutElement = currentModel.elements[to] as ITreeLayoutElement;
+        var toElement:ITreeLayoutElement = _model.elements[to] as ITreeLayoutElement;
 
         data.height = 100;
         data.width = 100;
@@ -392,23 +442,23 @@ public class LayoutController extends EventDispatcher {
             data.height = 50;
 
         if (to === 0)
-            currentModel.addAbove(data, index, layout);
+            _model.addAbove(data, index, layout);
         else
-            currentModel.add(toElement.layoutIndex, data, index, layout);
+            _model.add(toElement.layoutIndex, data, index, layout);
 
         updateDisplayList();
     }
 
 
     tb_internal function expandByKey(key:String):void {
-        var data:LayoutElementData = currentModel.tree.find(key).data as LayoutElementData;
-        data && expand(currentModel.elements[data.id]);
+        var data:LayoutElementData = _model.tree.find(key).data as LayoutElementData;
+        data && expand(_model.elements[data.id]);
     }
 
 
     tb_internal function minimizeByKey(key:String):void {
-        var data:LayoutElementData = currentModel.tree.find(key).data as LayoutElementData;
-        data && minimize(currentModel.elements[data.id]);
+        var data:LayoutElementData = _model.tree.find(key).data as LayoutElementData;
+        data && minimize(_model.elements[data.id]);
     }
 
 
@@ -432,14 +482,14 @@ public class LayoutController extends EventDispatcher {
     public function getElementUnderPoint(pt:Point):Object {
 
 
-        if (this.currentModel.num <= 0)
+        if (_model.num <= 0)
             return null;
 
         var target:ITreeLayoutElement;
         var direction:uint;
 
-        if (this.currentModel.num === 1) {
-            target = getElementById((this.currentModel.tree.data as LayoutElementData).id);
+        if (_model.num === 1) {
+            target = getElementById((_model.tree.data as LayoutElementData).id);
             direction = getDropDirection(pt.x, pt.y, _container.width / 2, _container.height / 2, _container.width, _container.height);
             return {element: target, direction: direction};
         }
@@ -456,7 +506,7 @@ public class LayoutController extends EventDispatcher {
         var height:int = 1;
         var flag:Boolean = true;
 
-        var _node:TreeNode = this.currentModel.tree.left;
+        var _node:TreeNode = _model.tree.left;
 
         width = _container.width + _gap;
         height = _container.height + _gap;
@@ -498,16 +548,19 @@ public class LayoutController extends EventDispatcher {
 
 
     public function updateDisplayList():void {
-        if (this.currentModel.num <= 0 || !this.active)
+
+        hideResizers();
+
+        if (_model.num <= 0 || !this.active)
             return;
 
 
-        this.height = _container.height;
-        this.width = _container.width;
+        height = _container.height;
+        width = _container.width;
 
 
-        _minW = minWidth * (this.width / contMinWidth);
-        _minH = minHeight * (this.height / contMinHeight);
+        _minW = minWidth * (width / contMinWidth);
+        _minH = minHeight * (height / contMinHeight);
 
         if (_expanded) {
             _expandedTarget.setLayoutBoundsPosition(0, 0);
@@ -518,8 +571,8 @@ public class LayoutController extends EventDispatcher {
 
         var target:ITreeLayoutElement;
 
-        if (this.currentModel.num === 1) {
-            target = getElementById((this.currentModel.tree.data as LayoutElementData).id);
+        if (_model.num === 1) {
+            target = getElementById((_model.tree.data as LayoutElementData).id);
             if (!target)
                 return;
             target.setLayoutBoundsPosition(0, 0);
@@ -536,7 +589,7 @@ public class LayoutController extends EventDispatcher {
         var l:uint = 0;
         var paramsStack:Stack = new Stack();
 
-        var _node:TreeNode = this.currentModel.tree;
+        var _node:TreeNode = _model.tree;
 
         width = _container.width + _gap;
         height = _container.height + _gap;
@@ -552,7 +605,7 @@ public class LayoutController extends EventDispatcher {
                 height = LayoutUtils.accuratePercentMultiply(height, (_node.data as LayoutElementData).height);
             } else {
 
-                initResizer(
+               !_locked && _resizersFun && initResizer(
                         _node.key
                         , (_node.data as LayoutElementData).layout
                         , width
@@ -625,6 +678,9 @@ public class LayoutController extends EventDispatcher {
                 right = false;
         }
 
+
+        !_locked && _resizersFun && showResizers();
+
     }
 
 
@@ -672,13 +728,13 @@ public class LayoutController extends EventDispatcher {
 
     private function getElementById(id:int):ITreeLayoutElement {
 
-        return (currentModel.elements[id] != undefined) ? currentModel.elements[id] : null;
+        return (_model.elements[id] != undefined) ? _model.elements[id] : null;
 
     }
 
 
     private function exists(id:uint):Boolean {
-        return !(currentModel.elements[id] == undefined) || !id;
+        return !(_model.elements[id] == undefined) || !id;
     }
 
 
@@ -716,31 +772,14 @@ public class LayoutController extends EventDispatcher {
         _active = value;
     }
 
-    public function get useVirtual():Boolean {
-        return _useVirtual;
+    public function get locked():Boolean {
+        return _locked;
     }
 
-    public function set useVirtual(value:Boolean):void {
-
-        if (_useVirtual === value)
-            return;
-
-        if (value) {
-            virtualModel = _model.clone();
-            currentModel = virtualModel;
-        } else {
-            currentModel = _model;
-            virtualModel.dispose();
-            virtualModel = null;
-            updateDisplayList();
-        }
-
-        _useVirtual = value;
+    public function set locked(value:Boolean):void {
+        _locked = value;
+        updateDisplayList();
+        dispatchEvent(new LayoutEvent(LayoutEvent.LOCK));
     }
-
-    public function get resizers():Object {
-        return _resizers;
-    }
-
 }
 }

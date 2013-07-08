@@ -5,9 +5,7 @@
  */
 package ru.teachbase.manage.streams.model {
 public class StreamType {
-
-    public static const AUDIO:uint = 1;
-    public static const VIDEO:uint = 1 << 1;
-    public static const SCREEN:uint = 1 << 2;
+    public static const MEDIA:String = "media";
+    public static const SCREEN:String = "share";
 }
 }

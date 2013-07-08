@@ -7,7 +7,7 @@
 	</fx:Declarations>
 	
 	<fx:Metadata>
-		[Event(name="onChangeSlide", type="ru.teachbase.module.documents.docevents.ChangeSlideEvent")]
+		[Event(name="onChangeSlide", type="ru.teachbase.module.documents.events.ChangeSlideEvent")]
 	</fx:Metadata>
 	
 	<fx:Script>

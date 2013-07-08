@@ -44,12 +44,12 @@ public class Logger extends EventDispatcher {
      * @param args        Message args
      **/
     public static function log(level:uint, ...args):void {
-        if (~(level & LEVEL) || MODE === LoggerMode.NONE) return;
+        if (!(level & LEVEL) || MODE === LoggerMode.NONE) return;
 
-        if (MODE === LoggerMode.TRACE) trace.call(null, LoggerLevel.toString(level), ": ", args);
+        var message:String = args.map(function(item:*,index:Number,arr:Array):String{return ObjectUtil.isSimple(item) ? item.toString() : ObjectUtil.toString(item);}).join(" ");
+
+        if (MODE === LoggerMode.TRACE) trace.call(null, LoggerLevel.toString(level), message);
         else {
-
-            var message:String = ((args.length === 1) && ObjectUtil.isSimple(args[0])) ? args[0].toString() : ObjectUtil.toString(args);
 
             switch (MODE) {
                 case LoggerMode.CONSOLE:

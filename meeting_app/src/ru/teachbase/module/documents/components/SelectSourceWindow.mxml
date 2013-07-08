@@ -21,32 +21,18 @@
         import mx.events.ItemClickEvent;
         import mx.rpc.Responder;
 
-        import ru.teachbase.core.App;
-        import ru.teachbase.core.Core;
         import ru.teachbase.components.tree.TreeEvent;
-        import ru.teachbase.module.documents.events.FileEvent;
-        import ru.teachbase.manage.LayoutModelManager;
-        import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.module.documents.DocumentsModule;
         import ru.teachbase.module.documents.WorkplaceContent;
+        import ru.teachbase.module.documents.events.FileEvent;
+        import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.skins.VerticalScrollerSkin;
         import ru.teachbase.utils.AssetLoader;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.logger.Logger;
         import ru.teachbase.utils.Strings;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.helpers.m;
+        import ru.teachbase.utils.logger.Logger;
         import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
 
         public var workplaceContent:WorkplaceContent;
 
@@ -68,7 +54,7 @@
             viewStack.selectedIndex = 0;
             buttonBar.selectedIndex = 0;
             stage && stage.removeEventListener(Event.RESIZE, invalidatePosition);
-            Core.removePopupFromTop(this);
+        //    Core.removePopupFromTop(this);
             commitGroup.visible = false;
             _fileItem = null;
         }
@@ -81,7 +67,7 @@
                     break;
                 case 1:
                     viewStack.selectedIndex = 1;
-                    (App.room.user.status === 'user') && initLibrary();
+                  //  (App.room.user.status === 'user') && initLibrary();
                     break;
                 case 2:
                     viewStack.selectedIndex = 2;
@@ -112,18 +98,13 @@
 
         private function initLibrary():void {
 
-            App.service.http && App.service.http.request("folders",
-                    new mx.rpc.Responder(
-                            onTreeLoaded,
-                            onError
-                    )
-            );
+
 
         }
 
 
         private function onError(reason:String):void {
-            Logger.log(reason, "file");
+            //Logger.log(reason, "file");
         }
 
         private function onTreeLoaded(obj:Object):void {
@@ -150,13 +131,13 @@
             docsBusyIndicator.visible = true;
             libraryFoundedItems.dataProvider = null;
             ;
-            App.service.http && App.service.http.request("files",
+          /*  App.service.http && App.service.http.request("files",
                     new mx.rpc.Responder(
                             onFilesLoaded,
                             onError
                     ),
                     {fol: evt.clickedTarget.id}
-            );
+            );*/
         }
 
         private function onFilesLoaded(cont:Object):void {
@@ -226,7 +207,7 @@
                 _youTubeLoader = new AssetLoader();
             _youTubeLoader.addEventListener(Event.COMPLETE, onYouTubeLoaded);
             _youTubeLoader.addEventListener(ErrorEvent.ERROR, function (evt:Event):void {
-                Logger.log("error wile loading youtube json", "file");
+              //  Logger.log("error wile loading youtube json", "file");
             })
 
             _youTubeLoader.load(url);
@@ -237,7 +218,7 @@
             try {
                 var cont:Object = JSON.parse(String(_youTubeLoader.loadedObject));
             } catch (evt:*) {
-                Logger.log("error wile loading youtube json", "file");
+                //Logger.log("error wile loading youtube json", "file");
             }
             sortYouTubeList(cont.responseData);
         }
@@ -277,7 +258,7 @@
                 _imageLoader = new AssetLoader();
             _imageLoader.addEventListener(Event.COMPLETE, onImageLoaded);
             _imageLoader.addEventListener(ErrorEvent.ERROR, function (evt:Event):void {
-                Logger.log("error wile loading image json", "file");
+               // Logger.log("error wile loading image json", "file");
             })
 
             _imageLoader.load(url);
@@ -289,7 +270,7 @@
             try {
                 var cont:Object = JSON.parse(String(_imageLoader.loadedObject));
             } catch (evt:*) {
-                Logger.log("error wile loading image json", "file");
+                //Logger.log("error wile loading image json", "file");
             }
             sortImageList(cont.responseData);
         }
@@ -324,7 +305,7 @@
 
             closeMe();
 
-            workplaceContent && (m(LayoutModelManager) as LayoutModelManager).restartPanelContent(workplaceContent.panelID, event.item.id);
+           // workplaceContent && (m(LayoutModelManager) as LayoutModelManager).restartPanelContent(workplaceContent.panelID, event.item.id);
         }
 
 
@@ -361,10 +342,10 @@
 											  y = "50"
 											  id="chooseBtn"
 											  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
-											  initialize="with(chooseBtn){label=translate('choose_files','docs');iconUp=ru.teachbase.utils.helpers.style('docs','uploadFile'); iconDown=ru.teachbase.utils.helpers.style('docs','uploadFileDown'); iconOver=ru.teachbase.utils.helpers.style('docs','uploadFileHover')}">
+											  initialize="with(chooseBtn){label=translate('choose_files','docs');iconUp=style('docs','uploadFile'); iconDown=style('docs','uploadFileDown'); iconOver=style('docs','uploadFileHover')}">
 						<com:click>
 							<![CDATA[
-								workplaceContent && workplaceContent.onStartLoad();
+							//	workplaceContent && workplaceContent.onStartLoad();
 							]]>
 						</com:click>
 					</com:CustomSkinableButton>
@@ -396,8 +377,8 @@
 				</s:Group>
 			</s:NavigatorContent>
 			<s:NavigatorContent visible="false"  id="libraryState" backgroundAlpha="0" initialize="libraryState.label=translate('from_lib','docs')">
-				<s:RichText id="libGuestField" horizontalCenter="0" y="50"  width="80%" initialize="libGuestField.text=translate('only_users','docs'); libGuestField.visible = (App.room.user.status === 'guest');" />
-				<s:HGroup width="100%" height="406" left="26" right="26" id="treeGr" initialize="treeGr.visible = (App.room.user.status === 'user')">
+				<s:RichText id="libGuestField" horizontalCenter="0" y="50"  width="80%" initialize="libGuestField.text=translate('only_users','docs'); libGuestField.visible = false;" />
+                <s:HGroup width="100%" height="406" left="26" right="26" id="treeGr" initialize="treeGr.visible = false">
 					<s:Group width="50%" height="100%">
 						<tcom:Tree dataProvider="{_libraryList}" width="100%" height="410" id="tree" contentBackgroundAlpha="0"  horizontalScrollPolicy="off" 
 								   itemRenderer="ru.teachbase.components.tree.TreeItemRenderer"/>
@@ -433,7 +414,7 @@
 				<s:HGroup  width="100%" height="406" left="26" right="26">
 					<s:VGroup width="50%" height="100%" gap="50">
 						<s:VGroup>
-							<s:Image source="{ru.teachbase.utils.helpers.style('docs','youTube')}" />
+							<s:Image source="{style('docs','youTube')}" />
 							<s:TextInput id="youTubeSearchField" enter="youTubeSearch()" focusSkin="{null}"  width="190"
 									 skinClass="ru.teachbase.skins.SearchField"/>
 							<s:click>
@@ -444,7 +425,7 @@
 							</s:click>
 						</s:VGroup>
 						<s:VGroup>
-							<s:BitmapImage source="{ru.teachbase.utils.helpers.style('docs','google')}"/>
+							<s:BitmapImage source="{style('docs','google')}"/>
 							<s:TextInput id="googleSerchField" enter="googleSearch()" focusSkin="{null}" width="190"
 									 skinClass="ru.teachbase.skins.SearchField">
 								<s:click>

@@ -25,6 +25,7 @@
         import ru.teachbase.components.*;
         import ru.teachbase.events.PermissionEvent;
         import ru.teachbase.layout.LayoutController;
+        import ru.teachbase.layout.model.ILayoutResizer;
         import ru.teachbase.layout.model.ITreeLayoutElement;
         import ru.teachbase.manage.layout.LayoutManager;
         import ru.teachbase.manage.modules.model.IModulePanel;
@@ -58,6 +59,7 @@
 
         private var _dragging:Boolean = false;
 
+        private var _panelToRemove:ITreeLayoutElement;
 
         //-------------- init handlers --------------//
 
@@ -66,7 +68,7 @@
             // setup manager
 
             _manager = App.layout;
-            _manager && _manager.setContainers(this);
+            _manager && _manager.setContainers(this,elementContainer);
 
             //setup resizer icons
 
@@ -81,6 +83,7 @@
             _controller = _manager.controller as LayoutController;
 
             _controller.init(elementContainer);
+            _controller.useResizers(attachResizer);
 
             lt.controller = _controller;
 
@@ -102,6 +105,19 @@
         }
 
 
+
+        public function attachResizer():ILayoutResizer{
+
+            var resizer:ModuleResizer = new ModuleResizer();
+            resizer.container = resizersContainer;
+            resizer.visible = false;
+            resizersContainer.addElement(resizer);
+
+            return resizer;
+        }
+
+
+
         //------------ implementation ---------------//
 
         //--------- IModuleContainer
@@ -114,6 +130,8 @@
                 el.locked = true;
 
             resizersContainer.visible = false;
+
+            _controller.locked = true;
         }
 
         public function unlock():void {
@@ -122,6 +140,9 @@
                 el.locked = false;
 
             resizersContainer.visible = true;
+
+            _controller.locked = false;
+
             _controller.updateDisplayList();
         }
 
@@ -135,7 +156,11 @@
 
             panel.visible = false;
 
-            // TODO: set permissions and locked
+            panel.locked = _controller.locked;
+
+            panel.p_enabled = App.user.isAdmin();
+
+            _controller.active = false;
 
             panel.addEventListener(FlexEvent.CREATION_COMPLETE, panelCreated);
             _wait_panels.push(panel);
@@ -171,7 +196,7 @@
 
             // if source is Panel
             if (snapshot.source is IModulePanel) {
-                _controller.removeElement(snapshot.source as ITreeLayoutElement);
+                _controller.removeElement(snapshot.source as ITreeLayoutElement,true,false);
             } else if (snapshot.source is ActionBarButtonDraggle) {
                 //THINK: ???
             }
@@ -209,7 +234,7 @@
             // if source is Panel (then we are moving)
             if (snapshot.source is IModulePanel) {
                 if (_getDropBoundsSide_catch !== DragDirection.NO_DIRECTION)
-                    _controller.addElement(snapshot.source as ITreeLayoutElement, _hoveredElement as ITreeLayoutElement, _dropDirection, false);
+                    _controller.addElement(snapshot.source as ITreeLayoutElement, _hoveredElement as ITreeLayoutElement, _dropDirection, true);
             }
             else if (snapshot.source is ActionBarButtonDraggle) {
 
@@ -245,19 +270,27 @@
                 _wait_panels.splice(_wait_panels.indexOf(e.currentTarget), 1);
             }
 
-            if (!_wait_panels.length) _controller.updateDisplayList();
+            if (!_wait_panels.length) _controller.active = true, _panels.forEach(__show), _controller.updateDisplayList();
 
+        }
+
+        private function __show(item:IModulePanel,index:Number,collection:*):void{
+            item.visible = true;
         }
 
         protected function moduleRegistered(data:ModuleInstanceData):void {
-
+            if(!data) return; //TODO: show error!
             var panel:IModulePanel = createPanel(data.panelId);
-
             //TODO: setup content
-
             _controller.addElement(panel as ITreeLayoutElement, _hoveredElement as ITreeLayoutElement, _dropDirection, false);
-
         }
+
+        protected function moduleUnRegistered(data:ModuleInstanceData):void{
+            if(!data) return; //TODO: show error!
+             _panelToRemove && _controller.removeFromLayout(_panelToRemove);
+            //TODO: hide content
+        }
+
 
         protected function onMinMaxHandler(event:ModuleEvent):void {
             if (event.value)
@@ -266,8 +299,8 @@
                 _controller.minimize(event.target as ITreeLayoutElement);
         }
 
-        protected function onRemoveHandler(event:ModuleEvent):void {
-            _controller.removeFromLayout(event.target as ITreeLayoutElement);
+        protected function onRemoveHandler(event:ModuleEvent):void{
+            _panelToRemove = event.target as ITreeLayoutElement;
         }
 
         protected function onResizerHandler(event:ModuleEvent):void {
@@ -449,13 +482,6 @@
             obj && obj.parent && obj.parent[(("setElementIndex" in obj.parent) ? "setElementIndex" : "setChildIndex")](obj, obj.parent.numChildren - 1);
         }
 
-
-        public function attachResizer(_r:ModuleResizer):void {
-            if (!_r)
-                return;
-
-            resizersContainer.addElement(_r);
-        }
 
 
         public function cancelDragDrop():void {

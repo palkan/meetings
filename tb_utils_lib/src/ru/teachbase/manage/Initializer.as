@@ -58,9 +58,7 @@ public final class Initializer extends EventDispatcher {
 
     private function initilizeNext():void {
         if (managersToDo && managersToDo.length) {
-            var ManagerClass:Class = managersToDo[0] as Class;
-            managersToDo[0] = new ManagerClass(true);
-            managersToDo[0].
+            var manager:Manager = managersToDo[0] as Manager;
             dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, _total - managersToDo.length, _total));
             managersToDo[0].preinitialize();
         }

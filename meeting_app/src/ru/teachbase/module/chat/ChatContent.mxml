@@ -16,11 +16,9 @@
         import mx.events.FlexEvent;
         import mx.rpc.Responder;
 
-        import ru.teachbase.constants.NotificationTypes;
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.modules.model.ModuleSettings;
-        import ru.teachbase.manage.rtmp.RTMPClient;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
         import ru.teachbase.manage.rtmp.model.Packet;
@@ -28,15 +26,11 @@
         import ru.teachbase.model.App;
         import ru.teachbase.model.User;
         import ru.teachbase.module.chat.components.ChatElementEvent;
-        import ru.teachbase.module.chat.events.ChatEvent;
         import ru.teachbase.module.chat.model.ChatMessage;
         import ru.teachbase.module.chat.model.PrivateChatElement;
         import ru.teachbase.skins.VerticalScrollerBlankSkin;
         import ru.teachbase.skins.VerticalScrollerSkin;
-        import ru.teachbase.traits.ChatTrait;
-        import ru.teachbase.traits.PrivateChatTrait;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.helpers.notify;
         import ru.teachbase.utils.shortcuts.rtmp_history;
         import ru.teachbase.utils.shortcuts.rtmp_send;
         import ru.teachbase.utils.shortcuts.style;
@@ -103,7 +97,7 @@
             listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
             showScrollM = true;
-            rtmp_history("chat", new mx.rpc.Responder(historyHandler, null));
+            rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, null));
 
             setsDP.push(new ModuleSettings("copy_chat", ModuleSettings.FUN, getRawText));
             setsDP.push(new ModuleSettings("clear_chat", ModuleSettings.FUN, clearChatHandler));
@@ -128,48 +122,48 @@
         }
 
 
-        private function __send(m:ChatMessage):void{
+        private function __send(m:ChatMessage):void {
 
-            rtmp_send(PacketType.CHAT,m,Recipients.ALL_EXCLUDE_ME,null,false);
+            rtmp_send(PacketType.CHAT, m, Recipients.ALL_EXCLUDE_ME, null, false);
         }
 
 
         private function typeStarted(evt:TextEvent):void {
-                if (evt.text.charCodeAt(0) == 13) {
-                    return;
-                }
+            if (evt.text.charCodeAt(0) == 13) {
+                return;
+            }
 
-                if (_isTyping) return;
+            if (_isTyping) return;
 
-                _stopTyperTimer.reset();
-                _stopTyperTimer.start();
-                _isTyping = true;
-                var m:ChatMessage
-                if (currentState == publicChatState.name) {
-                    m = new ChatMessage(user.sid, ChatMessage.TYPE_STARTED, "", "public");
-                } else {
-                    m = new ChatMessage(user.sid, ChatMessage.TYPE_STARTED, "", String(_curRecipientId));
-                }
+            _stopTyperTimer.reset();
+            _stopTyperTimer.start();
+            _isTyping = true;
+            var m:ChatMessage
+            if (currentState == publicChatState.name) {
+                m = new ChatMessage(user.sid, ChatMessage.TYPE_STARTED, "", "public");
+            } else {
+                m = new ChatMessage(user.sid, ChatMessage.TYPE_STARTED, "", String(_curRecipientId));
+            }
 
-              __send(m);
+            __send(m);
         }
 
         private function inputFieldEnterHandler(e:Event):void {
 
-                if (inputField.text == "") {
-                    return;
-                }
+            if (inputField.text == "") {
+                return;
+            }
 
-                var m:ChatMessage = new ChatMessage(user.sid, ChatMessage.MESSAGE, user.fullName, inputField.text);
-                inputField.text = '';
+            var m:ChatMessage = new ChatMessage(user.sid, ChatMessage.MESSAGE, user.fullName, inputField.text);
+            inputField.text = '';
 
-                if (currentState == publicChatState.name) {
-                    rtmp_send(PacketType.CHAT,m,Recipients.ALL,null,false);
-                    onStopType();
-                } else {
-                    m.to = _curRecipientId;
-                    rtmp_send(PacketType.CHAT,m,[user.sid, _curRecipientId],null,false);
-                }
+            if (currentState == publicChatState.name) {
+                rtmp_send(PacketType.CHAT, m, Recipients.ALL, null, false);
+                onStopType();
+            } else {
+                m.to = _curRecipientId;
+                rtmp_send(PacketType.CHAT, m, [user.sid, _curRecipientId], null, false);
+            }
         }
 
         private function addPrivateMessage(m:ChatMessage, userId:Number = 0):PrivateChatElement {
@@ -200,12 +194,12 @@
         }
 
 
-        protected function handleMessage(e:RTMPEvent):void{
+        protected function handleMessage(e:RTMPEvent):void {
             const m:ChatMessage = e.packet.data as ChatMessage;
 
-            if(!m) return;
+            if (!m) return;
 
-            switch(m.type){
+            switch (m.type) {
 
                 case ChatMessage.MESSAGE:
                     addMessage(m);
@@ -213,7 +207,7 @@
                 case ChatMessage.TYPE_STARTED:
                 case ChatMessage.TYPE_STOPPED:
                 case ChatMessage.CLEAR:
-                break;
+                    break;
             }
 
         }
@@ -267,33 +261,33 @@
             _messagesArray.removeAll();
         }
 
-        private function onPrivateMessage(event:ChatEvent):void {
-            const pc:PrivateChatElement = addPrivateMessage(event.message);
+        /* private function onPrivateMessage(event:ChatEvent):void {
+         const pc:PrivateChatElement = addPrivateMessage(event.message);
 
-            if (currentState == privateChatState.name && (_curRecipientId == event.message.to || _curRecipientId == event.message.uid)) {
-                (messagesList.dataProvider as ArrayCollection).refresh();
-                messagesList.addEventListener(FlexEvent.UPDATE_COMPLETE, scrollToSelectedIndexHandler);
-                messagesList.validateNow();
-            } else {
-                pc.unreadMessages++;
-                newEventsField.text = String(totalUnreaded);
-                notify(NotificationTypes.CHAT_NOTIFICATION, event.message.body, App.meeting.usersByID[event.message.uid], true);
-            }
-        }
+         if (currentState == privateChatState.name && (_curRecipientId == event.message.to || _curRecipientId == event.message.uid)) {
+         (messagesList.dataProvider as ArrayCollection).refresh();
+         messagesList.addEventListener(FlexEvent.UPDATE_COMPLETE, scrollToSelectedIndexHandler);
+         messagesList.validateNow();
+         } else {
+         pc.unreadMessages++;
+         newEventsField.text = String(totalUnreaded);
+         notify(NotificationTypes.CHAT_NOTIFICATION, event.message.body, App.meeting.usersByID[event.message.uid], true);
+         }
+         }
 
-        private function onMessage(event:ChatEvent):void {
-            if (event.message.type == ChatMessage.MESSAGE) {
-                addMessage(event.message);
-            } else if (event.message.type == ChatMessage.TYPE_STARTED) {
-                var $user:User = App.meeting.usersByID[event.message.uid]
-                if ((event.message.body == "public" && currentState == publicChatState.name) || ( currentState == privateChatState.name && Number(event.message.body) == user.sid))
-                    typingText.text = translate("writing", "chat", $user.fullName);
-                _stopListenerTimer.start();
-            } else if (event.message.type == ChatMessage.TYPE_STOPPED) {
-                onStopListenerTimer();
-            }
-        }
-
+         private function onMessage(event:ChatEvent):void {
+         if (event.message.type == ChatMessage.MESSAGE) {
+         addMessage(event.message);
+         } else if (event.message.type == ChatMessage.TYPE_STARTED) {
+         var $user:User = App.meeting.usersByID[event.message.uid]
+         if ((event.message.body == "public" && currentState == publicChatState.name) || ( currentState == privateChatState.name && Number(event.message.body) == user.sid))
+         typingText.text = translate("writing", "chat", $user.fullName);
+         _stopListenerTimer.start();
+         } else if (event.message.type == ChatMessage.TYPE_STOPPED) {
+         onStopListenerTimer();
+         }
+         }
+         */
 
         private function onStopListenerTimer(evt:Event = null):void {
             _stopListenerTimer.reset();

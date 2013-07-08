@@ -8,14 +8,14 @@ import flash.events.ErrorEvent;
 import flash.events.Event;
 import flash.events.NetStatusEvent;
 import flash.net.NetConnection;
+import flash.net.Responder;
 
 import mx.rpc.IResponder;
-import mx.rpc.Responder;
 
-import ru.teachbase.events.ErrorCodeEvent;
-import ru.teachbase.manage.*;
 import ru.teachbase.constants.ErrorCodes;
 import ru.teachbase.constants.NetConnectionStatusCodes;
+import ru.teachbase.events.ErrorCodeEvent;
+import ru.teachbase.manage.*;
 import ru.teachbase.net.factory.ConnectionFactory;
 import ru.teachbase.net.factory.FactoryErrorCodes;
 import ru.teachbase.utils.extensions.FuncObject;
@@ -114,9 +114,10 @@ public class RTMPManager extends Manager {
 
     override protected function initialize():void{
 
-        var _url = config('net.rtmp');
+        var _url = config('net/rtmp');
 
         if(!_url){
+            error("Missing RTMP options");
             _failed = true;
             return;
         }
@@ -184,12 +185,12 @@ public class RTMPManager extends Manager {
         switch(e.info.code){
             case NetConnectionStatusCodes.REJECTED:
                 _initialized = false;
-                //TODO: add errorID to erlang!!!
                 if(e.info.errorId & ErrorCodes.APPLICATION)
                     error('Application error', uint(e.info.errorId));
                 else
                     error(e.info.text, ErrorCodes.CONNECTION_FAILED);
                 break;
+            case NetConnectionStatusCodes.FAILED: //TODO: here we are going to reconnect!
             case NetConnectionStatusCodes.CLOSED:
                 _initialized = false;
                 error('Connection dropped',ErrorCodes.CONNECTION_DROPPED);

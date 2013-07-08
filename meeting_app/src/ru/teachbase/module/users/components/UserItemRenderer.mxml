@@ -107,7 +107,7 @@
 			</s:Group>
 			<s:Group  id="screenImageAttempted" verticalCenter="0"
 					  click="App.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.DOCS,false,screenImageAttempted, CalloutTwo.CONFIRM2,translate('sure_to_change_right_doc','users',translate('turn_off')))"
-					  visible="{getShareStatusValue(0,_user.shareRights) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(0,_user.shareStatus)}"
+					  visible="{getShareStatusValue(0,_user.permissions) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(0,_user.shareStatus)}"
 					  mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
 				<s:BitmapImage source="{style('users','screenAttempt')}"/>
 			</s:Group>
@@ -127,7 +127,7 @@
 			</s:Group>
 			<s:Group id="micImageAttempted" verticalCenter="0"
 					 click="App.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.MIC,false,micImageAttempted, CalloutTwo.CONFIRM2,translate('sure_to_change_right_mic','users',translate('turn_off')))"
-					 visible="{getShareStatusValue(1,_user.shareRights) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(1,_user.shareStatus)}"
+					 visible="{getShareStatusValue(1,_user.permissions) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(1,_user.shareStatus)}"
 					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
 				<s:BitmapImage source="{style('users','micAttempt')}" />
 			</s:Group>
@@ -153,7 +153,7 @@
 			</s:Group>
 			<s:Group id="camImageAttempted" verticalCenter="0"
 					 click="App.user.role == 'admin' &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,false,camImageAttempted, CalloutTwo.CONFIRM2, translate('sure_to_change_right_cam','users',translate('turn_off')))"
-					 visible="{getShareStatusValue(2,_user.shareRights) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(2,_user.shareStatus)}"
+					 visible="{getShareStatusValue(2,_user.permissions) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(2,_user.shareStatus)}"
 					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
 				<s:BitmapImage  source="{style('users','camAttempt')}"/>
 			</s:Group>

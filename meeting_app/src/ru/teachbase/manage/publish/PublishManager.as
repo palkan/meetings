@@ -1,6 +1,4 @@
 package ru.teachbase.manage.publish {
-import ru.teachbase.manage.*;
-
 import flash.events.ActivityEvent;
 import flash.events.AsyncErrorEvent;
 import flash.events.ErrorEvent;
@@ -15,14 +13,16 @@ import flash.net.NetConnection;
 import flash.net.NetStream;
 
 import ru.teachbase.constants.NetStreamStatusCodes;
+import ru.teachbase.constants.PublishQuality;
+import ru.teachbase.manage.*;
 import ru.teachbase.manage.rtmp.RTMPManager;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.model.App;
 import ru.teachbase.model.SharingModel;
-import ru.teachbase.constants.PublishQuality;
 import ru.teachbase.utils.CameraUtils;
 import ru.teachbase.utils.MicrophoneUtils;
 import ru.teachbase.utils.shortcuts.debug;
+import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.warning;
 import ru.teachbase.utils.system.requestUserMediaAccess;
 
@@ -58,10 +58,7 @@ public class PublishManager extends Manager {
     /**
      *  Create new PublishManager.
      *
-     * @param usePermissions    defines whether to handle permissions events
-     * @param useSettings        defines whether to handle settings events
-     * @param deps                dependencies
-     *
+     *  @inheritDoc
      */
     public function PublishManager(register:Boolean = false) {
         super(register,[RTMPManager,SessionManager]);
@@ -73,6 +70,7 @@ public class PublishManager extends Manager {
     override protected function initialize():void {
 
         if (!App.rtmp || !App.rtmp.connected) {
+            error("Can not find RTMPManager or RTMPManager is disconnected");
             _failed = true;
             return;
         }
@@ -101,7 +99,7 @@ public class PublishManager extends Manager {
      */
 
     public function toggleStartAudio():void {
-        _model.enabled && ((audioSharing &&  closeAudio()) || start(true, false));
+        ((audioSharing &&  closeAudio()) || start(true, false));
     }
 
 
@@ -364,8 +362,8 @@ public class PublishManager extends Manager {
 
     private function startAudioSharing(commit:Boolean = true):void {
 
-
-        if (setMicrophone()) {
+        setMicrophone(true);
+        if (_microphone){
             _stream.attachAudio(null);
             _stream.attachAudio(_microphone);
             audioSharing = true;
@@ -379,7 +377,9 @@ public class PublishManager extends Manager {
 
     private function startVideoSharing(commit:Boolean = true):void {
 
-        if (setCamera()) {
+        setCamera(true);
+
+        if (_camera) {
 
             _stream.attachCamera(_camera);
 
@@ -401,7 +401,7 @@ public class PublishManager extends Manager {
     }
 
     protected function initStream():void {
-        if (_stream == null) {
+        if (!_stream) {
             //THINK: Do we need a special connection for streams?
             _stream = new NetStream(App.rtmp.connection);
             var ns_client:Object = new Object();
@@ -426,10 +426,8 @@ public class PublishManager extends Manager {
 
         if (status === 0 && _streaming){    // stop stream and wait for events to update status
             _stream.publish(null);
-            _stream.dispose();
-            _streaming = false;
         }else                               // update status immediately
-            App.user.shareStatus = status;
+            App.session.setShareStatus(status);
 
     }
 
@@ -452,6 +450,8 @@ public class PublishManager extends Manager {
                 break;
             case NetStreamStatusCodes.UNPUBLISH_SUCCESS:
                 videoSharing = audioSharing = false;
+                _stream.close();
+                _streaming  = false;
                 statusUpdate();
                 break;
             case NetStreamStatusCodes.FAILED:

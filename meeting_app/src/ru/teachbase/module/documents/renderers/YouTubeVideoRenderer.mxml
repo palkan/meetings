@@ -207,7 +207,7 @@
         }
 
         protected function onPlayerError(event:Event):void {
-            Logger.log("error wile loading library json " + Object(event).data, "YouTube");
+//            Logger.log("error wile loading library json " + Object(event).data, "YouTube");
 
             if (Object(event).data == 150 || Object(event).data == 101) {
                 _timer.stop();

@@ -8,12 +8,14 @@
         "http":"http://test2013.teachbase.ru/"
     },
     "lang":"ru",
-    "skin":"../../assets/skins/skin.xml",
+    "skin":"../../../assets/skins/skin.xml",
     "locales":[
         {
             "code":"ru",
             "label":"русский",
-            "url":"../../assets/locales/ru.xml"
+            "url":"../../../assets/locales/ru.xml"
         }
-    ]
+    ],
+    "user_id": 12,
+    "meeting_id":20
 }

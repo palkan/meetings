@@ -47,13 +47,13 @@
             Localizer.addItem(this);
 
             for each(var ns:NetStream in App.meeting.streamList.toArray().filter(filter))
-                addVideo(ns,(ns.client as NetStreamClient).data.sid);
+                addVideo(ns, (ns.client as NetStreamClient).data.user_id);
 
             App.meeting.streamList.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStreamChangeEvent);
 
         }
 
-        private function onStreamChangeEvent(evt:CollectionEvent):void{
+        private function onStreamChangeEvent(evt:CollectionEvent):void {
 
             //TODO:
 
@@ -61,7 +61,7 @@
 
 
         private function filter(stream:NetStream, index:int = 0, arr:Array = null):Boolean {
-            return Boolean(stream && (stream.client as NetStreamClient) && (stream.client as NetStreamClient).data.type == StreamType.VIDEO && (!(_streamsDic[stream])));
+            return Boolean(stream && (stream.client as NetStreamClient) && (stream.client as NetStreamClient).data.type == StreamType.MEDIA && (!(_streamsDic[stream])));
         }
 
         private function getVideoContainer(userId:Number):IVideoContainer {
@@ -171,7 +171,6 @@
 
             super.permission = value;
         }
-
         ]]>
 	</fx:Script>
 

@@ -5,7 +5,6 @@
              implements="ru.teachbase.utils.interfaces.ILocalable"
              width="100%" height="43"
              skinClass="ru.teachbase.skins.actionbar.CustomActionBarSkin"
-             resize="resizeHandler(event)"
              creationComplete="creationCompleteHandler(event)"
         >
     <fx:Script>
@@ -14,6 +13,7 @@
         import mx.events.ResizeEvent;
 
         import ru.teachbase.components.*;
+        import ru.teachbase.manage.layout.events.LayoutEvent;
 
         import ru.teachbase.manage.settings.SettingsManager;
         import ru.teachbase.model.App;
@@ -27,19 +27,36 @@
 
         private const NAME:String = "actionbar";
 
-
-        private function resizeHandler(e:ResizeEvent = null):void {
-        }
-
         private function creationCompleteHandler(e:FlexEvent):void {
             Localizer.addItem(this);
-            resizeHandler();
+
+            App.layout.controller.addEventListener(LayoutEvent.LOCK, layoutLockHandler);
+
+            if(App.layout.layout_owner) layoutLockButton.enabled = layoutLockButton.selected = false;
+
         }
 
         public function localize():void {
             applicationPropertiesButton && (applicationPropertiesButton.toolTip = translate("settings", NAME));
             switchFullscreenButton && (switchFullscreenButton.toolTip = translate("fullscreen", NAME));
         }
+
+        private function layoutLockHandler(e:LayoutEvent):void {
+
+            if(!App.layout.layout_owner){
+
+                layoutLockButton.selected = false;
+
+                layoutLockButton.enabled = true;
+
+            }else{
+                const flag:Boolean = App.user.sid == App.layout.layout_owner.sid;
+
+                layoutLockButton.enabled = layoutLockButton.selected = flag;
+            }
+
+        }
+
         ]]>
 	</fx:Script>
 
@@ -75,11 +92,19 @@
         <s:Image includeIn="normal" id="sep2" left="{modulesGroup.x + modulesGroup.width+ 3}" top="0" height="43"
                  initialize="sep1.source = style('actionBar','separator')"/>
 
-        <!--
-		<c:ActionBarGroup dropSpace="{dropSpace}"
-								   toolTip="Layouts"
-								   />
-		-->
+
+        <c:ActionBarButton id="layoutLockButton"
+                           focusSkin="{null}"
+                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                           initialize="with(layoutLockButton){
+                                    toolTip=translate('mic_req','actionbar');
+                                    iconSelected=style('actionBar','layoutLockIconSelected');
+                                    iconOver=style('actionBar','layoutLockIconOver');
+                                    icon=style('actionBar','layoutLockIcon');}"
+                           preventToggle="true"
+                           change="layoutLockButton.selected ? App.layout.lock() : App.layout.unlock()"
+                />
+
     </s:titleContent>
 
     <s:actionContent>

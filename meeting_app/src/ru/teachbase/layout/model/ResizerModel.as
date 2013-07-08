@@ -4,10 +4,12 @@
  * Time: 1:48 PM
  */
 package ru.teachbase.layout.model {
+import flash.events.Event;
+import flash.events.EventDispatcher;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 
-public class ResizerModel {
+public class ResizerModel{
 
     private var _key:String;
 
@@ -19,10 +21,13 @@ public class ResizerModel {
     public var direction:uint;
 
     public function ResizerModel(key:String) {
+        _key = key;
     }
 
     public function get key():String {
         return _key;
     }
+
+
 }
 }

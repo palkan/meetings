@@ -48,6 +48,7 @@ public class LogoCustomPreloader extends SparkDownloadProgressBar {
 
             preloaderDisplay.addEventListener(Event.ADDED_TO_STAGE, function (e:Event):void {
                 stage.addEventListener(Event.RESIZE, onStageResize);
+                centerLoader();
             });
             preloaderDisplay.addEventListener(Event.REMOVED_FROM_STAGE, function (e:Event):void {
                 stage.removeEventListener(Event.RESIZE, onStageResize);

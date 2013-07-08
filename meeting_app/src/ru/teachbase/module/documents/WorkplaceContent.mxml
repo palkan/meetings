@@ -16,34 +16,26 @@
 		<![CDATA[
         import mx.rpc.Responder;
 
-        import ru.teachbase.core.App;
-        import ru.teachbase.core.Core;
+        import ru.teachbase.constants.PacketType;
+
+        import ru.teachbase.manage.rtmp.RTMPListener;
+        import ru.teachbase.manage.rtmp.events.RTMPEvent;
+        import ru.teachbase.manage.rtmp.model.Recipients;
+        import ru.teachbase.model.App;
+
         import ru.teachbase.module.documents.events.DocEvent;
-        import ru.teachbase.events.FileStatusEvent;
         import ru.teachbase.manage.FileManager;
-        import ru.teachbase.manage.LayoutModelManager;
-        import ru.teachbase.manage.TraitManager;
         import ru.teachbase.module.documents.model.DocChangeData;
         import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.model.User;
-        import ru.teachbase.constants.Recipients;
         import ru.teachbase.module.documents.components.SelectSourceWindow;
         import ru.teachbase.module.documents.model.WorkplaceRenderers;
-        import ru.teachbase.traits.DocTrait;
         import ru.teachbase.utils.AssetLoader;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.logger.Logger;
         import ru.teachbase.utils.Permissions;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.helpers.m;
-        import ru.teachbase.utils.helpers.s;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.shortcuts.translate;
-        import ru.teachbase.utils.helpers.translate;
-        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.*;
+
 
         CONFIG::AIR{
             import ru.teachbase.air.components.DropSpace;
@@ -51,14 +43,19 @@
         }
 
 
+
+
+        private const listener:RTMPListener = new RTMPListener(PacketType.DOCUMENT);
+
         public var setsDP:Vector.<ModuleSettings> = new Vector.<ModuleSettings>();
 
         [Bindable]
         private var _isOwner:Boolean = true;
-        [Bindable]
-        private var _docTrait:DocTrait;
+
         private var _initilized:Boolean = false;
-        //	private var _p_trait:PermissionTrait = TraitManager.instance.createTrait(PermissionTrait) as PermissionTrait;// new PermissionTrait();
+
+
+
         private var _xmlLoader:AssetLoader = new AssetLoader()
         private var _fm:FileManager;
         private var _docChangeData:DocChangeData;
@@ -69,12 +66,10 @@
         }
 
         protected function creationCompleteHandler(event:Event = null):void {
-            _docTrait = TraitManager.instance.createTrait(DocTrait, false, this.instanceID) as DocTrait; //new DocTrait(this.instanceID);
-            _docTrait.addEventListener(DocEvent.LOAD, onDocLoad);
-            _docTrait.call("get_history", new mx.rpc.Responder(onHistoryRecieved, null), "doc", this.instanceID);
-            //	_p_trait.addEventListener(PermissionEvent.PERMISSIONS_CHANGED, permissionChanged);
 
-            //_isOwner =  Permissions.docsAvailable(App.room.user.permissions);
+            listener.initialize();
+            listener.addEventListener(DocEvent.LOAD, handleMessage);
+            rtmp_history(PacketType.DOCUMENT+"::"+this.instanceID, new mx.rpc.Responder(historyHandler, null));
             setsDP.push(new ModuleSettings("clear_workplace", ModuleSettings.FUN, clearWorkplace));
             setsDP.push(new ModuleSettings("save_screenshot", ModuleSettings.FUN, container.takeSnapshot))
 
@@ -88,13 +83,17 @@
                 container.editable = _isOwner;
         }
 
-        private function onDocLoad(event:DocEvent):void {
-            onHistoryRecieved(event.data);
+        private function handleMessage(e:RTMPEvent):void {
+            handleData(e.packet.data);
         }
 
-        private function onHistoryRecieved(data:*):void {
+        private function historyHandler(data:*):void{
+            listener.readyToReceive = true;
+            handleData(data);
+        }
+
+        private function handleData(data:*):void {
             if (!(data is DocChangeData)) {
-                _docTrait.readyToReceive = true;
                 return;
             }
 
@@ -104,14 +103,12 @@
 
             if (docData.type == "idle") {
                 currentState = idle.name;
-                _docTrait.readyToReceive = true;
                 return;
             }
 
             if (docData.type == "loading") {
                 currentState = loading.name;
-                if (App.room.usersByID[docData.id]) progressText.text = translate("loading", "docs", (App.room.usersByID[docData.id] as User).fullName);
-                _docTrait.readyToReceive = true;
+                if (App.meeting.usersByID[docData.id]) progressText.text = translate("loading", "docs", (App.meeting.usersByID[docData.id] as User).fullName);
                 return;
             }
 
@@ -127,7 +124,6 @@
                 case "wb":
                 {
                     onWBChoose(null);
-                    _docTrait.readyToReceive = true;
                     return;
                 }
                 case "DOCS":
@@ -157,13 +153,13 @@
         private function onUploadButtonClick(evt:Event):void {
             if (_panel == null) _panel = new SelectSourceWindow()
             _panel.workplaceContent = this;
-            Core.addPopupToTop(_panel);
+            //Core.addPopupToTop(_panel);
             //_docTrait.output({type:"loading",id:App.room.user.sid},Recipients.ALL_EXCLUDE_ME);
             //onStartLoad();
         }
 
 
-        private function convertFromLibrary(item:FileItem):void {
+        /*private function convertFromLibrary(item:FileItem):void {
             _fm = m(FileManager) as FileManager;
 
             setFileListeners(_fm);
@@ -203,10 +199,9 @@
 
             _fm.upload_convert();
         }
+          */
 
-
-        CONFIG::AIR{
-            private function onFileDropped(event:FileDropEvent):void {
+           /* private function onFileDropped(event:FileDropEvent):void {
 
                 _fm = m(FileManager) as FileManager;
 
@@ -217,9 +212,8 @@
                 _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
 
                 _fm.upload_file(event.file);
-            }
-        }
-
+            } */
+           /*
         private function setFileListeners(fm:FileManager):void {
             fm.addEventListener(FileStatusEvent.COMPLETE, onFileReady);
             //fm.addEventListener(FileStatusEvent.PROGRESS, onFileProgress);
@@ -259,12 +253,12 @@
             removeFileListeners(_fm);
             //		loadConfigXML(event.value);
 
-        }
+        }    */
 
         private function loadConfigXML(url:String):void {
             _xmlLoader.addEventListener(Event.COMPLETE, onConfLoaded)
             _xmlLoader.addEventListener(ErrorEvent.ERROR, function (evt:Event):void {
-                _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+                rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "idle", id: App.user.sid}), Recipients.ALL_EXCLUDE_ME);
                 currentState = idle.name;
             })
 
@@ -289,7 +283,7 @@
         //progressBar.progress = Number(event.value/100);
         //}
 
-
+       /*
         private function onFileError(event:ErrorEvent):void {
 
             Logger.log(event.text, "file");
@@ -298,10 +292,10 @@
             _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
             currentState = idle.name;
         }
-
+         */
         protected function onWBChoose(event:MouseEvent):void {
             if (event) {
-                _docTrait.output({type: "load", dataType: "wb", title: translate("Whiteboard", "docs") + " " + this.instanceID.toString(), id: this.instanceID}, Recipients.ALL);
+                rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "wb", title: translate("Whiteboard", "docs") + " " + this.instanceID.toString(), id: this.instanceID}), Recipients.ALL);
                 return;
             }
 
@@ -345,22 +339,22 @@
 
             switch (obj.type) {
                 case 'YouTube':
-                    _docTrait.output({type: "load", dataType: "YouTube", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}, Recipients.ALL);
+                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "YouTube", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}), Recipients.ALL);
                     break;
                 case 'IMAGE':
-                    _docTrait.output({type: "load", dataType: "IMAGE", title: obj.title, id: this.instanceID, url: obj.url}, Recipients.ALL);
+                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "IMAGE", title: obj.title, id: this.instanceID, url: obj.url}), Recipients.ALL);
                     break;
                 case 'DOCS':
                 case 'PRES':
-                    _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-                    convertFromLibrary(obj);
+                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "loading", id: App.user.sid}), Recipients.ALL_EXCLUDE_ME);
+                    //convertFromLibrary(obj);
                     break;
                 case 'VIDEO':
-                    _docTrait.output({type: "load", dataType: "VIDEO", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}, Recipients.ALL);
+                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "VIDEO", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}), Recipients.ALL);
                     break;
                 case "GOOGLE_IMAGE":
-                    _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-                    convertFromGoogle(obj);
+                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "loading", id: App.user.sid}), Recipients.ALL_EXCLUDE_ME);
+                   // convertFromGoogle(obj);
                     break;
 
             }
@@ -375,7 +369,8 @@
 
         public function clearWorkplace():void {
 
-            (m(LayoutModelManager) as LayoutModelManager).restartPanelContent(this.panelID);
+            //(m(LayoutModelManager) as LayoutModelManager).restartPanelContent(this.panelID);
+
         }
 
 
@@ -404,7 +399,8 @@
     <com:WorkplaceContainer id="container"
                             width="{this.width}" height="{this.height}"
                             instanceId="{this.instanceID}" editable="{_isOwner}"
-                            trait="{_docTrait}"/>
+                            listener="{listener}"
+                            />
 
     <s:Label id="progressText" initialize="progressText.text=translate('Loading')" horizontalCenter="0"
              includeIn="loading" verticalCenter="-60"/>
@@ -421,11 +417,11 @@
                 <components:CustomSkinableButton id="doc" width="176" click="onUploadButtonClick(event)"
                                                  focusSkin="{null}"
                                                  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
-                                                 initialize="with(doc){label=translate('Load_files','docs');iconUp=ru.teachbase.utils.helpers.style('docs','uploadFile'); iconDown=ru.teachbase.utils.helpers.style('docs','uploadFileDown'); iconOver=ru.teachbase.utils.helpers.style('docs','uploadFileHover')}"
+                                                 initialize="with(doc){label=translate('Load_files','docs');iconUp=style('docs','uploadFile'); iconDown=style('docs','uploadFileDown'); iconOver=style('docs','uploadFileHover')}"
                         />
                 <components:CustomSkinableButton id="white" width="176" click="onWBChoose(event)" focusSkin="{null}"
                                                  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
-                                                 initialize="with(white){label=translate('Whiteboard','docs');iconUp=ru.teachbase.utils.helpers.style('docs','whitebordButton');iconDown=ru.teachbase.utils.helpers.style('docs','whitebordButtonDown');iconOver=ru.teachbase.utils.helpers.style('docs','whitebordButtonHover')}"
+                                                 initialize="with(white){label=translate('Whiteboard','docs');iconUp=style('docs','whitebordButton');iconDown=style('docs','whitebordButtonDown');iconOver=style('docs','whitebordButtonHover')}"
                         />
             </s:VGroup>
 

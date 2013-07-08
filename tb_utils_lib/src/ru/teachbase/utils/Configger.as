@@ -146,7 +146,7 @@ public final class Configger extends EventDispatcher {
     private function jsonToConfig(obj:Object):void {
 
         for (var key:String in obj) {
-            setConfigParam(key, obj[key]);
+            _config[key] = obj[key];
         }
 
     }

@@ -5,10 +5,11 @@
  */
 package ru.teachbase.manage.session.model{
 import ru.teachbase.utils.shortcuts.cookie;
+import ru.teachbase.utils.shortcuts.debug;
 
 /**
  *
- * User local settings (stored in LocalSharedObjects or during Runtime)
+ * User local settings (stored in Local SharedObjects or during Runtime)
  *
  */
 
@@ -22,6 +23,11 @@ public class UserLocalSettings {
     private var _publishQuality:String = "medium";
 
 
+    /**
+     *
+     * @param defaults
+     */
+
     public function UserLocalSettings(defaults:Object = null) {
 
         if(defaults){
@@ -31,8 +37,13 @@ public class UserLocalSettings {
 
         }
 
+        debug("Cookies",defaults);
     }
 
+
+    /**
+     * @default 80
+     */
 
     public function get micLevel():int {
         return _micLevel;
@@ -43,6 +54,10 @@ public class UserLocalSettings {
         cookie('micLevel',value);
     }
 
+    /**
+     * @default null
+     */
+
     public function get camID():String {
         return _camID;
     }
@@ -51,6 +66,12 @@ public class UserLocalSettings {
         _camID = value;
         cookie('camID',value);
     }
+
+    /**
+     * @default "medium"
+     *
+     * @see ru.teachbase.utils.CameraQuality
+     */
 
     public function get publishQuality():String {
         return _publishQuality;
@@ -61,6 +82,10 @@ public class UserLocalSettings {
         cookie('publishQuality',value);
     }
 
+    /**
+     * @default "ru"
+     */
+
     public function get lang():String {
         return _lang;
     }
@@ -70,6 +95,10 @@ public class UserLocalSettings {
         cookie('lang',value);
     }
 
+    /**
+     * @default 80
+     */
+
     public function get volumeLevel():int {
         return _volumeLevel;
     }
@@ -78,6 +107,10 @@ public class UserLocalSettings {
         _volumeLevel = value;
         cookie('volumeLevel',value);
     }
+
+    /**
+     * @default -1
+     */
 
     public function get micID():int {
         return _micID;

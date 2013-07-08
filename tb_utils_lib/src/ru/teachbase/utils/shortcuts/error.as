@@ -13,8 +13,8 @@ import ru.teachbase.utils.logger.LoggerLevel;
  */
 
 public function error(message:String, code:uint = 0):void {
-    Logger.log.call(null,LoggerLevel.ERROR,message,code);
+    Logger.log.call(null,LoggerLevel.ERROR,message,code ? code : '');
 
-    GlobalError.raise(message,code);
+    code && GlobalError.raise(message,code);
 }
 }

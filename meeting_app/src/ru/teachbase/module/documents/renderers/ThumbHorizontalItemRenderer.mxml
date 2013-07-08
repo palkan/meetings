@@ -53,17 +53,14 @@
         public function load():void {
             _loader.contentLoaderInfo.addEventListener(Event.COMPLETE, imageLoadingComplete)
             _loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function (e:*):void {
-                Logger.log("IO_ERROR error caught " + _itemId, "THUMB");
                 lodedHandler();
             });
             _loader.contentLoaderInfo.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function (e:*):void {
-                Logger.log("SECURITY_ERROR error caught " + _itemId, "THUMB");
                 lodedHandler();
             });
             try {
                 _loader.load(urlRequest);
             } catch (e:*) {
-                Logger.log("error cathes while loading thumbnail " + _itemId, "THUMB");
                 lodedHandler();
             }
         }

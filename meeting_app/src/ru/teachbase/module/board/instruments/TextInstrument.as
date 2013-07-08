@@ -7,7 +7,7 @@ import flash.geom.Point;
 
 import mx.core.EventPriority;
 
-import ru.teachbase.core.App;
+import ru.teachbase.model.App;
 import ru.teachbase.module.board.events.BoardTextEvent;
 import ru.teachbase.module.board.figures.Figure;
 import ru.teachbase.module.board.figures.FigureManager;

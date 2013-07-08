@@ -114,7 +114,7 @@ import ru.teachbase.model.App;
             if(_singleton) _available = value;
 
             if(_available != _old)
-				App..meeting.modulesCollection.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE));
+				App.meeting.modulesCollection.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE));
 		}
 
 		public function get moduleId():String

@@ -32,8 +32,6 @@
     </fx:Metadata> 
     <fx:Script>
 		<![CDATA[
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.helpers.skin;
         import ru.teachbase.utils.shortcuts.style;
         ]]>
 	</fx:Script>

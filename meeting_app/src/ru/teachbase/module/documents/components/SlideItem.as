@@ -67,7 +67,7 @@ public class SlideItem extends EventDispatcher
 			try {
 				_loader.load(new URLRequest(_asset.assetURL), context);
 			}catch(evt:*){
-				Logger.log("cant load asset "+_asset.assetURL,"slideItem");
+				//Logger.log("cant load asset "+_asset.assetURL,"slideItem");
 			}
 		}
 				

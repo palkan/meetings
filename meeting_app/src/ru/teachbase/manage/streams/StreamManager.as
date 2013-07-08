@@ -19,6 +19,7 @@ import ru.teachbase.manage.streams.model.NetStreamClient;
 import ru.teachbase.manage.streams.model.StreamData;
 import ru.teachbase.model.App;
 import ru.teachbase.utils.shortcuts.debug;
+import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.rtmp_call;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.warning;
@@ -52,7 +53,8 @@ public dynamic class StreamManager extends Manager {
 
         GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, onUserLeave);
 
-        rtmp_history("streams", new Responder(handleHistory, function (...args):void {
+        rtmp_history(PacketType.STREAM, new Responder(handleHistory, function (...args):void {
+            error("Failed to load streams history");
             _failed = true;
         }));
     }
@@ -89,7 +91,7 @@ public dynamic class StreamManager extends Manager {
 
         if (!stream) return;
 
-        if (_model.usersByID[stream.sid] && !_model.streamsByName[stream.name]) {
+        if (_model.usersByID[stream.user_id] && !_model.streamsByName[stream.name]) {
             addStream(stream);
         }
     }
@@ -107,22 +109,23 @@ public dynamic class StreamManager extends Manager {
 
         debug("Stream status:", (e.target as NetStream).info.resourceName, e.info.code);
 
+        const data:StreamData = ((e.target as NetStream).client as NetStreamClient).data as StreamData;
+
         switch (e.info.code) {
-            case NetStreamStatusCodes.FAILED:
-                warning("Failed to subscribe to stream", (e.target as NetStream).info.resourceName);
-                checkFailedStream((ns.client as NetStreamClient).data);
+            case NetStreamStatusCodes.PLAY_FAILED:
+                warning("Failed to subscribe to stream", data.name);
+                checkFailedStream(data);
                 break;
             case NetStreamStatusCodes.NOT_FOUND:
-                warning("Stream not found", (e.target as NetStream).info.resourceName);
-                checkFailedStream((ns.client as NetStreamClient).data);
+                warning("Stream not found", data.name);
+                removeStreamByName(data.name);
                 break;
             case NetStreamStatusCodes.PLAY_START:
                 var ns:NetStream = e.target as NetStream;
-                _model.streamsByName[(ns.client as NetStreamClient).data.name] = ns;
                 _model.streamList.addItem(ns);
                 break;
             case NetStreamStatusCodes.PLAY_STOP:
-                removeStreamByName((ns.client as NetStreamClient).data.name);
+                removeStreamByName(data.name);
                 break;
         }
     }
@@ -138,6 +141,7 @@ public dynamic class StreamManager extends Manager {
 
         ns.client = ns_client;
 
+        _model.streamsByName[stream.name] = ns;
 
         ns.addEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
         ns.addEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
@@ -165,7 +169,9 @@ public dynamic class StreamManager extends Manager {
 
         delete _model.streamsByName[name];
 
-        _model.streamList.removeItemAt(_model.streamList.getItemIndex(ns));
+        const ind:int = _model.streamList.getItemIndex(ns);
+
+        (ind > -1) && _model.streamList.removeItemAt(ind);
 
     }
 
@@ -180,20 +186,8 @@ public dynamic class StreamManager extends Manager {
     }
 
     private function checkFailedStream(data:StreamData):void {
-
-        rtmp_call('stream_exists', new Responder(success, failure), data.name);
-
-        function success(flag:Boolean):void {
             removeStreamByName(data.name);
-            if (flag)
-                addStream(data);
-        }
-
-        function failure(message:String):void{
-            warning("Stream check failed: "+message);
-            removeStreamByName(data.name);
-        }
-
+            addStream(data);
     }
 
 }

@@ -22,9 +22,7 @@
         import mx.rpc.Responder;
 
         import ru.teachbase.manage.rtmp.RTMPListener;
-        import ru.teachbase.manage.rtmp.model.Packet;
         import ru.teachbase.model.App;
-        import ru.teachbase.module.screenshare.events.ScreenShareEvent;
         import ru.teachbase.model.User;
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.module.screenshare.components.VideoContainerShare;
@@ -78,7 +76,7 @@
             Localizer.addItem(this);
 
 
-            rtmp_history(PacketType.SCREEN_SHARING, new mx.rpc.Responder(stateHandler, null));
+//            rtmp_history(PacketType.SCREEN_SHARING, new mx.rpc.Responder(stateHandler, null));
 
             CONFIG::AIR{
 
@@ -166,7 +164,7 @@
 
         }
 
-        private function stateHandler(packet:Packet = null):void {
+       /* private function stateHandler(packet:Packet = null):void {
 
             const data:Object = packet ? packet.data : null;
 
@@ -190,10 +188,12 @@
             });
             _trait.readyToReceive = true;
 
-           */
+
         }
+              */
 
 
+        /*
         private function prepareShareHandler(event:ScreenShareEvent):void {
 
 
@@ -230,7 +230,7 @@
             receive(event.stream);
 
         }
-
+         */
 
         private function onStartShare(event:MouseEvent):void {
 

@@ -16,6 +16,7 @@ public class ManagerEvent extends Event {
 
     public function ManagerEvent(type:String, manager:Manager, bubbles:Boolean = false, cancelable:Boolean = false) {
         super(type, bubbles, cancelable);
+        _manager = manager;
     }
 
 

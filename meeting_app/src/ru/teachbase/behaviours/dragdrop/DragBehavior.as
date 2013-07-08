@@ -77,7 +77,7 @@ import ru.teachbase.utils.geom.angleAB;
 		/**
 		 * Before calling the constructor creates an instance of this class <code>BoundsClass</code> in the variable <code>bounds</code>.
 		 */		
-		public static var BoundsClass:Class = DragCoordinateSpace;;
+		public static var BoundsClass:Class = DragCoordinateSpace;
 		
 		/**
 		 * Break dragging if mouse leaves drag-bounds.
@@ -580,7 +580,7 @@ import ru.teachbase.utils.geom.angleAB;
 			return _dragging;
 		}
 		
-		tb_drag function set dragging(value:Boolean):void
+		tb_drag function setDragging(value:Boolean):void
 		{
 			_dragging = value;
 		}

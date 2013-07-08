@@ -7,8 +7,8 @@
 	</fx:Declarations>
 	
 	<fx:Metadata>
-		[Event(name="modifySlide", type="ru.teachbase.module.documents.docevents.ModifySlideEvent")]
-		[Event(name="onChangeSlide", type="ru.teachbase.module.documents.docevents.ChangeSlideEvent")]
+		[Event(name="modifySlide", type="ru.teachbase.module.documents.events.ModifySlideEvent")]
+		[Event(name="onChangeSlide", type="ru.teachbase.module.documents.events.ChangeSlideEvent")]
 	</fx:Metadata>
 
 	<fx:Script>
@@ -18,22 +18,6 @@
         import ru.teachbase.module.documents.events.ChangeSlideEvent;
         import ru.teachbase.module.documents.events.ControlEvent;
         import ru.teachbase.module.documents.model.WorkplaceMethod;
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.helpers.skin;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
         import ru.teachbase.utils.workplace.ControlHost;
@@ -127,7 +111,7 @@
 	<s:Group id="mainGroup" width="100%" height="100%" horizontalCenter="0">
 		
 		
-		<s:Button id="hideButton" initialize="with(hideButton){toolTip=translate('hide');setStyle('icon',ru.teachbase.utils.helpers.style('docs','hideButtonBottomPanel'))}" focusSkin="{null}"
+		<s:Button id="hideButton" initialize="with(hideButton){toolTip=translate('hide');setStyle('icon',style('docs','hideButtonBottomPanel'))}" focusSkin="{null}"
 				  click="onHideButtonClick(event)" horizontalCenter="0" top="-11" height="11" width="19" skinClass="ru.teachbase.skins.SimpleButtonSkin" />
 		<!--s:Rect width="217" height="26" radiusX="3" radiusY="3">
 			<s:fill >
@@ -137,7 +121,7 @@
 		<s:HGroup gap="0" bottom="3" horizontalCenter="0" includeIn="fullView">
 			<components:CustomSkinableButton id="previousSlide" click="gotoSlide(event)"
 					  width="24" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-					  initialize="with(previousSlide){iconDown=ru.teachbase.utils.helpers.style('docs','bottomPrevDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomPrevOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomPrevUp');}"
+					  initialize="with(previousSlide){iconDown=style('docs','bottomPrevDown');iconOver=style('docs','bottomPrevOver');iconUp=style('docs','bottomPrevUp');}"
 					  />
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<s:Group width="57	">
@@ -151,28 +135,28 @@
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="nextSlide" click="gotoSlide(event)"
 					  width="26" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-					  initialize="with(nextSlide){iconDown=ru.teachbase.utils.helpers.style('docs','bottomNextDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomNextOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomNextUp');}"
+					  initialize="with(nextSlide){iconDown=style('docs','bottomNextDown');iconOver=style('docs','bottomNextOver');iconUp=style('docs','bottomNextUp');}"
 					  />
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="zoomIn" click="buttonClick(event)"
 					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-					  initialize="with(zoomIn){iconDown=ru.teachbase.utils.helpers.style('docs','bottomZoomInDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomZoomInOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomZoomInUp');}"
+					  initialize="with(zoomIn){iconDown=style('docs','bottomZoomInDown');iconOver=style('docs','bottomZoomInOver');iconUp=style('docs','bottomZoomInUp');}"
 					  />
 			<components:CustomSkinableButton id="zoomOut" click="buttonClick(event)"
 					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-					  initialize="with(zoomOut){iconDown=ru.teachbase.utils.helpers.style('docs','bottomZoomOutDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomZoomOutOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomZoomOutUp');}"
+					  initialize="with(zoomOut){iconDown=style('docs','bottomZoomOutDown');iconOver=style('docs','bottomZoomOutOver');iconUp=style('docs','bottomZoomOutUp');}"
 					  />
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="rotateRight" click="buttonClick(event)"
 					  width="29" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-					  initialize="with(rotateRight){ iconDown=ru.teachbase.utils.helpers.style('docs','bottomRotateDown');iconOver=ru.teachbase.utils.helpers.style('docs','bottomRotateOver');iconUp=ru.teachbase.utils.helpers.style('docs','bottomRotateUp');}"
+					  initialize="with(rotateRight){ iconDown=style('docs','bottomRotateDown');iconOver=style('docs','bottomRotateOver');iconUp=style('docs','bottomRotateUp');}"
 					  />
 			
 		</s:HGroup>
 		<s:HGroup includeIn="lightView" gap="0" horizontalCenter="0">
 			<components:CustomSkinableButton id="zoomOutS" click="buttonClick(event)"
 											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-											 initialize="with(zoomOutS){iconDown=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomOutDown'); iconOver=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomOutOver'); iconUp=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomOutUp');}"
+											 initialize="with(zoomOutS){iconDown=style('docs','bottomSmallZoomOutDown'); iconOver=style('docs','bottomSmallZoomOutOver'); iconUp=style('docs','bottomSmallZoomOutUp');}"
 											 />
 
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
@@ -183,7 +167,7 @@
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="zoomInS" click="buttonClick(event)"
 											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
-											 initialize="with(zoomInS){iconDown=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomInDown'); iconOver=ru.teachbase.utils.helpers.style('docs','ottomSmallZoomInOver'); iconUp=ru.teachbase.utils.helpers.style('docs','bottomSmallZoomInUp');}"
+											 initialize="with(zoomInS){iconDown=style('docs','bottomSmallZoomInDown'); iconOver=style('docs','ottomSmallZoomInOver'); iconUp=style('docs','bottomSmallZoomInUp');}"
 											 />
 		</s:HGroup>
 	</s:Group>

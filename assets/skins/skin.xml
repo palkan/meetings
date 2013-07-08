@@ -369,6 +369,10 @@
 				<element name="reccordIco" src="actionbar_rec_ico.png"></element>
 				<element name="reccordIcoOver" src="actionbar_rec_ico_over.png"></element>
 				<element name="reccordIcoSelected" src="actionbar_rec_ico_selected.png"></element>
+
+                <element name="layoutLockIcon" src="layout_locked_button.png"></element>
+                <element name="layoutLockIconOver" src="layout_locked_button_over.png"></element>
+                <element name="layoutLockIconSelected" src="layout_locked_button_selected.png"></element>
 				
 				<element name="playIco" src="actionbar_play_ico.png"></element>
 				<element name="playIcoOver" src="actionbar_play_ico_over.png"></element>

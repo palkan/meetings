@@ -11,7 +11,7 @@ registerClazzAlias(LayoutChangeData);
 		
 		public var type:String="default";
 		public var data:LayoutElementData;
-		public var from:Number;
+		public var from:Number = 0;
 		public var to:uint;
 		public var l:uint = 0;
 		public var i:uint = 0;

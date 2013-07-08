@@ -12,14 +12,10 @@
 
         import ru.teachbase.behaviours.dragdrop.DragBehavior;
         import ru.teachbase.behaviours.dragdrop.DragDirection;
+        import ru.teachbase.behaviours.dragdrop.DragEvent;
         import ru.teachbase.behaviours.interfaces.IDragCoordinateSpace;
         import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
-        import ru.teachbase.behaviours.dragdrop.DragEvent;
-        import ru.teachbase.manage.layout.model.LayoutChangeData;
-        import ru.teachbase.layout.LayoutElementData;
-        import ru.teachbase.constants.PacketType;
         import ru.teachbase.manage.modules.model.Module;
-        import ru.teachbase.utils.helpers.dispatchTraitEvent;
 
         [Bindable]
         public var module:Module;
@@ -54,17 +50,17 @@
             // TODO: I don't like this piece of code!
 
 
-            if (module) {
-                var _d:LayoutChangeData = new LayoutChangeData();
-                var _data:LayoutElementData = new LayoutElementData();
-                _data.content = [
-                    {module: module}
-                ];
-                _d.fromObject({type: "module_click", data: _data});
+            /*       if (module) {
+             var _d:LayoutChangeData = new LayoutChangeData();
+             var _data:LayoutElementData = new LayoutElementData();
+             _data.content = [
+             {module: module}
+             ];
+             _d.fromObject({type: "module_click", data: _data});
 
-                dispatchTraitEvent(PacketType.LAYOUT, _d);
+             dispatchTraitEvent(PacketType.LAYOUT, _d);
 
-            }
+             }   */
         }
 
 

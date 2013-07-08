@@ -10,10 +10,8 @@ package ru.teachbase.constants
 		
 		public static const CURSOR:String = "live_cursor";
 		public static const LAYOUT:String = "layout";
-		public static const SHARING:String = "sharing";
 		public static const DOCUMENT:String = "document";
-		public static const CHAT:String = 'text';
-		public static const PRIVATE_CHAT:String = 'privateChat';
+		public static const CHAT:String = 'chat';
 		public static const WHITEBOARD:String = 'whiteboard';
 		public static const USERS:String = "users";
         public static const MEETING:String = "meeting";

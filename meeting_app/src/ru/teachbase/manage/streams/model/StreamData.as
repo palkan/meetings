@@ -7,10 +7,8 @@ registerClazzAlias(StreamData);
 	public class StreamData
 	{
         private var _name:String;
-        private var _sid:Number;
-        private var _type:uint = 0;
-
-        private var _rotation:int;
+        private var _user_id:Number;
+        private var _type:String;
 
         public function StreamData()
 		{
@@ -22,31 +20,24 @@ registerClazzAlias(StreamData);
 			return _name;
 		}
 
-		public function get sid():Number
+		public function get user_id():Number
 		{
-			return _sid;
+			return _user_id;
 		}
 
 		public function set name(value:String):void{
 			_name = value;
 		}
 		
-		public function set sid(value:Number):void{
-			_sid = value;
+		public function set user_id(value:Number):void{
+			_user_id = value;
 		}
 
-		public function get rotation():int
-		{
-			return _rotation;
-		}
+        public function set type(value:String):void{
+            _type = value;
+        }
 
-		public function set rotation(value:int):void
-		{
-			_rotation = value;
-		}
-
-
-        public function get type():uint {
+        public function get type():String {
             return _type;
         }
     }

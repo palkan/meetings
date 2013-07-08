@@ -3,13 +3,10 @@ package ru.teachbase.module.documents
 import mx.collections.ArrayCollection;
 import mx.rpc.Responder;
 
-import ru.teachbase.manage.layout.LayoutManager;
-import ru.teachbase.manage.TraitManager;
-import ru.teachbase.module.documents.model.DocChangeData;
 import ru.teachbase.manage.modules.model.IModuleContent;
 import ru.teachbase.manage.modules.model.Module;
-import ru.teachbase.traits.DocTrait;
-import ru.teachbase.utils.helpers.*;
+import ru.teachbase.module.documents.model.DocChangeData;
+import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.style;
 
 public class DocumentsModule extends Module
@@ -23,18 +20,17 @@ public class DocumentsModule extends Module
 		public var docsCollection:ArrayCollection = new ArrayCollection();
 		
 		
-		private var trait:DocTrait;
-		
+
 		public function DocumentsModule()
 		{
 			super('docs');
 			
 			_icon = style('docs',"icon");
 			_iconHover = style('docs',"iconHover");
-			
-			trait = TraitManager.instance.createTrait(DocTrait,false,0) as DocTrait;
-			
-			trait.call("get_history",new Responder(onHistory,null),"docs");
+
+            new DocChangeData();
+
+			rtmp_history("docs",new Responder(onHistory,null));
 			
 		}
 		
@@ -48,9 +44,7 @@ public class DocumentsModule extends Module
 				}
 			}
 			
-			trait.dispose();
-			
-		}		
+		}
 		
 		
 		public function registerNewDoc(_id:int, _title:String):void{
@@ -80,13 +74,7 @@ public class DocumentsModule extends Module
 			
 		}
 			
-				
-		override public function initializeModule(manager:LayoutManager):void
-		{
-			super.initializeModule(manager);
-			new DocChangeData();
-		}
-		
+
 		override protected function createInstance(instanceID:int):IModuleContent
 		{
 			const result:WorkplaceContent = new WorkplaceContent();

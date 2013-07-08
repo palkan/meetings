@@ -44,5 +44,9 @@ registerClazzAlias(LayoutElementData);
         public function get key():String {
             return _key;
         }
+
+        public function set key(value:String):void {
+            _key = value;
+        }
     }
 }
