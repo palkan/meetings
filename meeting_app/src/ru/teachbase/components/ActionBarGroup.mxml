@@ -83,10 +83,7 @@
                     btn.icon = data[i].icon;
                 btn.iconOver = data[i].iconHover;
 
-                if (data[i].moduleID)
-                    btn.toolTip = translate('tooltip', data[i].NAME);
-                else
-                    btn.label = data[i].name;
+                btn.toolTip = translate('tooltip', data[i].moduleId);
 
                 btn.module = data[i];
                 btn.enabled = btn.module.available;

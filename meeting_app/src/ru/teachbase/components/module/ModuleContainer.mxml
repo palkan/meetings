@@ -14,6 +14,7 @@
     <!-- ui ctrl -->
     <fx:Script>
         <![CDATA[
+        import mx.core.IVisualElement;
         import mx.events.FlexEvent;
 
         import ru.teachbase.behaviours.dragdrop.DragCoordinateSpace;
@@ -29,7 +30,6 @@
         import ru.teachbase.layout.model.ITreeLayoutElement;
         import ru.teachbase.manage.layout.LayoutManager;
         import ru.teachbase.manage.modules.model.IModulePanel;
-        import ru.teachbase.manage.modules.model.ModuleInstanceData;
         import ru.teachbase.model.App;
         import ru.teachbase.skins.cursors.HorizontalResizerCursor;
         import ru.teachbase.skins.cursors.VerticalResizerCursor;
@@ -68,7 +68,7 @@
             // setup manager
 
             _manager = App.layout;
-            _manager && _manager.setContainers(this,elementContainer);
+            _manager && _manager.setContainers(this, elementContainer);
 
             //setup resizer icons
 
@@ -97,16 +97,15 @@
 
             // setup default panels
 
-            for each(var panelData:ModuleInstanceData in App.modules.instances) {
-                createPanel(panelData.panelId);
+            for each(var panelId:uint in App.layout.panel_ids) {
+                createPanel(panelId);
             }
 
             App.session.userReady();
         }
 
 
-
-        public function attachResizer():ILayoutResizer{
+        public function attachResizer():ILayoutResizer {
 
             var resizer:ModuleResizer = new ModuleResizer();
             resizer.container = resizersContainer;
@@ -115,7 +114,6 @@
 
             return resizer;
         }
-
 
 
         //------------ implementation ---------------//
@@ -196,7 +194,7 @@
 
             // if source is Panel
             if (snapshot.source is IModulePanel) {
-                _controller.removeElement(snapshot.source as ITreeLayoutElement,true,false);
+                _controller.removeElement(snapshot.source as ITreeLayoutElement, true, false);
             } else if (snapshot.source is ActionBarButtonDraggle) {
                 //THINK: ???
             }
@@ -240,7 +238,40 @@
 
                 const button:ActionBarButtonDraggle = snapshot.source as ActionBarButtonDraggle;
 
-                App.modules.registerModuleInstance(button.module.moduleId, moduleRegistered);
+
+                //TODO: dry the following block (see LayoutController.as:277)
+
+                var dir:uint = 0;
+                var index:uint = 0;
+
+
+                switch (DragDirection.getNameByValue(_dropDirection)) {
+
+                    case "up":
+                        dir = 1;
+                        break;
+                    case "down":
+                        dir = 1;
+                        index = 1;
+                        break;
+                    case "right":
+                        index = 1;
+                        break;
+                    default:
+                        break;
+
+                }
+
+                App.layout.commitAddElement(
+                        _hoveredElement.elementId,
+                        index,
+                        dir
+                );
+
+
+                //THINK: storing module id in ModulesManager is not safe and kinda stupid. Maybe we need some redesign here, disjoin completely panels and modules.
+
+                App.modules.setModuleId(button.module.moduleId);
 
             }
 
@@ -274,32 +305,20 @@
 
         }
 
-        private function __show(item:IModulePanel,index:Number,collection:*):void{
+        private function __show(item:IModulePanel, index:Number, collection:*):void {
             item.visible = true;
-        }
-
-        protected function moduleRegistered(data:ModuleInstanceData):void {
-            if(!data) return; //TODO: show error!
-            var panel:IModulePanel = createPanel(data.panelId);
-            //TODO: setup content
-            _controller.addElement(panel as ITreeLayoutElement, _hoveredElement as ITreeLayoutElement, _dropDirection, false);
-        }
-
-        protected function moduleUnRegistered(data:ModuleInstanceData):void{
-            if(!data) return; //TODO: show error!
-             _panelToRemove && _controller.removeFromLayout(_panelToRemove);
-            //TODO: hide content
         }
 
 
         protected function onMinMaxHandler(event:ModuleEvent):void {
-            if (event.value)
+            if (event.value) {
+                elementContainer.setElementIndex(event.target as IVisualElement, elementContainer.numElements-1);
                 _controller.expand(event.target as ITreeLayoutElement);
-            else
+            } else
                 _controller.minimize(event.target as ITreeLayoutElement);
         }
 
-        protected function onRemoveHandler(event:ModuleEvent):void{
+        protected function onRemoveHandler(event:ModuleEvent):void {
             _panelToRemove = event.target as ITreeLayoutElement;
         }
 
@@ -481,7 +500,6 @@
         private function bringToFront(obj:DisplayObject):void {
             obj && obj.parent && obj.parent[(("setElementIndex" in obj.parent) ? "setElementIndex" : "setChildIndex")](obj, obj.parent.numChildren - 1);
         }
-
 
 
         public function cancelDragDrop():void {

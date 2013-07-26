@@ -43,6 +43,8 @@
         import ru.teachbase.behaviours.interfaces.IDropContainer;
         import ru.teachbase.components.*;
         import ru.teachbase.manage.modules.model.IModuleContent;
+        import ru.teachbase.manage.modules.model.ModuleInstanceData;
+        import ru.teachbase.model.App;
         import ru.teachbase.utils.shortcuts.style;
 
         private var _id:uint;
@@ -88,6 +90,17 @@
 
         private function preinitializeHandler(e:FlexEvent):void {
             this.setStyle("backgroundColor", style('modulecontainer', 'background', 'string'));
+
+            var data:ModuleInstanceData = App.meeting.instancesById[elementId];
+
+            // check if we have initialized instance for this panel
+
+            // if(data) content = [App.meeting.modules[data.moduleId].getVisual(data.instanceId)];
+
+            // else check if we have temp moduleId (for newly added module)
+
+            // else if(App.modules.getModuleId())  App.modules.registerModuleInstance(App.modules.getModuleId(),elementId);
+
         }
 
 

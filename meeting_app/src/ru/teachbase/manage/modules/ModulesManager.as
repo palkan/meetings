@@ -28,6 +28,8 @@ public class ModulesManager extends Manager {
     private const _listener:RTMPListener = new RTMPListener(PacketType.MODULE);
     private var _model:Meeting;
 
+    private var _tmpModuleId:String;
+
     public function ModulesManager(registered:Boolean = false) {
         super(registered);
         new ModuleInstanceData();
@@ -52,15 +54,16 @@ public class ModulesManager extends Manager {
 
     /**
      *
-     * Call before adding new module to layout or display list.
+     * Call to register new module instance (e.g. after creating new panel)
      *
      * @param module
+     * @param panelId
      * @param callback
      */
 
-    public function registerModuleInstance(moduleId:String,callback:Function = null):void{
+    public function registerModuleInstance(moduleId:String, panelId:uint, callback:Function = null):void{
 
-        rtmp_call("register_module", new Responder(callback, moduleRegisterFailed), moduleId);
+        rtmp_call("register_module", new Responder(callback, moduleRegisterFailed), moduleId, panelId);
 
         function moduleRegisterFailed(error:*):void{
             warning("Module register failed:",error);
@@ -84,6 +87,30 @@ public class ModulesManager extends Manager {
             warning("Module unregister failed:",error);
         }
 
+    }
+
+
+    /**
+     *
+     * Store temporary moduleId for upcoming panel
+     *
+     * @param moduleId
+     */
+
+    public function setModuleId(moduleId:String):void{
+
+        _tmpModuleId = moduleId;
+
+    }
+
+
+    /**
+     *
+     * @return
+     */
+
+    public function getModuleId():String{
+        return _tmpModuleId;
     }
 
 
@@ -126,6 +153,7 @@ public class ModulesManager extends Manager {
 
             _model.instances.splice(_model.instances.indexOf(instance),1);
             delete _model.instancesById[data.moduleId+":"+data.instanceId];
+            delete _model.instancesById[data.panelId];
 
             GlobalEvent.dispatch(GlobalEvent.MODULE_REMOVE,instance);
         }else{
@@ -173,6 +201,7 @@ public class ModulesManager extends Manager {
         if((_model.modules[data.moduleId] as IModule).getVisual(data.instanceId)){
             _model.instances.push(data);
             _model.instancesById[data.moduleId+":"+data.instanceId] = data;
+            _model.instancesById[data.panelId] = data;
             return true;
         }
 

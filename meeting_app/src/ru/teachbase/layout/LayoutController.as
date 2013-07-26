@@ -415,7 +415,7 @@ public class LayoutController extends EventDispatcher {
 
         if(!exists(to)) return;
 
-        addElement(_model[elementId] as ITreeLayoutElement, _model[to] as ITreeLayoutElement, getDropDirectionByLayoutIndex(layout,index),false);
+        addElement(_model.elements[elementId] as ITreeLayoutElement, _model.elements[to] as ITreeLayoutElement, getDropDirectionByLayoutIndex(layout,index),false);
     }
 
     tb_internal function move(from:uint, to:uint, layout:uint, index:uint):void {
