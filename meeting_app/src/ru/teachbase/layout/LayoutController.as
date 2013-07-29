@@ -16,6 +16,7 @@ import ru.teachbase.tb_internal;
 import ru.teachbase.utils.LayoutUtils;
 import ru.teachbase.utils.data.Stack;
 import ru.teachbase.utils.data.TreeNode;
+import ru.teachbase.utils.shortcuts.debug;
 
 
 /**
@@ -97,8 +98,6 @@ public class LayoutController extends EventDispatcher {
 
         _model = new LayoutModel();
 
-        _model = _model;
-
         _resizers = {};
 
         if (elements && elements.length > 0)
@@ -158,12 +157,8 @@ public class LayoutController extends EventDispatcher {
     protected function initResizer(groupKey:String, l:uint, width:int, height:int, x:int, y:int, rw:int, rh:int):void {
 
         var r:ResizerModel;
-        if (_resizers[groupKey] == undefined) {
-            r = new ResizerModel(groupKey);
-            _resizers[groupKey] = r;
-        }
-
-        r = _resizers[groupKey] as ResizerModel;
+        r = new ResizerModel(groupKey);
+        _resizers[groupKey] = r;
         r.dragBounds = new Rectangle();
         r.direction = l;
         r.gap = 2 * _gap;
@@ -193,10 +188,12 @@ public class LayoutController extends EventDispatcher {
     protected function hideResizers():void{
         const size:int = _resizersInUse.length;
 
-        for(var i:int=size-1; i>0; i--){
+        for(var i:int=size-1; i>=0; i--){
             _resizersInUse[i].hide();
             _availableResizers[_availableResizers.length] = _resizersInUse.pop();
         }
+
+        _resizers = {};
     }
 
 
@@ -206,6 +203,7 @@ public class LayoutController extends EventDispatcher {
         for each(var m:ResizerModel in _resizers){
             el = _availableResizers.length ? _availableResizers.pop() : _resizersFun();
             el.model = m;
+            el.show();
             _resizersInUse.push(el);
         }
     }
@@ -348,8 +346,7 @@ public class LayoutController extends EventDispatcher {
 
         _model.remove(element.layoutIndex);
         element.visible = false;
-        if (!weak) {
-            element.includeInLayout = false; //TODO: for what?
+        if (!weak){
             delete _model.elements[element.elementId];
         }
 
@@ -360,19 +357,15 @@ public class LayoutController extends EventDispatcher {
     }
 
 
-    public function removeFromLayout(element:ITreeLayoutElement):void {
-        //useVirtual = true;
-        removeElement(element, false);
-    }
-
 
     /** Expand module
      *
      * @param module
+     * @param update display list immediately or skip
      *
      */
 
-    public function expand(element:ITreeLayoutElement):void {
+    public function expand(element:ITreeLayoutElement, update:Boolean = true):void {
 
         if (_expanded)
             return;
@@ -381,7 +374,7 @@ public class LayoutController extends EventDispatcher {
 
         _expanded = true;
 
-        updateDisplayList();
+        update && updateDisplayList();
     }
 
 
@@ -563,8 +556,8 @@ public class LayoutController extends EventDispatcher {
         _minH = minHeight * (height / contMinHeight);
 
         if (_expanded) {
+            _expandedTarget.setLayoutBoundsSize(width, height);
             _expandedTarget.setLayoutBoundsPosition(0, 0);
-            _expandedTarget.setLayoutBoundsSize(_container.width, _container.height);
             return;
         }
 
@@ -575,8 +568,8 @@ public class LayoutController extends EventDispatcher {
             target = getElementById((_model.tree.data as LayoutElementData).id);
             if (!target)
                 return;
-            target.setLayoutBoundsPosition(0, 0);
             target.setLayoutBoundsSize(_container.width, _container.height);
+            target.setLayoutBoundsPosition(0, 0);
             target.layoutIndex = "";
             return;
         }
@@ -630,9 +623,10 @@ public class LayoutController extends EventDispatcher {
                 if (!target)
                     return;
                 target.layoutIndex = _node.key;
+                target.setLayoutBoundsSize(width - _gap,height - _gap);
                 target.setLayoutBoundsPosition(x, y);
-                target.width = width - _gap;
-                target.height = height - _gap;
+               // target.width = width - _gap;
+               // target.height = height - _gap;
 
                 var tempObj:Object = paramsStack.pop();
 

@@ -59,8 +59,6 @@
 
         private var _dragging:Boolean = false;
 
-        private var _panelToRemove:ITreeLayoutElement;
-
         //-------------- init handlers --------------//
 
         protected function preinitializeHandler(event:FlexEvent):void {
@@ -165,6 +163,15 @@
 
             elementContainer.addElement(panel);
             return panel;
+        }
+
+
+        public function destroyPanel(panel:IModulePanel):void{
+            if(!panel) return;
+
+            panel.content = null;
+
+            elementContainer.removeElement(panel);
         }
 
 
@@ -312,14 +319,23 @@
 
         protected function onMinMaxHandler(event:ModuleEvent):void {
             if (event.value) {
+
+                const panel:ModuleGroup =  event.target as ModuleGroup;
+
+                panel.dragBehavior.active = false;
+
                 elementContainer.setElementIndex(event.target as IVisualElement, elementContainer.numElements-1);
-                _controller.expand(event.target as ITreeLayoutElement);
+
+                _controller.expand(panel);
+
             } else
                 _controller.minimize(event.target as ITreeLayoutElement);
         }
 
         protected function onRemoveHandler(event:ModuleEvent):void {
-            _panelToRemove = event.target as ITreeLayoutElement;
+            var panelToRemove:ITreeLayoutElement = event.target as ITreeLayoutElement;
+
+            App.layout.commitRemoveElement(panelToRemove.elementId);
         }
 
         protected function onResizerHandler(event:ModuleEvent):void {

@@ -15,6 +15,7 @@ public interface ILayoutResizer{
 
     function set model(value:ResizerModel):void;
     function hide():void;
+    function show():void;
     function get key():String;
 
 }

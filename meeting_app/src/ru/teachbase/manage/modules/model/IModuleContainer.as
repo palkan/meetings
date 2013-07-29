@@ -14,6 +14,14 @@ public interface IModuleContainer{
     function createPanel(id:uint = 0):IModulePanel;
 
     /**
+     * Remove panel from stage.
+     *
+     * @param panel
+     */
+
+    function destroyPanel(panel:IModulePanel):void;
+
+    /**
      * Lock layout to prevent changes
      */
 

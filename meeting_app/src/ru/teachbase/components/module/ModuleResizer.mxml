@@ -38,6 +38,7 @@
 
     <fx:Script>
 		<![CDATA[
+        import mx.core.IVisualElementContainer;
         import mx.events.FlexEvent;
         import mx.managers.CursorManager;
         import mx.managers.CursorManagerPriority;
@@ -49,9 +50,8 @@
         import ru.teachbase.skins.cursors.HorizontalResizerCursor;
         import ru.teachbase.skins.cursors.VerticalResizerCursor;
 
-
         private var cursorClazz:Class;
-        public var container:DisplayObjectContainer;
+        public var container:IVisualElementContainer;
 
         private var _start:int;
         private var _delta:int;
@@ -61,7 +61,7 @@
         private function creationCompleteHandler(e:FlexEvent):void {
 
             setActualSize(Math.max(minWidth, width), Math.max(minHeight, height));
-            if(_model) model = _model;
+            if (_model) model = _model;
         }
 
 
@@ -110,10 +110,10 @@
 
             if (value === 0) {
                 cursorClazz = HorizontalResizerCursor;
-                setActualSize(_model.gap, _model.param);
+                setLayoutBoundsSize(_model.gap, _model.param);
             } else {
                 cursorClazz = VerticalResizerCursor;
-                setActualSize(_model.param, _model.gap);
+                setLayoutBoundsSize(_model.param, _model.gap);
             }
 
         }
@@ -121,46 +121,45 @@
 
         public function setParam(value:int):void {
             if (_model.direction === 0)
-                setActualSize(_model.gap, value);
+                setLayoutBoundsSize(_model.gap, value);
             else
-                setActualSize(value, _model.gap);
+                setLayoutBoundsSize(value, _model.gap);
         }
 
 
-        public function hide():void{
+        public function hide():void {
             this.visible = false;
             this.drag.active = false;
         }
 
 
-        public function set model(value:ResizerModel):void{
+        public function show():void {
+            this.visible = true;
+            this.drag.active = true;
+        }
+
+
+        public function set model(value:ResizerModel):void {
 
             _model = value;
 
             setDirection(_model.direction);
-            setParam(_model.param);
 
             drag.virtualBounds = _model.dragBounds;
             drag.direction = _model.direction;
 
-            drag.active = true;
-
-            this.x = _model.position.x;
-            this.y = _model.position.y;
-
-            this.visible = true;
+            setLayoutBoundsPosition(_model.position.x, _model.position.y);
 
         }
 
-        public function get key():String{
+        public function get key():String {
             return _model ? _model.key : '';
         }
-
         ]]>
 	</fx:Script>
     <s:Rect width="100%" height="100%" x="0" y="0">
         <s:fill>
-            <s:SolidColor color="0x333333" alpha.static="0" alpha.preparing="1" alpha.dragging="0.3"/>
+            <s:SolidColor color="0x11FF22" alpha.static="0.4" alpha.preparing="1" alpha.dragging="0.3"/>
         </s:fill>
     </s:Rect>
 </s:Group>

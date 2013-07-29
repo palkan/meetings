@@ -45,14 +45,13 @@
 
             if(!App.layout.layout_owner){
 
-                layoutLockButton.selected = false;
+                layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = false;
 
                 layoutLockButton.enabled = true;
 
             }else{
-                const flag:Boolean = App.user.sid == App.layout.layout_owner.sid;
 
-                layoutLockButton.enabled = layoutLockButton.selected = flag;
+                layoutLockButton.enabled = layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = App.layout.is_owner;
             }
 
         }
@@ -85,6 +84,8 @@
 
         <!--draggable content-->
         <c:SlidedActionBarGroup id="modulesGroup"
+                                visible="false"
+                                includeInLayout="false"
                                 includeIn="normal"
                                 dataProvider="{App.meeting.modulesCollection}"
                 />
@@ -104,6 +105,37 @@
                            preventToggle="true"
                            change="layoutLockButton.selected ? App.layout.lock() : App.layout.unlock()"
                 />
+        <c:ActionBarButton id="switch0"
+                           focusSkin="{null}"
+                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                           initialize="with(switch0){
+                                    toolTip=translate('mic_req','actionbar');
+                                    iconSelected=style('actionBar','layoutLockIcon');
+                                    iconOver=style('actionBar','layoutLockIconOver');
+                                    icon=style('actionBar','layoutLockIcon');}"
+                           click="App.layout.switchLayout(0)"
+                />
+        <c:ActionBarButton id="switch1"
+                           focusSkin="{null}"
+                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                           initialize="with(switch1){
+                                    toolTip=translate('mic_req','actionbar');
+                                    iconSelected=style('actionBar','layoutLockIcon');
+                                    iconOver=style('actionBar','layoutLockIconOver');
+                                    icon=style('actionBar','layoutLockIcon');}"
+                           click="App.layout.switchLayout(1)"
+                />
+        <c:ActionBarButton id="switch2"
+                           focusSkin="{null}"
+                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                           initialize="with(switch2){
+                                    toolTip=translate('mic_req','actionbar');
+                                    iconSelected=style('actionBar','layoutLockIcon');
+                                    iconOver=style('actionBar','layoutLockIconOver');
+                                    icon=style('actionBar','layoutLockIcon');}"
+                           click="App.layout.switchLayout(2)"
+                />
+
 
     </s:titleContent>
 

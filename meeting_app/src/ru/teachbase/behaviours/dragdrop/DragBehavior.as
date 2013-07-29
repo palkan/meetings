@@ -22,8 +22,9 @@ import ru.teachbase.behaviours.dragdrop.DragEvent;
 import ru.teachbase.behaviours.dragdrop.tb_drag;
 
 import ru.teachbase.utils.geom.angleAB;
+import ru.teachbase.utils.shortcuts.debug;
 
-    [Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
+[Event(name="dragPrepare", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
 	[Event(name="dragStart", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
 	[Event(name="dragCancel", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
 	[Event(name="dragEnd", type="ru.teachbase.behaviours.dragdrop.DragEvent")]
@@ -666,7 +667,7 @@ import ru.teachbase.utils.geom.angleAB;
 			
 			
 			_active = value;
-			
+
 			if(value)
 				addListeners();
 			else{

@@ -34,6 +34,8 @@
 
     <fx:Script>
 		<![CDATA[
+        import caurina.transitions.Tweener;
+
         import mx.events.FlexEvent;
 
         import ru.teachbase.behaviours.dragdrop.DragBehavior;
@@ -241,6 +243,8 @@
             }
 
         }
+
+
         ]]>
 	</fx:Script>
     <s:layout>
