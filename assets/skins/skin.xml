@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <skin>
 	<components>
-	
-	
 		<component name="wb">
 			<elements>
 				<element name="undo" src="undo.png"/>
@@ -412,7 +410,7 @@
 		<component name="modulecontainer">
 			<settings>
 				<setting name="background" value="0xEFEFEF"></setting>
-				<setting name="titlTextColor" value="0xDBDBDB"></setting>
+				<setting name="titleTextColor" value="0xDBDBDB"></setting>
 			</settings>
 			<elements>
 				<element name="actionbarLeftCorner" src="actionbar_left_corner.png"></element>

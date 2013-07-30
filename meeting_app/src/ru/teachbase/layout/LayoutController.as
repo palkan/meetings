@@ -64,8 +64,6 @@ public class LayoutController extends EventDispatcher {
 
     private var _locked:Boolean = true;
 
-    protected var _useVirtual:Boolean = false;
-
     public var maxId:int = 0;
 
 
@@ -216,7 +214,6 @@ public class LayoutController extends EventDispatcher {
      */
 
     public function resizeGroup(key:String, delta:int, dispatch:Boolean = true):void {
-        //useVirtual = true;
         _model.resize_group(key, delta);
 
         dispatch && dispatchLocalChanges("resize",{key:key,d:delta});
@@ -271,7 +268,7 @@ public class LayoutController extends EventDispatcher {
 
 
 
-    public function addElement(element:ITreeLayoutElement, elementTo:ITreeLayoutElement, direction:uint, dispatch:Boolean = true):void {
+    public function addElement(element:ITreeLayoutElement, elementTo:ITreeLayoutElement, direction:uint, dispatch:Boolean = false):void {
 
         var layout:uint = 0;
         var index:uint = 0;
@@ -411,6 +408,11 @@ public class LayoutController extends EventDispatcher {
         addElement(_model.elements[elementId] as ITreeLayoutElement, _model.elements[to] as ITreeLayoutElement, getDropDirectionByLayoutIndex(layout,index),false);
     }
 
+
+    tb_internal function resize(key:String, delta:Number):void{
+        resizeGroup(key,delta,false);
+    }
+
     tb_internal function move(from:uint, to:uint, layout:uint, index:uint):void {
 
         if (!exists(from) || !exists(to))
@@ -494,9 +496,6 @@ public class LayoutController extends EventDispatcher {
 
         var x:int = 0;
         var y:int = 0;
-        var right:Boolean = false;
-        var width:int = 1;
-        var height:int = 1;
         var flag:Boolean = true;
 
         var _node:TreeNode = _model.tree.left;
@@ -542,10 +541,11 @@ public class LayoutController extends EventDispatcher {
 
     public function updateDisplayList():void {
 
-        hideResizers();
 
         if (_model.num <= 0 || !this.active)
             return;
+
+        hideResizers();
 
 
         height = _container.height;

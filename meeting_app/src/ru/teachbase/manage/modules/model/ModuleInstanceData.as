@@ -39,10 +39,10 @@ public class ModuleInstanceData {
      * @param instance
      */
 
-    public function ModuleInstanceData(module:String = "", instance:uint = 0, panelId:uint = 0) {
+    public function ModuleInstanceData(module:String = "", instance:uint = 0, panel:uint = 0) {
         moduleId = module;
         instanceId = instance;
-        panelId = panelId;
+        panelId = panel;
     }
 }
 }

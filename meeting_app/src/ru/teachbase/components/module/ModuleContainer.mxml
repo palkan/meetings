@@ -30,6 +30,7 @@
         import ru.teachbase.layout.model.ITreeLayoutElement;
         import ru.teachbase.manage.layout.LayoutManager;
         import ru.teachbase.manage.modules.model.IModulePanel;
+        import ru.teachbase.manage.modules.model.ModuleInstanceData;
         import ru.teachbase.model.App;
         import ru.teachbase.skins.cursors.HorizontalResizerCursor;
         import ru.teachbase.skins.cursors.VerticalResizerCursor;
@@ -95,8 +96,8 @@
 
             // setup default panels
 
-            for each(var panelId:uint in App.layout.panel_ids) {
-                createPanel(panelId);
+            for each(var panel:ModuleInstanceData in App.layout.panels_to_init) {
+                createPanel(panel);
             }
 
             App.session.userReady();
@@ -143,12 +144,14 @@
         }
 
 
-        public function createPanel(id:uint = 0):IModulePanel {
+        public function createPanel(data:ModuleInstanceData):IModulePanel {
             var panel:ModuleGroup = new ModuleGroup();
 
-            panel.elementId = id ? id : _controller.maxId + 1;
+            panel.elementId = data ? data.panelId : _controller.maxId + 1;
             panel.container = this;
             panel.dropSpace = dropSpace;
+
+            panel.data = data;
 
             panel.visible = false;
 
@@ -169,7 +172,9 @@
         public function destroyPanel(panel:IModulePanel):void{
             if(!panel) return;
 
-            panel.content = null;
+            panel.hide();
+
+            _panels.splice(_panels.indexOf(panel),1);
 
             elementContainer.removeElement(panel);
         }
@@ -271,14 +276,10 @@
 
                 App.layout.commitAddElement(
                         _hoveredElement.elementId,
+                        dir,
                         index,
-                        dir
+                        button.module.moduleId
                 );
-
-
-                //THINK: storing module id in ModulesManager is not safe and kinda stupid. Maybe we need some redesign here, disjoin completely panels and modules.
-
-                App.modules.setModuleId(button.module.moduleId);
 
             }
 
@@ -340,7 +341,7 @@
 
         protected function onResizerHandler(event:ModuleEvent):void {
             if ((event.target as ModuleResizer) && event.value) {
-                _controller.resizeGroup((event.target as ModuleResizer).key, event.value);
+                App.layout.commitResizeElement((event.target as ModuleResizer).key, event.value);
             }
         }
 

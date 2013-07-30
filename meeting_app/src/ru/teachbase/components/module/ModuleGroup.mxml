@@ -52,8 +52,8 @@
         private var _id:uint;
 
         private var _title:String;
-        protected var _content:Vector.<IModuleContent>;
-        private var _currentContent:IModuleContent;
+        private var _content:IModuleContent;
+        private var _data:ModuleInstanceData;
         private var _locked:Boolean = false;
 
 
@@ -84,7 +84,7 @@
             __initialized = true;
 
             if (instancesToLoad) {
-                mainContent.addElement(_currentContent);
+                mainContent.addElement(_content);
                 instancesToLoad = false;
             }
 
@@ -93,18 +93,10 @@
         private function preinitializeHandler(e:FlexEvent):void {
             this.setStyle("backgroundColor", style('modulecontainer', 'background', 'string'));
 
-            var data:ModuleInstanceData = App.meeting.instancesById[elementId];
-
             // check if we have initialized instance for this panel
 
-            // if(data) content = [App.meeting.modules[data.moduleId].getVisual(data.instanceId)];
-
-            // else check if we have temp moduleId (for newly added module)
-
-            // else if(App.modules.getModuleId())  App.modules.registerModuleInstance(App.modules.getModuleId(),elementId);
-
+             if(data) content = App.meeting.modules[data.moduleId].getVisual(data.instanceId);
         }
-
 
 
         //------------ implementations ---------------//
@@ -121,29 +113,22 @@
             _id = value;
         }
 
-        public function set content(value:Array):void {
+        public function set content(value:IModuleContent):void {
 
-            if (!value || !(value is Array)) {
+            if (!value) {
                 hide();
                 mainContent.removeAllElements();
                 return;
             }
 
-            _title = (value[0] as IModuleContent).label;
-            _content = new Vector.<IModuleContent>();
+            _title = value.label;
+            _content = value;
 
-            const size:int = value.length;
-
-            // convert our array to vector (stop if we find a non-IModuleContent element or pass thru all
-
-            for (var i:int = 0; (_content[i] = value[i] as IModuleContent) && i < size; i++);
-
-            _currentContent = _content[0];
-            _currentContent.p_enabled = _p_enabled;
-            _currentContent.ownerPanel = this;
+            _content.p_enabled = _p_enabled;
+            _content.ownerPanel = this;
 
             if (this._initialized)
-                mainContent.addElement(_currentContent);
+                mainContent.addElement(_content);
             else
                 instancesToLoad = true;
         }
@@ -169,13 +154,11 @@
             titleBar.title = value;
         }
 
-        public function get currentContent():IModuleContent {
-            return _currentContent;
+        public function get content():IModuleContent {
+            return _content;
         }
 
-        public function set currentContent(value:IModuleContent):void {
-            _currentContent = value;
-        }
+
 
 
         //------------- ITreeLayoutElement
@@ -216,19 +199,20 @@
 
 
         public function hide():void {
-            for each (var el:IModuleContent in _content) {
-                el.hide();
-            }
+            _content.hide();
         }
 
 
         //---------------- handlers --------------//
 
-        private function dragPrepareHandler(e:DragEvent):void {}
+        private function dragPrepareHandler(e:DragEvent):void {
+        }
 
-        private function dragStartHandler(e:DragEvent):void {}
+        private function dragStartHandler(e:DragEvent):void {
+        }
 
-        private function dragEndHandler(e:DragEvent):void {}
+        private function dragEndHandler(e:DragEvent):void {
+        }
 
 
         //----------------- get/set ---------------//
@@ -245,11 +229,18 @@
         }
 
 
+        public function get data():ModuleInstanceData {
+            return _data;
+        }
+
+        public function set data(value:ModuleInstanceData):void {
+            _data = value;
+        }
         ]]>
 	</fx:Script>
     <s:layout>
         <s:VerticalLayout gap="0"/>
     </s:layout>
-    <components:ModuleHeader id="titleBar" width="100%" height="28" initialize="titleBar.target = this;"/>
-    <s:Group id="mainContent" width="100%" top="28" bottom="0"/>
+    <components:ModuleHeader id="titleBar" width="100%" height="28" initialize="titleBar.target = this; titleBar.locked = _locked;"/>
+    <s:Group id="mainContent" width="100%" height="100%" top="28" bottom="0"/>
 </s:SkinnableContainer>

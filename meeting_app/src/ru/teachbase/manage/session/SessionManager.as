@@ -328,6 +328,8 @@ public final class SessionManager extends Manager {
 
         _model.users = getValue(meeting_model, "users", [], isArray);
 
+        (_model.usersByID[App.user.sid] as User).iam = true;
+
         _model.tb_internal::setState(getValue(meeting_model, "state", MeetingState.LIVE));
         _model.tb_internal::setSettings(getValue(meeting_model, "settings", 0));
 

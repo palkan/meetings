@@ -11,7 +11,7 @@ public interface IModuleContainer{
      * @return
      */
 
-    function createPanel(id:uint = 0):IModulePanel;
+    function createPanel(data:ModuleInstanceData):IModulePanel;
 
     /**
      * Remove panel from stage.

@@ -25,7 +25,7 @@ public class TreeLayout extends LayoutBase
 			
 			if(_controller && _controller.initialized){
 				super.updateDisplayList(w, h);
-				_controller.updateDisplayList();
+                ((w != _w) || (h != _h)) && _controller.updateDisplayList();
 				_w = w;
 				_h = h;
 			}

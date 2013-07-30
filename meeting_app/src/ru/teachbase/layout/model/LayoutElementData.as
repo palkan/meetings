@@ -15,14 +15,20 @@ registerClazzAlias(LayoutElementData);
 		
 		public var id:int;
 
+        public var module:String = '';
+
+        public var instance_id:int = 0;
+
         private var _key:String;
 
-		public function LayoutElementData(width:int = 100, height:int = 100, instance:int = 1, layout:int = 0){
+		public function LayoutElementData(width:int = 100, height:int = 100, panel_id:int = 1, layout:int = 0, module:String = '', instance_id:uint = 0){
 		
 			this.width = width;
 			this.height = height;
-			this.id = instance;
+			this.id = panel_id;
 			this.layout = layout;
+            this.instance_id = instance_id;
+            this.module = module;
 		}
 		
 		
