@@ -16,6 +16,8 @@ import mx.core.IVisualElement;
 		
 		function get panelID():uint;
 		function set panelID(value:uint):void;
+
+        function get settings():Vector.<ModuleSettings>;
 		
 		function get instanceID():uint;
 		

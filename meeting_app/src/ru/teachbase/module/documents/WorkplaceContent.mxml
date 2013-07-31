@@ -69,7 +69,7 @@
 
             listener.initialize();
             listener.addEventListener(DocEvent.LOAD, handleMessage);
-            rtmp_history(PacketType.DOCUMENT+"::"+this.instanceID, new mx.rpc.Responder(historyHandler, null));
+            rtmp_history(PacketType.DOCUMENT+"::"+this.instanceID, new mx.rpc.Responder(historyHandler, $null));
             setsDP.push(new ModuleSettings("clear_workplace", ModuleSettings.FUN, clearWorkplace));
             setsDP.push(new ModuleSettings("save_screenshot", ModuleSettings.FUN, container.takeSnapshot))
 

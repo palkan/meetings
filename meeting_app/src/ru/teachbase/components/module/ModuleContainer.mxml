@@ -31,10 +31,12 @@
         import ru.teachbase.manage.layout.LayoutManager;
         import ru.teachbase.manage.modules.model.IModulePanel;
         import ru.teachbase.manage.modules.model.ModuleInstanceData;
+        import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.model.App;
         import ru.teachbase.skins.cursors.HorizontalResizerCursor;
         import ru.teachbase.skins.cursors.VerticalResizerCursor;
         import ru.teachbase.utils.Permissions;
+        import ru.teachbase.utils.shortcuts.debug;
         import ru.teachbase.utils.shortcuts.style;
 
         private const NAME:String = "modules";
@@ -59,6 +61,8 @@
         private var _snapshot:DraggleSnapshot = null;
 
         private var _dragging:Boolean = false;
+
+        private var _settingsCallout:SettingsCallout = new SettingsCallout();
 
         //-------------- init handlers --------------//
 
@@ -169,12 +173,12 @@
         }
 
 
-        public function destroyPanel(panel:IModulePanel):void{
-            if(!panel) return;
+        public function destroyPanel(panel:IModulePanel):void {
+            if (!panel) return;
 
             panel.hide();
 
-            _panels.splice(_panels.indexOf(panel),1);
+            _panels.splice(_panels.indexOf(panel), 1);
 
             elementContainer.removeElement(panel);
         }
@@ -321,11 +325,11 @@
         protected function onMinMaxHandler(event:ModuleEvent):void {
             if (event.value) {
 
-                const panel:ModuleGroup =  event.target as ModuleGroup;
+                const panel:ModuleGroup = event.target as ModuleGroup;
 
                 panel.dragBehavior.active = false;
 
-                elementContainer.setElementIndex(event.target as IVisualElement, elementContainer.numElements-1);
+                elementContainer.setElementIndex(event.target as IVisualElement, elementContainer.numElements - 1);
 
                 _controller.expand(panel);
 
@@ -346,20 +350,16 @@
         }
 
         protected function onSettingsHandler(event:ModuleEvent):void {
-            /* var _remset:ModuleSettings = new ModuleSettings("minimize", ModuleSettings.FUN, removeModule, event.target);
 
-             var _s:Vector.<ModuleSettings> = (event.target as ModuleGroup).currentContent.settings;
+            if (_settingsCallout.opened) _settingsCallout.close();
 
-             if (!_s)
-             _s = new Vector.<ModuleSettings>();
-             else
-             _s = _s.concat();
+            var _s:Vector.<ModuleSettings> = (event.target as ModuleGroup).content.settings;
 
-             _s.push(_remset);
+            if (!_s) return;
 
-             setsCallout.dataProvider = _s;
-             setsCallout.open((event.target as ModuleGroup).settins);
-             */
+            _settingsCallout.dataProvider = _s;
+            _settingsCallout.open((event.target as ModuleGroup).titleBar.settings_btn);
+
         }
 
         protected function onPermissionsChanged(event:PermissionEvent):void {

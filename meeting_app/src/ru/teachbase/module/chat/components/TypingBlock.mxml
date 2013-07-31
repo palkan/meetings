@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark">
+    <fx:Script><![CDATA[
+        import caurina.transitions.Tweener;
+
+        import ru.teachbase.model.User;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        private var _storage:Object = {};
+        private var _users:Vector.<User> = new <User>[];
+        private var _count:uint = 0;
+
+        public function add(user:User):void{
+
+            if(!user) return;
+
+            if(_storage[user.sid]){
+
+                clearTimeout(_storage[user.sid]['tid']);
+
+                var newTid:uint = setTimeout(timeoutFun(user.sid),3000);
+
+                _storage[user.sid]['tid'] = newTid;
+
+            }else{
+
+                var tid:uint = setTimeout(timeoutFun(user.sid),3000);
+
+                _storage[user.sid] = {tid:tid, user:user};
+
+                _users.push(user);
+
+                _count++;
+
+            }
+
+            updateText();
+        }
+
+
+        public function remove(sid:Number):void{
+
+            if(!_storage[sid]) return;
+
+            _users.splice(_users.indexOf(_storage[sid]['user']),1);
+
+            delete _storage[sid];
+
+            _count--;
+
+            updateText();
+        }
+
+
+        private function updateText():void{
+
+            if(_count < 1){
+                hide();
+                return;
+            }
+
+            !visible && show();
+
+            if(_count == 1) typingText.text = translate("writing", "chat", _users[0].fullName);
+
+            else if(_count % 10 < 5)  typingText.text = translate("writing_few", "chat", _count);
+
+            else  typingText.text = translate("writing_many", "chat", _count);
+
+        }
+
+
+        private function show():void{
+
+            visible = true;
+
+            Tweener.addTween(this,{alpha:0.3,time:.5,transition:"linear"});
+
+        }
+
+        private function hide():void{
+
+            Tweener.addTween(this,{alpha:0,time:.5,transition:"linear", onComplete: function(){ this.visible = false;}});
+
+        }
+
+
+        private function timeoutFun(sid:Number):Function{
+
+            return function(){ remove(sid);};
+
+        }
+
+
+
+
+        ]]></fx:Script>
+    <s:Rect width="100%" height="100%">
+        <s:fill>
+            <s:SolidColor color="#c7ecff" alpha="0.2"></s:SolidColor>
+        </s:fill>
+    </s:Rect>
+    <s:Label id="typingText" width="100%" color="0x595959" right="10" bottom="5" textAlign="right" fontSize="12"/>
+</s:Group>

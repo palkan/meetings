@@ -26,6 +26,7 @@ import ru.teachbase.module.board.style.FillStyle;
 import ru.teachbase.module.board.style.StrokeStyle;
 import ru.teachbase.skins.cursors.BoardCursor;
 import ru.teachbase.utils.helpers.getValue;
+import ru.teachbase.utils.shortcuts.$null;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.rtmp_send;
 import ru.teachbase.utils.shortcuts.style;
@@ -75,7 +76,7 @@ import ru.teachbase.utils.shortcuts.style;
 
 			listener.addEventListener(RTMPEvent.DATA, handleMessage);
 			
-			rtmp_history(PacketType.WHITEBOARD+"::"+id,new Responder(receiveHistory,null));
+			rtmp_history(PacketType.WHITEBOARD+"::"+id,new Responder(receiveHistory,$null));
 			
 			_cursorManager = new LiveCursorManager(_container, id);
 			

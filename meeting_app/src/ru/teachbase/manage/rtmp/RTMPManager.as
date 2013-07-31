@@ -81,12 +81,12 @@ public class RTMPManager extends Manager {
 
         function sendResult(result:*):void
         {
-            responder && responder.result is Function && responder.result(result);
+            responder && responder.result(result);
         }
 
         function sendError(error:*):void
         {
-            responder && responder.fault is Function && responder.fault(error);
+            responder && responder.fault(error);
         }
     }
 
@@ -103,6 +103,7 @@ public class RTMPManager extends Manager {
 
 
     tb_rtmp function incomingCall(name, ...args):void{
+        debug('Incoming Call:',args);
         (listeners[name] is Function) && listeners[name].apply(null,args);
     }
 

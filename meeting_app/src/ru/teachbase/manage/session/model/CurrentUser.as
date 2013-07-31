@@ -68,8 +68,8 @@ public class CurrentUser extends User {
 
 
     override public function set permissions(value:uint):void{
-        GlobalEvent.dispatch(GlobalEvent.PERMISSIONS_UPDATE,value);
         super.permissions = value;
+        GlobalEvent.dispatch(GlobalEvent.PERMISSIONS_UPDATE,value);
     }
 
     /**

@@ -27,6 +27,7 @@
 				<element name="minimize"><![CDATA[Свернуть окно]]></element>
 				<element name="clear_workplace"><![CDATA[Очистить рабочую область]]></element>
 				<element name="save_screenshot"><![CDATA[Сохранить скриншот]]></element>
+                <element name="export_user_list"><![CDATA[Экспорт списка пользователей]]></element>
 			</elements>
 		</component>
 		<component name="chat">
@@ -34,7 +35,9 @@
 				<element name="label"><![CDATA[Чат]]></element>
 				<element name="tooltip"><![CDATA[чат]]></element>
 				<element name="me"><![CDATA[Я]]></element>
-				<element name="writing"><![CDATA[${1} пишет...]]></element>
+				<element name="writing"><![CDATA[${1} печатает...]]></element>
+                <element name="writing_few"><![CDATA[${1} пользователя печатают...]]></element>
+                <element name="writing_many"><![CDATA[${1} пользователей печатают...]]></element>
 				<element name="rooms_button"><![CDATA[Список пользователей]]></element>
 				<element name="search_field"><![CDATA[Поиск...]]></element>
 				<element name="message_field"><![CDATA[Сообщение...]]></element>

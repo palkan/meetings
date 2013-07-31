@@ -24,15 +24,11 @@
 
         private var _dataProvider:Vector.<ModuleSettings>;
 
-
         public function set dataProvider(value:Vector.<ModuleSettings>):void {
 
-
-            while (numElements > 0)
-                removeElementAt(0);
+            removeAllElements();
 
             var but:Button;
-
 
             for each(var set:ModuleSettings in value) {
 

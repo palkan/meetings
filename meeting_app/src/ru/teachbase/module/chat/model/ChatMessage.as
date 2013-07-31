@@ -8,11 +8,9 @@ registerClazzAlias(ChatMessage);
 	public class ChatMessage
 	{
 		
-		public static const MESSAGE:String = 'message';
-		public static const TYPE_STARTED:String = 'typeStarted';
-		public static const TYPE_STOPPED:String = 'typeStopped';
-		
-		public static const CLEAR:String = "clear";
+		public static const MESSAGE:String = 'tb:chat:message';
+		public static const TYPING:String = 'tb:chat:typing';
+		public static const CLEAR:String = "tb:chat:clear";
 		
 		private var _uid:Number;
 		private var _body:String;
@@ -20,8 +18,8 @@ registerClazzAlias(ChatMessage);
 		private var _name:String;
 		private var _timestampL:Number;
 		private var _type:String;
-		
 		private var _to:Number = 0;
+        private var _localId:int = 0;
 		
 		
 		public function ChatMessage(uid:Number = 0, type:String = ChatMessage.MESSAGE, name:String = "", body:String = "")

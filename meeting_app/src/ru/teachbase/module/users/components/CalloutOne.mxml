@@ -39,7 +39,7 @@
         }
 
         private function changeRole():void {
-            if (_user.role == UserRoles.ADMIN) {
+            if (_user.isAdmin()) {
                 App.session.setUserRole(_user.sid, "user");
             } else {
                 App.session.setUserRole(_user.sid, "admin");
@@ -51,7 +51,7 @@
         public function localize():void {
 
             deleteUser && (deleteUser.label = translate('Delete'));
-            if (_user.role == UserRoles.ADMIN) {
+            if (_user.isAdmin()) {
                 setRole.label = translate('set_user', 'users');
             } else {
                 setRole.label = translate('set_admin', 'users');
@@ -77,7 +77,7 @@
 			
 		<s:VGroup gap="0" includeIn="normal" height="100%">
 			<s:Button id="setRole" fontSize="11" click="changeRole()" skinClass="ru.teachbase.skins.CalloutButtonSkin" 
-					  initialize="(_user.role === UserRoles.ADMIN) ? setRole.label = translate('set_user','users') : setRole.label = translate('set_admin','users'); setRole.includeInLayout=App.user.isAdmin()"/>
+					  initialize="(_user.isAdmin()) ? setRole.label = translate('set_user','users') : setRole.label = translate('set_admin','users'); setRole.includeInLayout=App.user.isAdmin()"/>
 			<s:Button id="startPC" fontSize="11" skinClass="ru.teachbase.skins.CalloutButtonSkin" 
 					  initialize="startPC.label=translate('start_private','users');" click="startPrivateChat(event)"/>
 			<s:Button id="deleteUser" fontSize="11" skinClass="ru.teachbase.skins.CalloutButtonSkin" 

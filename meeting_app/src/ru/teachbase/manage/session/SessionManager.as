@@ -183,7 +183,14 @@ public final class SessionManager extends Manager {
 
         if (!App.meeting.usersByID[sid] || !App.user.isAdmin()) return;
 
-        rtmp_call("set_role", null, sid, role);
+        var permissions:uint;
+        const user:User = App.meeting.usersByID[sid];
+
+        if(role == "admin")  permissions = user.permissions | Permissions.ADMIN;
+        else if(role == "user") permissions = user.permissions ^ Permissions.ADMIN;
+        else return;
+
+        rtmp_call("set_permissions", null, sid, permissions);
     }
 
 

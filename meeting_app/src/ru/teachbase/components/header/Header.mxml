@@ -13,6 +13,7 @@
         import mx.events.ResizeEvent;
 
         import ru.teachbase.components.*;
+        import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.layout.events.LayoutEvent;
 
         import ru.teachbase.manage.settings.SettingsManager;
@@ -32,7 +33,11 @@
 
             App.layout.controller.addEventListener(LayoutEvent.LOCK, layoutLockHandler);
 
+            GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE, permissionsHandler);
+
             if(App.layout.layout_owner) layoutLockButton.enabled = layoutLockButton.selected = false;
+
+            permissionsHandler();
 
         }
 
@@ -54,6 +59,12 @@
                 layoutLockButton.enabled = layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = App.layout.is_owner;
             }
 
+        }
+
+
+
+        private function permissionsHandler(e:GlobalEvent = null):void{
+            layoutGroup.visible = layoutGroup.includeInLayout = modulesGroup.visible = modulesGroup.includeInLayout = App.user.isAdmin();
         }
 
         ]]>
@@ -94,6 +105,7 @@
                  initialize="sep1.source = style('actionBar','separator')"/>
 
 
+        <s:HGroup id="layoutGroup">
         <c:ActionBarButton id="layoutLockButton"
                            focusSkin="{null}"
                            skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
@@ -135,6 +147,8 @@
                                     icon=style('actionBar','layoutLockIcon');}"
                            click="App.layout.switchLayout(2)"
                 />
+        </s:HGroup>
+
 
 
     </s:titleContent>

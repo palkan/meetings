@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:List xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        rollOut="__rollEvent(event)"
+        rollOver="__rollEvent(event)"
+        creationComplete="creationHandler(event)"
+        >
+
+    <fx:Script><![CDATA[
+        import ru.teachbase.skins.VerticalScrollerBlankSkin;
+        import ru.teachbase.skins.VerticalScrollerSkin;
+
+        protected function creationHandler(e:Event):void{
+
+            scroller.verticalScrollBar.setStyle("skinClass", VerticalScrollerBlankSkin);
+
+        }
+
+
+        protected function __rollEvent(e:MouseEvent):void{
+
+            if(!scroller || !scroller.verticalScrollBar) return;
+
+            scroller.verticalScrollBar.visible = e.type === MouseEvent.ROLL_OVER;
+
+            if(e.type === MouseEvent.ROLL_OVER)
+                scroller.verticalScrollBar.setStyle("skinClass", VerticalScrollerSkin);
+            else
+                scroller.verticalScrollBar.setStyle("skinClass", VerticalScrollerBlankSkin);
+        }
+
+
+
+        ]]></fx:Script>
+
+
+</s:List>

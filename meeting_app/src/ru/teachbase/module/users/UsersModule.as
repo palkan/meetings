@@ -2,7 +2,9 @@ package ru.teachbase.module.users
 {
 import ru.teachbase.manage.modules.model.IModuleContent;
 import ru.teachbase.manage.modules.model.Module;
-import ru.teachbase.utils.helpers.*;
+import ru.teachbase.manage.modules.model.ModuleSettings;
+import ru.teachbase.model.App;
+import ru.teachbase.utils.shortcuts.$null;
 import ru.teachbase.utils.shortcuts.style;
 
 /**
@@ -10,6 +12,8 @@ import ru.teachbase.utils.shortcuts.style;
 	 */
 	public final class UsersModule extends Module
 	{
+
+        private var _settings:Vector.<ModuleSettings>;
 		
 		//------------ constructor ------------//
 				
@@ -18,7 +22,11 @@ import ru.teachbase.utils.shortcuts.style;
 			super("users");
 			_icon = style("users","icon");
 			_iconHover = style("users","iconHover");
-			
+
+            _settings = new <ModuleSettings>[];
+
+            _settings.push(new ModuleSettings("export_user_list",ModuleSettings.FUN,$null)); // TODO: add this function!
+
 			singleton = true;
 		}
 		
@@ -40,22 +48,11 @@ import ru.teachbase.utils.shortcuts.style;
 		}
 		
 		//--------------- ctrl ---------------//
-		
-		/*public function addUser(room:Room, user:User):void
-		{
-			for each(var panel:UsersPanel in instances)
-				panel.addUser(user);
-		}
-		
-		public function removeUser(room:Room, user:User):void
-		{
-			for each(var panel:UsersPanel in instances)
-				panel.removeUser(user);
-		}
-		*/
 		//------------ get / set -------------//
-		
 		//------- handlers / callbacks -------//
-		
-	}
+
+    public function get settings():Vector.<ModuleSettings> {
+        return _settings;
+    }
+}
 }

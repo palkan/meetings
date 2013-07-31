@@ -11,6 +11,7 @@
 
     <fx:Script>
 		<![CDATA[
+        import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.model.App;
         import ru.teachbase.skins.VerticalScrollerSkin;
         import ru.teachbase.utils.Localizer;
@@ -31,6 +32,13 @@
             ownersList && (ownersList.label = translate('admins', 'users'));
             usersList && (usersList.label = translate('users', 'users'));
         }
+
+
+        override public function get settings():Vector.<ModuleSettings>{
+            return (ownerModule as UsersModule).settings;
+        }
+
+
         ]]>
 	</fx:Script>
     <s:Scroller width="100%" height="100%" horizontalScrollPolicy="off" id="myScroller">

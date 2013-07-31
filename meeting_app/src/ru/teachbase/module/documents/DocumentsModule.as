@@ -6,6 +6,7 @@ import mx.rpc.Responder;
 import ru.teachbase.manage.modules.model.IModuleContent;
 import ru.teachbase.manage.modules.model.Module;
 import ru.teachbase.module.documents.model.DocChangeData;
+import ru.teachbase.utils.shortcuts.$null;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.style;
 
@@ -30,7 +31,7 @@ public class DocumentsModule extends Module
 
             new DocChangeData();
 
-			rtmp_history("docs",new Responder(onHistory,null));
+			rtmp_history("docs",new Responder(onHistory,$null));
 			
 		}
 		

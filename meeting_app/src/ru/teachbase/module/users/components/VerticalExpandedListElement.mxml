@@ -13,9 +13,7 @@
             import mx.events.CollectionEvent;
 
             import ru.teachbase.model.App;
-
             import ru.teachbase.model.User;
-            import ru.teachbase.utils.Permissions;
 
             private var _dataProvider:ArrayCollection;
 
