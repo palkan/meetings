@@ -7,7 +7,7 @@
 
     <fx:Script>
 		<![CDATA[
-        import ru.teachbase.module.chat.model.PrivateChatElement;
+        import ru.teachbase.module.chat.model.ChatRoom;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
@@ -21,7 +21,7 @@
         }
 
         protected function onMouseClick(event:MouseEvent):void {
-            dispatchEvent(new ChatElementEvent(ChatElementEvent.CHAT_ELEMET_CLICK, data as PrivateChatElement, true));
+            dispatchEvent(new ChatElementEvent(ChatElementEvent.CHAT_ELEMENT_CLICK, data as ChatRoom, true));
         }
         ]]>
 	</fx:Script>
@@ -37,7 +37,7 @@
 	</s:Group>
 	
 	<s:Group width="100%" height="100%">
-		<s:Label text="{data.userName}" fontSize="13" left="10" verticalCenter="0" verticalAlign="middle"/>
+		<s:Label text="{data.roomName}" fontSize="13" left="10" verticalCenter="0" verticalAlign="middle"/>
 		<s:Group right="5" verticalCenter="0" visible="{data.unreadMessages &gt; 0}"> 
 			<s:BitmapImage id="redCircle" source="{style('chat','redCircle')}" right="0"/>
 			<s:Label id="newEventsField" text="{data.unreadMessages}" fontSize="11" top="2" color="0xFFFFFF" right="3" />

@@ -9,6 +9,8 @@
 		<![CDATA[
         import flash.net.NetStream;
 
+        import mx.collections.CursorBookmark;
+
         import mx.events.CollectionEvent;
 
         import mx.events.FlexEvent;
@@ -35,6 +37,8 @@
         private var _streams:int;
 
         private var _streamsDic:Dictionary = new Dictionary(true);
+
+        private var _p_enabled:Boolean = false;
 
         private function addedToStage(evt:Event):void {
             App.publisher.enable();
@@ -79,7 +83,7 @@
 
             vc.stream = ns;
             vc.from = userId;
-            vc.isAdmin = Permissions.isAdmin(permission);
+            vc.isAdmin = Permissions.isAdmin(permissions);
             vc.addEventListener("removeStream", onRemoveLocalStream);
             vc.addEventListener("removeUserStream", onRemoveUserStream);// убивает поток
             vc.addEventListener("removeVideo", onRemoveLocalVideo); // при переключении в аудио режим, не убивает поток
@@ -162,14 +166,14 @@
         }
 
 
-        override public function set permission(value:int):void {
-            p_enabled = Permissions.camAvailable(value);
+        override public function set permissions(value:uint):void {
+            _p_enabled = Permissions.camAvailable(value);
 
             for each(var el:IVideoContainer in elements)
                 el.isAdmin = Permissions.isAdmin(value);
 
 
-            super.permission = value;
+            super.permissions = value;
         }
         ]]>
 	</fx:Script>
@@ -180,7 +184,7 @@
         </s:layout>
     </s:Group>
     <s:VGroup horizontalCenter="0" verticalCenter="0"
-              visible="{_camVideoContainerInstance == null &amp;&amp; _streams == 0 &amp;&amp; p_enabled}">
+              visible="{_camVideoContainerInstance == null &amp;&amp; _streams == 0 &amp;&amp; _p_enabled}">
         <components:CustomSkinableButton id="bigButton"
                                          initialize="with(bigButton){iconUp=style('video','bigCameraButton');iconDown=style('video','bigCameraButtonDown');iconOver=style('video','bigCameraButtonHover');}"
                                          skinClass="ru.teachbase.skins.CustomSkiningButtonSkin" focusSkin="{null}"
@@ -190,7 +194,7 @@
                  width="100%" color="0x8196A6"/>
     </s:VGroup>
     <s:Group width="100%" bottom="0" left="0" right="0"
-             visible="{_camVideoContainerInstance == null &amp;&amp; _streams > 0 &amp;&amp; p_enabled}"
+             visible="{_camVideoContainerInstance == null &amp;&amp; _streams > 0 &amp;&amp; _p_enabled}"
              show="videoCont.bottom = 46" hide="videoCont.bottom = 0">
         <s:layout>
             <s:BasicLayout/>

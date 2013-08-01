@@ -471,9 +471,9 @@
         }
 
 
-        override public function set permission(value:int):void {
+        override public function set permissions(value:uint):void {
 
-            super.permission = value;
+            super.permissions = value;
 
             _isOwner = Permissions.docsAvailable(value);
         }

@@ -7,9 +7,23 @@ registerClazzAlias(ChatMessage);
 	
 	public class ChatMessage
 	{
-		
+        /**
+         *  True chat message
+         */
+
 		public static const MESSAGE:String = 'tb:chat:message';
+
+        /**
+         *  Typing message
+         */
+
 		public static const TYPING:String = 'tb:chat:typing';
+
+
+        /**
+         *  Clear chat message
+         */
+
 		public static const CLEAR:String = "tb:chat:clear";
 		
 		private var _uid:Number;
@@ -18,19 +32,33 @@ registerClazzAlias(ChatMessage);
 		private var _name:String;
 		private var _timestampL:Number;
 		private var _type:String;
-		private var _to:Number = 0;
-        private var _localId:int = 0;
+        private var _roomId:Number;
 		
 		
-		public function ChatMessage(uid:Number = 0, type:String = ChatMessage.MESSAGE, name:String = "", body:String = "")
+		public function ChatMessage(uid:Number = 0, roomId:Number = 0,  type:String = ChatMessage.MESSAGE, name:String = "", body:String = "")
 		{
 			
-			this.uid = uid;
-			this.body = body;
-			this.name = name;
-			this.type = type;
-			this.timestampL = (new Date()).time;		
+			_uid = uid;
+			_roomId = roomId;
+            _body = body;
+			_name = name;
+			_type = type;
+
+			_timestampL = (new Date()).time;
 		}
+
+        public function toString():String{
+
+            return _name+' ['+(new Date(_timestampS).toUTCString())+']: '+_body;
+
+        }
+
+        public function toCSVString():String{
+
+            return _name+';'+(new Date(_timestampS).toUTCString())+';'+_body;
+
+        }
+
 
 		public function get uid():Number
 		{
@@ -92,24 +120,12 @@ registerClazzAlias(ChatMessage);
 			_type = value;
 		}
 
-		/**
-		 * <b>Only for private chat.</b>
-		 * 
-		 * Sid of the recipient.
-		 *  
-		 * @return 
-		 * 
-		 */
-		public function get to():Number
-		{
-			return _to;
-		}
+        public function get roomId():Number {
+            return _roomId;
+        }
 
-		public function set to(value:Number):void
-		{
-			_to = value;
-		}
-
-
-	}
+        public function set roomId(value:Number):void {
+            _roomId = value;
+        }
+    }
 }

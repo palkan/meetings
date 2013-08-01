@@ -23,7 +23,7 @@ import mx.core.IVisualElement;
 		
 		function get label():String;
 
-		function set p_enabled(value:Boolean):void;
+		function set permissions(value:uint):void;
 		
 		function hide():void;
 		

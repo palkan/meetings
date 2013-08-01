@@ -75,7 +75,7 @@
 
         }
 
-        override public function set permission(value:int):void {
+        override public function set permissions(value:uint):void {
 
             //private function permissionChanged(evt:PermissionEvent):void{
             _isOwner = Permissions.docsAvailable(value);

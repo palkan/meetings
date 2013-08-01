@@ -43,6 +43,7 @@
 				<element name="message_field"><![CDATA[Message...]]></element>
 				<element name="send_button"><![CDATA[Send]]></element>
 				<element name="public_label"><![CDATA[Public chat]]></element>
+                <element name="admin_label"><![CDATA[Administrators]]></element>
 			</elements>
 		</component>
 		<component name="actionbar">

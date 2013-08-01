@@ -10,17 +10,16 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
-        import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.manage.modules.model.IModule;
         import ru.teachbase.manage.modules.model.IModulePanel;
+        import ru.teachbase.manage.modules.model.ModuleSettings;
 
         private var _ownerModule:IModule;
         private var _instanceID:uint;
         private var _label:String;
         private var _panelID:uint;
-        private var _permission:int;
+        private var _permissions:int;
         private var _ownerPanel:IModulePanel;
-        private var _p_enabled:Boolean;
 
 
         public function get ownerModule():IModule {
@@ -62,12 +61,12 @@
         }
 
 
-        public function set permission(value:int):void {
-            _permission = value;
+        public function set permissions(value:uint):void {
+            _permissions = value;
         }
 
-        public function get permission():int {
-            return _permission;
+        public function get permissions():uint {
+            return _permissions;
         }
 
         public function get settings():Vector.<ModuleSettings> {
@@ -82,15 +81,6 @@
         public function set ownerPanel(value:IModulePanel):void {
             _ownerPanel = value;
         }
-
-        public function get p_enabled():Boolean{
-            return _p_enabled;
-        }
-
-        public function set p_enabled(value:Boolean):void{
-            _p_enabled = value;
-        }
-
 
         ]]>
 	</fx:Script>

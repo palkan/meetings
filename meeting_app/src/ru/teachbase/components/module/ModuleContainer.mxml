@@ -24,6 +24,7 @@
         import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
         import ru.teachbase.behaviours.interfaces.IDropCoordinateSpace;
         import ru.teachbase.components.*;
+        import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.events.PermissionEvent;
         import ru.teachbase.layout.LayoutController;
         import ru.teachbase.layout.model.ILayoutResizer;
@@ -104,6 +105,9 @@
                 createPanel(panel);
             }
 
+
+            GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE,onPermissionsChanged);
+
             App.session.userReady();
         }
 
@@ -161,7 +165,7 @@
 
             panel.locked = _controller.locked;
 
-            panel.p_enabled = App.user.isAdmin();
+            panel.permissions = App.user.permissions;
 
             _controller.active = false;
 
@@ -362,11 +366,14 @@
 
         }
 
-        protected function onPermissionsChanged(event:PermissionEvent):void {
+        protected function onPermissionsChanged(event:GlobalEvent):void {
 
-            if (!Permissions.isAdmin(event.value)) lock();
-            else unlock();
+            if (App.layout.is_owner && !Permissions.isAdmin(event.value)){
+                App.layout.lock();
+            }
 
+            for each(var el:IModulePanel in _panels)
+                el.permissions = event.value;
         }
 
 

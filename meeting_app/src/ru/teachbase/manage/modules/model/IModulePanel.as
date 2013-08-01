@@ -12,6 +12,7 @@ public interface IModulePanel extends IElement, IVisualElement
 		function set title(title:String):void;
         function set locked(value:Boolean):void;
         function get locked():Boolean;
+        function set permissions(value:uint):void;
         function hide():void;
 	}
 }

@@ -49,8 +49,8 @@
 
         public function set p_enabled(value:Boolean):void {
             _p_enabled = value;
-            hide_btn.visible = !_locked && value;
-            settings_btn.visible = value;
+            hide_btn.visible = hide_btn.includeInLayout = !_locked && value;
+            settings_btn.visible = settings_btn.includeInLayout = value;
         }
 
         public function get expanded():Boolean {

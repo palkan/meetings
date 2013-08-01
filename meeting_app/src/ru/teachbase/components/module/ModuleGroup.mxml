@@ -47,6 +47,7 @@
         import ru.teachbase.manage.modules.model.IModuleContent;
         import ru.teachbase.manage.modules.model.ModuleInstanceData;
         import ru.teachbase.model.App;
+        import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.shortcuts.style;
 
         private var _id:uint;
@@ -69,7 +70,7 @@
 
         private var __initialized:Boolean = false;
 
-        private var _p_enabled:Boolean = true;
+        private var _permissions:uint = 0;
 
         private var _expanded:Boolean = false;
 
@@ -95,7 +96,7 @@
 
             // check if we have initialized instance for this panel
 
-             if(data) content = App.meeting.modules[data.moduleId].getVisual(data.instanceId);
+            if (data) content = App.meeting.modules[data.moduleId].getVisual(data.instanceId);
         }
 
 
@@ -124,7 +125,7 @@
             _title = value.label;
             _content = value;
 
-            _content.p_enabled = _p_enabled;
+            _content.permissions = _permissions;
             _content.ownerPanel = this;
 
             if (this._initialized)
@@ -157,8 +158,6 @@
         public function get content():IModuleContent {
             return _content;
         }
-
-
 
 
         //------------- ITreeLayoutElement
@@ -217,17 +216,15 @@
 
         //----------------- get/set ---------------//
 
+        public function set permissions(value:uint):void {
 
-        public function set p_enabled(value:Boolean):void {
+            _permissions = value;
 
-            titleBar && (titleBar.p_enabled = value);
+            titleBar && (titleBar.p_enabled = Permissions.docsAvailable(value));
 
-            for each (var el:IModuleContent in _content) {
-                el.p_enabled = value;
-            }
+             _content && (_content.permissions = value);
 
         }
-
 
         public function get data():ModuleInstanceData {
             return _data;

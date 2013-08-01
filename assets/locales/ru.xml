@@ -43,6 +43,7 @@
 				<element name="message_field"><![CDATA[Сообщение...]]></element>
 				<element name="send_button"><![CDATA[Отправить]]></element>
 				<element name="public_label"><![CDATA[Общий чат]]></element>
+                <element name="admin_label"><![CDATA[Администраторы]]></element>
 			</elements>
 		</component>
 		<component name="actionbar">

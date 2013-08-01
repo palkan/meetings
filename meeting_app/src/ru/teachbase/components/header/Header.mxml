@@ -148,9 +148,6 @@
                            click="App.layout.switchLayout(2)"
                 />
         </s:HGroup>
-
-
-
     </s:titleContent>
 
     <s:actionContent>
@@ -178,7 +175,6 @@
 						                        icon=style('actionBar','fullscreenIco');
 						                        iconOver=style('actionBar','fullscreenIcoHover');}"
                 />
-
         <c:ActionBarButton id="exitButton"
                            focusSkin="{null}"
                            skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"

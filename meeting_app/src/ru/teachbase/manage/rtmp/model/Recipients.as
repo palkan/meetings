@@ -6,7 +6,7 @@ package ru.teachbase.manage.rtmp.model
 	 */
 	public class Recipients
 	{
-		// groups
+
 		public static const ADMINS:uint = 1;
 		public static const ALL_EXCLUDE_ME:uint = 2;
 		public static const ALL:uint = 3;

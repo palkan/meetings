@@ -8,7 +8,7 @@ package ru.teachbase.utils {
  *  Bits order (left to right): GUEST, ADMIN, CAMERA, MIC, DOCS.
  *
  *  For example, 2#10001 represents guest user with only rights to work with docs;
- *  2#01111 represents administrator user (administrator always has all share rights).
+ *  2#01**** represents administrator user.
  *
  *  <b>Note:</b> administrator can be a guest (i.e. permissions' mask 2#11111 is possible).
  *
@@ -21,10 +21,10 @@ public class Permissions {
     public static const CAMERA:uint = 1 << 2;
     public static const MIC:uint = 1 << 1;
     public static const DOCS:uint = 1;
-
-    public static const ADMIN:uint = CAMERA + MIC + DOCS + (1 << 3);
-
+    public static const ADMIN:uint = 1 << 3;
     public static const GUEST:uint = 1 << 4;
+
+    public static const ADMIN_MASK:uint = CAMERA + MIC + DOCS + ADMIN;
 
     public function Permissions() {
     }
