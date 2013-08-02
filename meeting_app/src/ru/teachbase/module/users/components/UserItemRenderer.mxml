@@ -33,8 +33,7 @@
             }
 
             _user = value as User;
-            _userName = _user.fullName;
-            _user.suffix && (_userName += " " + (_user.suffix + 1).toString());
+            _userName = _user.extName;
 
             _callout1 = new CalloutOne();
             _callout1.user = value as User;

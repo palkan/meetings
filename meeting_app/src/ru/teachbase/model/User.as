@@ -130,6 +130,16 @@ public class User extends EventDispatcher{
         return isAdmin() ? UserRoles.ADMIN : UserRoles.USER;
     }
 
+    /**
+     * Get fullname with suffix (if exists)
+     */
+
+    public function get extName():String{
+
+        return suffix ? fullName+' '+suffix : fullName;
+
+    }
+
 
     /**
      * Define whether user share cam|mic|doc (using Permissions bitmask)

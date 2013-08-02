@@ -254,7 +254,7 @@ package ru.teachbase.utils {
 		}
 		
 		
-		public static function cutString(str:String, len:int):String{
+		public static function truncate(str:String, len:int):String{
 			if (str.length <= len) {
 				return str;
 			}

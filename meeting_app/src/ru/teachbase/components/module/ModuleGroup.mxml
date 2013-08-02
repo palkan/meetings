@@ -34,8 +34,6 @@
 
     <fx:Script>
 		<![CDATA[
-        import caurina.transitions.Tweener;
-
         import mx.events.FlexEvent;
 
         import ru.teachbase.behaviours.dragdrop.DragBehavior;
@@ -89,6 +87,7 @@
                 instancesToLoad = false;
             }
 
+            title = _title;
         }
 
         private function preinitializeHandler(e:FlexEvent):void {
@@ -222,7 +221,7 @@
 
             titleBar && (titleBar.p_enabled = Permissions.docsAvailable(value));
 
-             _content && (_content.permissions = value);
+            _content && (_content.permissions = value);
 
         }
 

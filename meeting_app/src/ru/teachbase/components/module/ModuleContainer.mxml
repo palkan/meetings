@@ -30,6 +30,7 @@
         import ru.teachbase.layout.model.ILayoutResizer;
         import ru.teachbase.layout.model.ITreeLayoutElement;
         import ru.teachbase.manage.layout.LayoutManager;
+        import ru.teachbase.manage.modules.model.IModule;
         import ru.teachbase.manage.modules.model.IModulePanel;
         import ru.teachbase.manage.modules.model.ModuleInstanceData;
         import ru.teachbase.manage.modules.model.ModuleSettings;
@@ -282,11 +283,16 @@
 
                 }
 
+                const mod:IModule = App.meeting.modules[button.module.moduleId];
+
+                if(!mod) return;
+
                 App.layout.commitAddElement(
                         _hoveredElement.elementId,
                         dir,
                         index,
-                        button.module.moduleId
+                        mod.moduleId,
+                        mod.singleton ? 1 : 0
                 );
 
             }

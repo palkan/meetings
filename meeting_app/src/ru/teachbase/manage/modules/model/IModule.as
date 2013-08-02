@@ -30,6 +30,8 @@ import ru.teachbase.manage.modules.ModulesManager;
 		function set available(value:Boolean):void;
 		
 		function get available():Boolean;
+
+        function get singleton():Boolean;
 		
 		//------- handlers / callbacks -------//
 	}

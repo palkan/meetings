@@ -24,10 +24,11 @@
 			<elements>
 				<element name="clear_chat"><![CDATA[Очистить чат]]></element>
 				<element name="copy_chat"><![CDATA[Копировать чат]]></element>
+                <element name="save_chat"><![CDATA[Сохранить чат]]></element>
 				<element name="minimize"><![CDATA[Свернуть окно]]></element>
 				<element name="clear_workplace"><![CDATA[Очистить рабочую область]]></element>
 				<element name="save_screenshot"><![CDATA[Сохранить скриншот]]></element>
-                <element name="export_user_list"><![CDATA[Экспорт списка пользователей]]></element>
+                <element name="export_user_list"><![CDATA[Сохранить список пользователей]]></element>
 			</elements>
 		</component>
 		<component name="chat">

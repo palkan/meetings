@@ -5,28 +5,42 @@
 
     <fx:Script>
 		<![CDATA[
+        import flashx.textLayout.elements.ParagraphElement;
+        import flashx.textLayout.elements.SpanElement;
+
         import ru.teachbase.utils.Strings;
 
         override public function set data(value:Object):void {
             super.data = value;
             if (!value)
                 return;
+
             const timer:Date = new Date(Math.floor(value.timestampS));
-            timeStamp.text = '(' + Strings.zero(timer.hours) + ':' + Strings.zero(timer.minutes) + '):';
+
+            var par:ParagraphElement = new ParagraphElement();
+            par.fontSize = 13;
+            par.color = "0x515151";
+
+            var span:SpanElement = new SpanElement();
+            span.color = "0x3E83B9";
+            span.text = data.name+' (' + Strings.zero(timer.hours) + ':' + Strings.zero(timer.minutes) + '): ';
+
+            par.addChild(span);
+
+            var span2:SpanElement = new SpanElement();
+            span2.text = data.body;
+
+            par.addChild(span2);
+
+            messageFlow.addChild(par);
         }
         ]]>
 	</fx:Script>
-	<s:Group height="100%" left="15" top="4" right="10" bottom="2" id="cont">
-		<s:layout>
-			<s:VerticalLayout gap="3"/>
-		</s:layout>
-		<s:HGroup gap="3">
-			<s:Label text="{data.name}" color="0x3E83B9" fontWeight="bold" fontSize="13"/>
-			<s:Label id="timeStamp" color="0x3E83B9" fontSize="13"/>
-		</s:HGroup>
-		<s:RichEditableText text="{data.body}"  multiline="true" width="100%" focusSkin="{null}" editable="false" 
-							color="0x515151" fontSize="13"/>
-	</s:Group>
+    <s:RichEditableText height="100%" left="15" top="4" right="10" bottom="2">
+        <s:textFlow>
+            <s:TextFlow id="messageFlow"/>
+        </s:textFlow>
+    </s:RichEditableText>
 </s:ItemRenderer>
 
 

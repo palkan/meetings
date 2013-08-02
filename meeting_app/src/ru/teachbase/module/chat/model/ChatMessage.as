@@ -25,7 +25,8 @@ registerClazzAlias(ChatMessage);
          */
 
 		public static const CLEAR:String = "tb:chat:clear";
-		
+
+        private var _id:int;
 		private var _uid:Number;
 		private var _body:String;
 		private var _timestampS:Number = 0;
@@ -126,6 +127,14 @@ registerClazzAlias(ChatMessage);
 
         public function set roomId(value:Number):void {
             _roomId = value;
+        }
+
+        public function get id():int {
+            return _id;
+        }
+
+        public function set id(value:int):void {
+            _id = value;
         }
     }
 }

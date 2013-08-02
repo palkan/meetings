@@ -1,6 +1,13 @@
 package ru.teachbase.module.chat.model {
+import flashx.textLayout.elements.FlowElement;
+import flashx.textLayout.elements.LinkElement;
+import flashx.textLayout.elements.ParagraphElement;
+import flashx.textLayout.elements.SpanElement;
+import flashx.textLayout.elements.TextFlow;
+
 import mx.collections.ArrayCollection;
-import mx.collections.CursorBookmark;
+
+import ru.teachbase.utils.Strings;
 
 public class ChatRoom {
 
@@ -13,6 +20,9 @@ public class ChatRoom {
     private var _visible:Boolean = false;
 
     private var _system:Boolean;
+
+    private var _textFlow:TextFlow;
+
 
     /**
      * Creates new chat room
@@ -27,6 +37,8 @@ public class ChatRoom {
         _roomName = name;
         _system = system;
         _messages = new ArrayCollection();
+
+        _textFlow = new TextFlow();
     }
 
     /**
@@ -42,6 +54,63 @@ public class ChatRoom {
         if(!_visible) _unreadMessages++;
 
         _messages.addItem(message);
+
+
+        const timer:Date = new Date(Math.floor(message.timestampS));
+
+        var par:ParagraphElement = new ParagraphElement();
+        par.fontSize = 13;
+        par.color = "0x515151";
+        par.paragraphEndIndent = 2;
+
+        var span:SpanElement = new SpanElement();
+        span.color = "0x3E83B9";
+        span.text = message.name+' (' + Strings.zero(timer.hours) + ':' + Strings.zero(timer.minutes) + '): ';
+
+        par.addChild(span);
+
+        var elements:Array = bodyToElements(message.body,[]);
+
+        for each(var el:FlowElement in elements) par.addChild(el);
+
+        _textFlow.addChild(par);
+
+    }
+
+
+    private function bodyToElements(body:String, elements:Array):Array{
+
+       if(!body) return elements;
+
+       var matches:Array =  body.match(/^(.+)?(http(?:s)?:\/\/[_\d\w\.\-]+\.\w{2,3}[^\s]+)(.+)?/);
+
+       if(matches){
+
+           if(matches[1]){
+               var span:SpanElement = new SpanElement();
+               span.text = matches[1];
+               elements.push(span);
+           }
+
+           var link:LinkElement = new LinkElement();
+           link.href = matches[2];
+           link.target = "_blank";
+
+           var linkSpan:SpanElement = new SpanElement();
+           linkSpan.text = matches[2];
+
+           link.addChild(linkSpan);
+
+           elements.push(link);
+
+           return bodyToElements(matches[3],elements);
+       }
+
+        var textSpan:SpanElement = new SpanElement();
+        textSpan.text = body;
+        elements.push(textSpan);
+
+        return elements;
     }
 
     /**
@@ -53,6 +122,7 @@ public class ChatRoom {
     public function clear():void{
         _totalMessages = _unreadMessages = 0;
         _messages.removeAll();
+        _textFlow.replaceChildren(0,_textFlow.numChildren);
     }
 
 
@@ -118,6 +188,10 @@ public class ChatRoom {
 
     public function get system():Boolean {
         return _system;
+    }
+
+    public function get textFlow():TextFlow {
+        return _textFlow;
     }
 }
 }

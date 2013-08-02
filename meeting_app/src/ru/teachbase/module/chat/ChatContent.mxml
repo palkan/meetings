@@ -22,7 +22,6 @@
         import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
-        import ru.teachbase.manage.rtmp.model.Packet;
         import ru.teachbase.manage.rtmp.model.Recipients;
         import ru.teachbase.manage.session.model.MeetingSettings;
         import ru.teachbase.model.App;
@@ -32,13 +31,16 @@
         import ru.teachbase.module.chat.model.ChatRoom;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.Permissions;
+        import ru.teachbase.utils.Strings;
         import ru.teachbase.utils.shortcuts.$null;
+        import ru.teachbase.utils.shortcuts.rtmp_call;
         import ru.teachbase.utils.shortcuts.rtmp_history;
         import ru.teachbase.utils.shortcuts.rtmp_send;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
         private const TYPING_WAIT_TIME:int = 2000;
+        private const MESSAGE_MAX_SIZE:int = 256;
 
         private const listener:RTMPListener = new RTMPListener(PacketType.CHAT);
         private const user:User = App.user;
@@ -52,6 +54,9 @@
 
         private var _adminsRoom:ChatRoom;
 
+        [Bindable]
+        private var _unreadCount:int = 0;
+
         private var _isTyping:Boolean = false;
 
         private var _typingID:uint;
@@ -60,6 +65,8 @@
         private var _privateChatEnabled:Boolean = false;
 
         private var _initialized:Boolean = false;
+
+        private var _lastMessageId:int = 0;
 
         //------------- initialization / creation------------------//
 
@@ -84,14 +91,14 @@
 
             _adminsRoom = new ChatRoom(Recipients.ADMINS, translate('admin_label', 'chat'), true);
 
-            if(App.user.isAdmin()){
+            if (App.user.isAdmin()) {
                 _roomsById[Recipients.ADMINS] = _adminsRoom;
                 _rooms.addItem(_adminsRoom);
             }
 
             _currentRoom = publicRoom;
             _currentRoom.visible = true;
-            messagesList.dataProvider = _currentRoom.messages;
+            messagesList.textFlow = _currentRoom.textFlow;
 
             _settings.push(new ModuleSettings("copy_chat", ModuleSettings.FUN, saveAsCSV));//getRawText));
             _settings.push(new ModuleSettings("clear_chat", ModuleSettings.FUN, clearChatHandler));
@@ -102,7 +109,7 @@
             _privateChatEnabled = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
             GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, settingsUpdate);
 
-            rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null));
+            rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null), 0, App.user.isAdmin() ? [Recipients.ALL, Recipients.ADMINS] : [Recipients.ALL]);
         }
 
 
@@ -152,7 +159,7 @@
                 return;
             }
 
-            sendMessage(inputField.text);
+            sendMessage(Strings.truncate(inputField.text, MESSAGE_MAX_SIZE));
 
             inputField.text = '';
         }
@@ -162,10 +169,6 @@
             var m:ChatMessage = e.packet.data as ChatMessage;
 
             if (!m) return;
-
-            // Set server time from packet !important
-
-            m.timestampS = e.packet.timeS;
 
             switch (m.type) {
                 case ChatMessage.MESSAGE:
@@ -184,13 +187,8 @@
 
         private function historyHandler(arr:Array):void {
 
-            for each(var p:Packet in arr) {
-
-                var mes:ChatMessage = p.data as ChatMessage;
-                if (mes.type == ChatMessage.MESSAGE) {
-                    mes.timestampS = p.timeS;
-                    addMessage(mes);
-                }
+            for each(var mes:ChatMessage in arr) {
+                addMessage(mes);
             }
 
             listener.readyToReceive = true;
@@ -205,19 +203,17 @@
 
             if (!_currentRoom) return;
 
-            var spDelta:Point = messagesList.dataGroup.layout.getScrollPositionDeltaToElement(_currentRoom.all().length - 1);
-            if (!spDelta) return;
-
-            Tweener.addTween(messagesList.layout, {verticalScrollPosition: messagesList.dataGroup.contentHeight, time: 0.5, transition: "easeOutSine"});
+            Tweener.addTween(messagesScroller.viewport, {verticalScrollPosition: messagesScroller.viewport.contentHeight, time: 0.5, transition: "easeOutSine"});
         }
 
 
         public function clearChatHandler():void {
-            if (_currentRoom) return;
+            if (!_currentRoom) return;
             rtmp_send(PacketType.CHAT, new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.CLEAR), _currentRoom.roomId);
         }
 
         private function roomsListClick(event:MouseEvent):void {
+            _currentRoom.visible = false;
             currentState = roomsState.name;
             label = translate('users', 'users');
             _rooms.source.sort(compareChatRooms);
@@ -238,7 +234,7 @@
         }
 
 
-        public function saveAsCSV():void{
+        public function saveAsCSV():void {
 
             if (!_currentRoom) return;
 
@@ -257,9 +253,12 @@
 
 
         private function clearChat(roomId:Number):void {
+
             if (!_roomsById[roomId]) return;
 
             const room:ChatRoom = _roomsById[roomId] as ChatRoom;
+
+            _unreadCount -= room.unreadMessages;
 
             room.clear();
         }
@@ -269,7 +268,7 @@
 
             if (!_currentRoom) return;
 
-            var m:ChatMessage = new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.MESSAGE, user.fullName, body);
+            var m:ChatMessage = new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.MESSAGE, user.extName, body);
 
             rtmp_send(PacketType.CHAT, m, _currentRoom.roomId);   // roomId is equal to Recipients code or user's sid
         }
@@ -291,17 +290,28 @@
             if (m.uid == user.sid)
                 m.name = translate('me', 'chat');
 
-            if (!_roomsById[m.roomId]) addRoom(m.roomId, m.name);   // create private chat with user (so message name == user.fullName)
+            if (!_roomsById[m.roomId]) addRoom(m.roomId, m.name);   // create private chat with user (so message name == user.extName)
 
             (_roomsById[m.roomId] as ChatRoom).add(m);
 
+            _lastMessageId = m.id;
+
             if (_currentRoom.roomId == m.roomId && currentState == chatState.name) {
                 messagesList.addEventListener(FlexEvent.UPDATE_COMPLETE, scrollToSelectedIndexHandler);
-                messagesList.validateNow();
-            }
+              //  messagesScroller.validateNow();
+            } else if (currentState == roomsState.name) {
+                _rooms.source.sort(compareChatRooms);
+                _rooms.refresh();
+                roomsList.validateNow();
+                _unreadCount++;
+            } else _unreadCount++;
+
+
         }
 
         private function addRoom(id:Number, name:String):void {
+
+            if (_roomsById[id]) return;
 
             var room:ChatRoom = new ChatRoom(id, name);
 
@@ -312,21 +322,19 @@
 
         private function switchChatRoom(id:Number):void {
 
-            const user:User = App.meeting.usersByID[id];
-
-            if (!_roomsById[id] && !user) return;
-
-            if (!_roomsById[id]) addRoom(id, user.fullName);
+            if (!_roomsById[id]) return;
 
             _currentRoom.visible = false;
 
             _currentRoom = _roomsById[id];
 
+            _unreadCount -= _currentRoom.unreadMessages;
+
             _currentRoom.visible = true;
 
             label = translate('label', 'chat') + ": " + _currentRoom.roomName;
 
-            messagesList.dataProvider = _currentRoom.messages;
+            messagesList.textFlow = _currentRoom.textFlow;
 
             currentState = chatState.name;
         }
@@ -347,9 +355,17 @@
         }
 
         private function globalEventHandler(evt:GlobalEvent):void {
-            if (evt.type == GlobalEvent.START_PRIVATE_CHAT) {
-                switchChatRoom(Number(evt.value));
+
+            const room_name:String = (App.meeting.usersByID[Number(evt.value)] as User).extName;
+
+            rtmp_call("create_chat", new mx.rpc.Responder(success, $null), [App.user.sid, Number(evt.value)]);
+
+            function success(room_id:Number):void {
+                addRoom(room_id, room_name);
+                switchChatRoom(room_id);
             }
+
+
         }
 
 
@@ -376,21 +392,24 @@
         override public function set permissions(value:uint):void {
             super.permissions = value;
 
-            if(!_initialized) return;
+            if (!_initialized) return;
 
-            if(!Permissions.isAdmin(value)){
+            if (!Permissions.isAdmin(value)) {
 
-                if(!_roomsById[_adminsRoom.roomId]) return;
+                if (!_roomsById[_adminsRoom.roomId]) return;
 
-                if(_currentRoom.roomId == _adminsRoom.roomId) switchChatRoom(Recipients.ALL);
+                if (_currentRoom.roomId == _adminsRoom.roomId) switchChatRoom(Recipients.ALL);
 
                 delete _roomsById[_adminsRoom.roomId];
 
                 _rooms.removeItemAt(_rooms.getItemIndex(_adminsRoom));
 
-            }else{
+                _unreadCount -= _adminsRoom.unreadMessages;
+                _adminsRoom.clear();
 
-                if(_roomsById[_adminsRoom.roomId]) return;
+            } else {
+
+                if (_roomsById[_adminsRoom.roomId]) return;
 
                 _roomsById[_adminsRoom.roomId] = _adminsRoom;
 
@@ -432,25 +451,11 @@
     </module:states>
 
     <s:VGroup gap="0" width="100%" height="100%">
-    <!--components:CustomSkinableButton id="publicChatButton"
-                                     width="100%" height="25"
-                                     skinClass="ru.teachbase.module.chat.components.PublicChatButtonSkin"
-                                     initialize="with(publicChatButton) {iconUp=style('users','toggleButtonBg'); iconOver=style('users','toggleButtonBg'); iconDown=style('users','toggleButtonBg');label=translate('public_label','chat') }"
-                                     click="onPublicChatClick()"
-                                     includeIn="roomsList, private"/-->
 
-    <components:ScrollList id="messagesList"
-            includeIn="chat"
-            itemRenderer="ru.teachbase.module.chat.components.ChatMesssageRenderer"
-            width="100%" height="100%"
-            contentBackgroundAlpha="1"
-            horizontalScrollPolicy="off"
-            verticalScrollPolicy="on"
-      >
-        <components:layout>
-            <s:VerticalLayout gap="0"/>
-        </components:layout>
-    </components:ScrollList>
+    <components:HidingScroller width="100%" height="100%" verticalScrollPolicy="on" horizontalScrollPolicy="off" includeIn="chat" id="messagesScroller">
+        <s:RichEditableText height="100%" width="100%" id="messagesList" editable="false" paddingLeft="10" paddingRight="10" paddingTop="5" paddingBottom="5">
+        </s:RichEditableText>
+    </components:HidingScroller>
 
     <components:ScrollList id="roomsList"
             includeIn="roomsList"
@@ -548,9 +553,9 @@
                                              skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
 
         </s:Group>
-        <s:Group top="3" left="27" id="unreadGroup" visible="false">
+        <s:Group top="3" left="27" id="unreadGroup" visible="{_unreadCount > 0}" includeIn="chat">
             <s:BitmapImage id="redCircle" source="{style('chat','redCircle')}" right="0"/>
-            <s:Label id="unreadCount" text="" fontSize="11" top="2" color="0xFFFFFF" right="3"/>
+            <s:Label id="unreadCount" text="{_unreadCount}" fontSize="11" top="2" color="0xFFFFFF" right="3"/>
         </s:Group>
     </s:Group>
     </s:VGroup>
