@@ -18,6 +18,7 @@
 				<element name="turn_on">enable</element>
 				<element name="turn_off">disable</element>
 				<element name="save">save</element>
+                <element name="offline">offline</element>
 			</elements>
 		</component>
 		<component name="module_settings">

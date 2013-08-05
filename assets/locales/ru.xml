@@ -18,6 +18,7 @@
 				<element name="turn_on">включить</element>
 				<element name="turn_off">выключить</element>
 				<element name="save">сохранить</element>
+                <element name="offline">не в сети</element>
 			</elements>
 		</component>
 		<component name="module_settings">

@@ -1,4 +1,5 @@
 package ru.teachbase.module.chat.model {
+import flashx.textLayout.elements.DivElement;
 import flashx.textLayout.elements.FlowElement;
 import flashx.textLayout.elements.LinkElement;
 import flashx.textLayout.elements.ParagraphElement;
@@ -64,7 +65,7 @@ public class ChatRoom {
         par.paragraphEndIndent = 2;
 
         var span:SpanElement = new SpanElement();
-        span.color = "0x3E83B9";
+        span.color = message.color;
         span.text = message.name+' (' + Strings.zero(timer.hours) + ':' + Strings.zero(timer.minutes) + '): ';
 
         par.addChild(span);
@@ -73,7 +74,13 @@ public class ChatRoom {
 
         for each(var el:FlowElement in elements) par.addChild(el);
 
+        // HACK: RichEditableText create empty Paragraph if TextFlow has no children; but we don't need this fucking paragraph - remove!
+
+        if(_totalMessages === 1 && _textFlow.numChildren === 1) _textFlow.removeChildAt(0);
+
         _textFlow.addChild(par);
+
+
 
     }
 
@@ -155,6 +162,10 @@ public class ChatRoom {
         return _roomName;
     }
 
+    public function set roomName(value:String):void {
+        _roomName = value;
+    }
+
 
     /**
      *  Either user's sid (if it's a private chat) or system id for 'ALL'/'ADMINS'
@@ -193,5 +204,7 @@ public class ChatRoom {
     public function get textFlow():TextFlow {
         return _textFlow;
     }
+
+
 }
 }

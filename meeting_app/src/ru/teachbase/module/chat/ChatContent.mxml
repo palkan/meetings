@@ -29,6 +29,7 @@
         import ru.teachbase.module.chat.components.ChatElementEvent;
         import ru.teachbase.module.chat.model.ChatMessage;
         import ru.teachbase.module.chat.model.ChatRoom;
+        import ru.teachbase.utils.LocalFile;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.Strings;
@@ -42,6 +43,9 @@
         private const TYPING_WAIT_TIME:int = 2000;
         private const MESSAGE_MAX_SIZE:int = 256;
 
+        private const USER_DEFAULT_COLOR:String = "0x3E83B9";
+        private const ADMIN_DEFAULT_COLOR:String = "0xFF0359";
+
         private const listener:RTMPListener = new RTMPListener(PacketType.CHAT);
         private const user:User = App.user;
 
@@ -50,9 +54,12 @@
 
         private var _rooms:ArrayCollection;
         private var _roomsById:Object = {};
+        private var _roomsByUserId:Object = {};
         private var _currentRoom:ChatRoom;
 
         private var _adminsRoom:ChatRoom;
+
+        private var _myColor:String = USER_DEFAULT_COLOR;
 
         [Bindable]
         private var _unreadCount:int = 0;
@@ -94,13 +101,16 @@
             if (App.user.isAdmin()) {
                 _roomsById[Recipients.ADMINS] = _adminsRoom;
                 _rooms.addItem(_adminsRoom);
+
+                _myColor = ADMIN_DEFAULT_COLOR;
             }
 
             _currentRoom = publicRoom;
             _currentRoom.visible = true;
             messagesList.textFlow = _currentRoom.textFlow;
 
-            _settings.push(new ModuleSettings("copy_chat", ModuleSettings.FUN, saveAsCSV));//getRawText));
+            _settings.push(new ModuleSettings("copy_chat", ModuleSettings.FUN, getRawText));
+            _settings.push(new ModuleSettings("save_chat", ModuleSettings.FUN, saveAsCSV));
             _settings.push(new ModuleSettings("clear_chat", ModuleSettings.FUN, clearChatHandler));
 
             listener.addEventListener(RTMPEvent.DATA, handleMessage);
@@ -108,6 +118,7 @@
 
             _privateChatEnabled = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
             GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, settingsUpdate);
+            GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, userLeaveHandler);
 
             rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null), 0, App.user.isAdmin() ? [Recipients.ALL, Recipients.ADMINS] : [Recipients.ALL]);
         }
@@ -128,6 +139,29 @@
                 currentState = chatState.name;
             }
 
+        }
+
+
+        private function userLeaveHandler(e:GlobalEvent):void {
+
+            const uid:Number = (e.value as User).sid;
+
+            if (_roomsByUserId[uid]) {
+                const room:ChatRoom = _roomsByUserId[uid] as ChatRoom;
+                room.active = false;
+                room.roomName += ' (' + translate('offline') + ')';
+
+                if (_currentRoom.roomId == room.roomId) {
+                    label = translate('label', 'chat') + ": " + _currentRoom.roomName;
+                    inputField.enabled = false;
+                }
+
+                if (currentState == roomsState.name) {
+                    _rooms.source.sort(compareChatRooms);
+                    _rooms.refresh();
+                    roomsList.validateNow();
+                }
+            }
         }
 
         private function typingStopped():void {
@@ -244,8 +278,7 @@
 
             const data:String = messagesToStr.join("\n");
 
-            var fileReference:FileReference = new FileReference();
-            fileReference.save(data, "chat_log.csv");
+            LocalFile.save(data, 'chat_log.csv');
 
         }
 
@@ -268,7 +301,7 @@
 
             if (!_currentRoom) return;
 
-            var m:ChatMessage = new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.MESSAGE, user.extName, body);
+            var m:ChatMessage = new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.MESSAGE, user.extName, body, _myColor);
 
             rtmp_send(PacketType.CHAT, m, _currentRoom.roomId);   // roomId is equal to Recipients code or user's sid
         }
@@ -290,7 +323,7 @@
             if (m.uid == user.sid)
                 m.name = translate('me', 'chat');
 
-            if (!_roomsById[m.roomId]) addRoom(m.roomId, m.name);   // create private chat with user (so message name == user.extName)
+            if (!_roomsById[m.roomId]) addRoom(m.roomId, m.name, m.uid);   // create private chat with user (so message name == user.extName)
 
             (_roomsById[m.roomId] as ChatRoom).add(m);
 
@@ -298,7 +331,6 @@
 
             if (_currentRoom.roomId == m.roomId && currentState == chatState.name) {
                 messagesList.addEventListener(FlexEvent.UPDATE_COMPLETE, scrollToSelectedIndexHandler);
-              //  messagesScroller.validateNow();
             } else if (currentState == roomsState.name) {
                 _rooms.source.sort(compareChatRooms);
                 _rooms.refresh();
@@ -309,7 +341,7 @@
 
         }
 
-        private function addRoom(id:Number, name:String):void {
+        private function addRoom(id:Number, name:String, user_id:Number = 0):void {
 
             if (_roomsById[id]) return;
 
@@ -317,6 +349,8 @@
 
             _roomsById[room.roomId] = room;
             _rooms.addItem(room);
+
+            user_id && (_roomsByUserId[user_id] = room);
 
         }
 
@@ -335,6 +369,8 @@
             label = translate('label', 'chat') + ": " + _currentRoom.roomName;
 
             messagesList.textFlow = _currentRoom.textFlow;
+
+            inputField.enabled = _currentRoom.active;
 
             currentState = chatState.name;
         }
@@ -371,9 +407,11 @@
 
         private function compareChatRooms(a:ChatRoom, b:ChatRoom, arr:Array = null):int {
 
-            if (a.system && !b.system) return  -1;
+            if (a.system != b.system) return  a.system ? -1 : 1;
 
             if (a.system && b.system) return a.roomId > b.roomId ? -1 : 1;
+
+            if (a.active != b.active) return a.active ? -1 : 1;
 
             if (a.unreadMessages == b.unreadMessages) return 0;
 
@@ -407,6 +445,8 @@
                 _unreadCount -= _adminsRoom.unreadMessages;
                 _adminsRoom.clear();
 
+                _myColor = USER_DEFAULT_COLOR;
+
             } else {
 
                 if (_roomsById[_adminsRoom.roomId]) return;
@@ -414,6 +454,8 @@
                 _roomsById[_adminsRoom.roomId] = _adminsRoom;
 
                 _rooms.addItem(_adminsRoom);
+
+                _myColor = ADMIN_DEFAULT_COLOR;
 
             }
 

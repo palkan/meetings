@@ -82,6 +82,13 @@ public class User extends EventDispatcher{
 
 
     /**
+     * E-mail
+     */
+
+    public var email:String;
+
+
+    /**
      * Is <code>true</code> iff this is a current user
      *
      *  @default null
@@ -119,6 +126,17 @@ public class User extends EventDispatcher{
         return Permissions.isAdmin(_permissions);
     }
 
+    /**
+     *
+     * @return
+     */
+
+    public function toCSVString():String{
+
+        return fullName + ';'+id+';'+role+';'+email;
+
+    }
+
     //------------ get / set -------------//
 
 
@@ -136,7 +154,7 @@ public class User extends EventDispatcher{
 
     public function get extName():String{
 
-        return suffix ? fullName+' '+suffix : fullName;
+        return suffix ? fullName+' '+(suffix+1) : fullName;
 
     }
 

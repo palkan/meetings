@@ -34,9 +34,10 @@ registerClazzAlias(ChatMessage);
 		private var _timestampL:Number;
 		private var _type:String;
         private var _roomId:Number;
+        private var _color:String;
 		
 		
-		public function ChatMessage(uid:Number = 0, roomId:Number = 0,  type:String = ChatMessage.MESSAGE, name:String = "", body:String = "")
+		public function ChatMessage(uid:Number = 0, roomId:Number = 0,  type:String = ChatMessage.MESSAGE, name:String = "", body:String = "", color:String = "")
 		{
 			
 			_uid = uid;
@@ -44,6 +45,7 @@ registerClazzAlias(ChatMessage);
             _body = body;
 			_name = name;
 			_type = type;
+            _color = color;
 
 			_timestampL = (new Date()).time;
 		}
@@ -135,6 +137,18 @@ registerClazzAlias(ChatMessage);
 
         public function set id(value:int):void {
             _id = value;
+        }
+
+        /**
+         * Color of name-date block of a message.
+         */
+
+        public function get color():String {
+            return _color;
+        }
+
+        public function set color(value:String):void {
+            _color = value;
         }
     }
 }
