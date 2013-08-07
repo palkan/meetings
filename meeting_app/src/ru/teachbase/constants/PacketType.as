@@ -19,6 +19,7 @@ package ru.teachbase.constants
 		public static const SCREEN_SHARING:String = 'screen_sharing';
         public static const MODULE:String = "modules";
         public static const STREAM:String = "stream";
+        public static const PUBLISH:String = "publish";
 
 	}
 }

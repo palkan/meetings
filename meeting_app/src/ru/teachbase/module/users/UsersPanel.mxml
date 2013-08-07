@@ -2,29 +2,57 @@
 <module:ModuleInstance xmlns:fx="http://ns.adobe.com/mxml/2009"
                        xmlns:s="library://ns.adobe.com/flex/spark"
                        xmlns:module="ru.teachbase.components.module.*"
+                       xmlns:components="ru.teachbase.components.*"
                        implements="ru.teachbase.utils.interfaces.ILocalable"
                        initialize="label=translate('label','users');Localizer.addItem(this);"
                        xmlns:components1="ru.teachbase.module.users.components.*"
+                       creationComplete="creationCompleteHandler(event)"
         >
     <fx:Declarations>
     </fx:Declarations>
 
     <fx:Script>
 		<![CDATA[
+        import mx.collections.ArrayCollection;
+        import mx.events.CollectionEvent;
+
         import ru.teachbase.manage.modules.model.ModuleSettings;
         import ru.teachbase.model.App;
-        import ru.teachbase.skins.VerticalScrollerSkin;
+        import ru.teachbase.model.User;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.shortcuts.translate;
+
+        private function creationCompleteHandler(e:Event):void {
+
+            App.meeting.usersList.addEventListener(CollectionEvent.COLLECTION_CHANGE, usersUpdateHandler);
+
+            usersUpdateHandler();
+
+        }
+
+
+        protected function usersUpdateHandler(e:CollectionEvent = null):void {
+
+            const compared:Array = App.meeting.usersList.source.sort(compare);
+
+            ownersList.dataProvider = new ArrayCollection(compared.filter(filterAdmin));
+            usersList.dataProvider =  new ArrayCollection(compared.filter(filterUser));
+
+        }
+
+
+        private function filterUser(user:User, index:int = 0, arr:Array = null):Boolean {
+            return !user.isAdmin();
+        }
+
+        private function filterAdmin(user:User, index:int = 0, arr:Array = null):Boolean {
+            return user.isAdmin();
+        }
+
 
         internal function clear():void {
             ownersList.dataProvider = null;
             usersList.dataProvider = null;
-        }
-
-        protected function myScrollerAddedToStageHandler(event:Event):void {
-            if (myScroller && myScroller.verticalScrollBar)
-                myScroller.verticalScrollBar.setStyle("skinClass", VerticalScrollerSkin);
         }
 
         public function localize():void {
@@ -34,25 +62,38 @@
         }
 
 
-        override public function get settings():Vector.<ModuleSettings>{
-            return (ownerModule as UsersModule).settings;
+        private function compare(a:User, b:User, arr:Array = null):int {
+            if (a.iam)
+                return -1;
+
+            if (b.iam)
+                return 1;
+
+            if (App.user.isAdmin() && (a.requestStatus - b.requestStatus) != 0)
+                return (a.requestStatus > b.requestStatus) ? -1 : 1;
+
+            if (a.fullName === b.fullName)
+                return (a.suffix > b.suffix) ? 1 : -1;
+
+            return (a.fullName > b.fullName) ? 1 : -1;
         }
 
 
+        override public function get settings():Vector.<ModuleSettings> {
+            return (ownerModule as UsersModule).settings;
+        }
         ]]>
 	</fx:Script>
-    <s:Scroller width="100%" height="100%" horizontalScrollPolicy="off" id="myScroller">
-        <s:VGroup id="usersVerticalGroup" verticalAlign="top" width="100%" gap="0"
-                  resize="myScrollerAddedToStageHandler(event)">
-            <components1:VerticalExpandedListElement id="ownersList" width="100%" usersType="admin"
-                                                     initialize="ownersList.label = translate('admins','users');ownersList.dataProvider=App.meeting.usersList;"/>
+    <components:HidingScroller width="100%" height="100%" horizontalScrollPolicy="off">
+        <s:VGroup id="usersVerticalGroup" verticalAlign="top" width="100%" gap="0">
+            <components1:VerticalExpandedListElement id="ownersList" width="100%"
+                                                     initialize="ownersList.label = translate('admins','users');"/>
 
             <components1:VerticalExpandedListElement id="usersList"
                                                      width="100%"
-                                                     initialize="usersList.label=translate('users','users');usersList.dataProvider=App.meeting.usersList;"
-                                                     usersType="user"
+                                                     initialize="usersList.label=translate('users','users');"
                     />
 
         </s:VGroup>
-    </s:Scroller>
+    </components:HidingScroller>
 </module:ModuleInstance>

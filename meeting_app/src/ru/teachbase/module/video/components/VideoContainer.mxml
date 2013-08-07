@@ -13,12 +13,12 @@
         import mx.events.FlexEvent;
 
         import ru.teachbase.model.App;
+        import ru.teachbase.model.User;
         import ru.teachbase.utils.shortcuts.style;
 
         private var video:Video = null;
 
-        [Bindable]
-        public var stream:NetStream = null;
+        private var _stream:NetStream = null;
 
         private var _camera:Camera = null;
 
@@ -44,8 +44,7 @@
         private function onCloseHandler(event:MouseEvent = null):void {
 
             if (stream) {
-                this.dispatchEvent(new Event("removeUserStream"));
-                //stream.removeEventListener(NetStatusEvent.NET_STATUS, statusHandler);
+                dispatchEvent(new Event("removeUserStream"));
                 _paused = false;
             } else {
 
@@ -57,13 +56,8 @@
 
 
         private function removeThis():void {
-
-            /*if (stream)
-             stream.removeEventListener(NetStatusEvent.NET_STATUS, statusHandler);*/
-
-            this.dispatchEvent(new Event("removeStream"));
+            dispatchEvent(new Event("removeStream"));
             _paused = false;
-
         }
 
 
@@ -93,7 +87,7 @@
 
 
         public function set from(userId:Number):void {
-            //userName = App.meeting.getUserNameById(userId);
+            userName = App.meeting.usersByID[userId] ? (App.meeting.usersByID[userId] as User).extName : '';
             this.userId = userId;
         }
 
@@ -114,32 +108,6 @@
                 video.attachCamera(camera);
 
             uic.addChild(video);
-            /*if (stream != null) {
-             stream.addEventListener(NetStatusEvent.NET_STATUS, statusHandler,false,EventPriority.CURSOR_MANAGEMENT);
-             }*/
-        }
-
-        private function statusHandler(e:NetStatusEvent):void {
-            switch (e.info.code) {
-                case('NetConnection.Connect.Closed'):
-                case('NetStream.Connect.Closed'):
-                case('NetStream.Play.Failed'):
-                case('NetStream.Play.Stop'):
-                {
-                    //removeThis();
-                    break;
-                }
-                /*case('NetStream.Share.Audio'):
-                 {
-                 removeThis();
-                 break;
-                 }
-                 case('NetStream.Share.Video'):
-                 {
-                 //removeThis();
-                 break;
-                 }*/
-            }
         }
 
 
@@ -259,6 +227,14 @@
                 video.x = 0;
                 video.y = 0;
             }
+        }
+
+        public function get stream():NetStream {
+            return _stream;
+        }
+
+        public function set stream(value:NetStream):void {
+            _stream = value;
         }
         ]]>
 	</fx:Script>

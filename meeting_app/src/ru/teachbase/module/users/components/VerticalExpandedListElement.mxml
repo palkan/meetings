@@ -15,6 +15,7 @@
             import ru.teachbase.model.App;
             import ru.teachbase.model.User;
 
+            [Bindable]
             private var _dataProvider:ArrayCollection;
 
             [Bindable]
@@ -23,51 +24,16 @@
 
             private var _expanded:Boolean = true;
 
-            public var usersType:String = '';
-
-            [Bindable]
-            private var _listProvider:ArrayCollection;
-
-            public function set listProvider(value:ArrayCollection):void {
-                _listProvider = new ArrayCollection(value.toArray().filter(filter).sort(compare));
+            public function set dataProvider(value:ArrayCollection):void {
+                _dataProvider = value;
                 makeTween();
             }
 
-
-            public function set dataProvider(value:ArrayCollection):void {
-                _dataProvider = value;
-                _dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE, onCollectionChanged);
-                listProvider = _dataProvider;
-            }
-
-
-            private function filter(user:User, index:int = 0, arr:Array = null):Boolean {
-                return Boolean(user && (user.role === usersType));
-            }
-
-            private function compare(a:User, b:User, arr:Array = null):int {
-                if (a.iam)
-                    return -1;
-
-                if (b.iam)
-                    return 1;
-
-                if (App.user.isAdmin() && (a.requestStatus - b.requestStatus) != 0)
-                    return (a.requestStatus > b.requestStatus) ? -1 : 1;
-
-                if (a.fullName === b.fullName)
-                    return (a.suffix > b.suffix) ? 1 : -1;
-
-                return (a.fullName > b.fullName) ? 1 : -1;
-            }
 
             private function init():void {
                 toggleButton.selected = true;
             }
 
-            private function onCollectionChanged(evt:CollectionEvent = null):void {
-                listProvider = _dataProvider;
-            }
 
             private function onToggleClick():void {
                 _expanded = !_expanded;
@@ -76,25 +42,21 @@
 
 
             private function makeTween():void {
-                if (!ownersList.dataProvider)
+                if (!usersList.dataProvider)
                     return;
 
                 if (_expanded) {
-                    Tweener.addTween(ownersList, {height: ownersList.dataProvider.length * 32, time: .3});
+                    Tweener.addTween(usersList, {height: usersList.dataProvider.length * 32, time: .3});
                 } else {
-                    Tweener.addTween(ownersList, {height: 0, time: .3});
+                    Tweener.addTween(usersList, {height: 0, time: .3});
                 }
             }
             ]]>
 		</fx:Script>
-	<s:List id="ownersList"
+	<s:List id="usersList"
 			width="100%" top="25" left="0" right="0"
 			 height="0"
-			 dataProvider="{_listProvider}"
+			 dataProvider="{_dataProvider}"
 			itemRenderer="ru.teachbase.module.users.components.UserItemRenderer" verticalScrollPolicy="off" horizontalScrollPolicy="off"/>
-	<s:ToggleButton id="toggleButton" skinClass="ru.teachbase.skins.VerticalExpandedToggleButtonSkin" click="onToggleClick()"  label="{this.label + ' ('+ownersList.dataProvider.length+')' }" top="0" left="0" height="25" width="100%"/>
-
-	<fx:Declarations>
-		<!-- Place non-visual elements (e.g., services, value objects) here -->
-	</fx:Declarations>
+	<s:ToggleButton id="toggleButton" skinClass="ru.teachbase.skins.VerticalExpandedToggleButtonSkin" click="onToggleClick()"  label="{this.label + ' ('+usersList.dataProvider.length+')' }" top="0" left="0" height="25" width="100%"/>
 </s:Group>

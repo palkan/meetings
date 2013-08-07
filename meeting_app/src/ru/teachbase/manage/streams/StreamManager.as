@@ -22,6 +22,7 @@ import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.rtmp_call;
 import ru.teachbase.utils.shortcuts.rtmp_history;
+import ru.teachbase.utils.shortcuts.rtmp_send;
 import ru.teachbase.utils.shortcuts.warning;
 
 /**
@@ -29,7 +30,6 @@ import ru.teachbase.utils.shortcuts.warning;
  */
 
 public dynamic class StreamManager extends Manager {
-    private const RESTART_STREAM_TIME:int = 2000;
 
     private const _listener:RTMPListener = new RTMPListener(PacketType.STREAM);
 
@@ -63,6 +63,8 @@ public dynamic class StreamManager extends Manager {
     //------------ API -------------------//
 
     public function closeRemoteStream(uid:Number):void{
+
+        rtmp_send(PacketType.PUBLISH,{action:"close"},uid,null,false);
 
     }
 

@@ -7,19 +7,15 @@
                        creationComplete="creationCompleteHandler(event)" addedToStage="addedToStage(event)">
     <fx:Script>
 		<![CDATA[
-        import flash.net.NetStream;
-
-        import mx.collections.CursorBookmark;
-
         import mx.events.CollectionEvent;
-
+        import mx.events.CollectionEventKind;
         import mx.events.FlexEvent;
+        import mx.events.PropertyChangeEvent;
 
-        import ru.teachbase.manage.streams.model.NetStreamClient;
+        import ru.teachbase.events.ChangeEvent;
 
         import ru.teachbase.manage.streams.model.NetStreamClient;
         import ru.teachbase.manage.streams.model.StreamType;
-
         import ru.teachbase.model.App;
         import ru.teachbase.module.video.components.IVideoContainer;
         import ru.teachbase.module.video.components.VideoContainer;
@@ -34,10 +30,11 @@
         private var _camVideoContainerInstance:IVideoContainer;
 
         [Bindable]
-        private var _streams:int;
+        private var _streams:int = 0;
 
         private var _streamsDic:Dictionary = new Dictionary(true);
 
+        [Bindable]
         private var _p_enabled:Boolean = false;
 
         private function addedToStage(evt:Event):void {
@@ -50,22 +47,57 @@
 
             Localizer.addItem(this);
 
+            _p_enabled = Permissions.camAvailable(App.user.permissions);
+
             for each(var ns:NetStream in App.meeting.streamList.toArray().filter(filter))
-                addVideo(ns, (ns.client as NetStreamClient).data.user_id);
+                addVideo(ns);
 
             App.meeting.streamList.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStreamChangeEvent);
 
+            App.user.addEventListener(ChangeEvent.CHANGED, userChangeHandler);
+
         }
 
-        private function onStreamChangeEvent(evt:CollectionEvent):void {
 
-            //TODO:
+        private function userChangeHandler(e:ChangeEvent):void{
 
+            if(e.property != "shareStatus") return;
+
+            if(App.user.sharing.videoSharing) addCamera(App.publisher.camera);
+            else removeCamera();
+
+        }
+
+
+        private function onStreamChangeEvent(e:CollectionEvent):void {
+
+             switch(e.kind){
+                 case CollectionEventKind.REMOVE:{
+                         for each(var ns:NetStream in e.items){
+                            if(_streamsDic[ns]){
+                                removeVideo(_streamsDic[ns]);
+                            }
+                         }
+                 break;
+                 }
+                 case CollectionEventKind.ADD:{
+                     for each(var ns:NetStream in e.items.filter(filter))
+                         addVideo(ns);
+                     break;
+                 }
+                 case CollectionEventKind.UPDATE:{
+                    for each(var prop:PropertyChangeEvent in e.items){
+                        if(filter(prop.source as NetStream)) addVideo(prop.source as NetStream);
+                        else if(!(prop.source as NetStream).client.hasVideo) removeVideo(_streamsDic[prop.source]);
+                    }
+                    break;
+                 }
+             }
         }
 
 
         private function filter(stream:NetStream, index:int = 0, arr:Array = null):Boolean {
-            return Boolean(stream && (stream.client as NetStreamClient) && (stream.client as NetStreamClient).data.type == StreamType.MEDIA && (!(_streamsDic[stream])));
+            return Boolean(stream && (stream.client as NetStreamClient) && (stream.client as NetStreamClient).data.type == StreamType.MEDIA && (stream.client as NetStreamClient).hasVideo && (!(_streamsDic[stream])));
         }
 
         private function getVideoContainer(userId:Number):IVideoContainer {
@@ -78,16 +110,23 @@
         }
 
 
-        private function addVideo(ns:NetStream = null, userId:Number = 0):void {
+        private function addVideo(ns:NetStream = null):void {
+
+            const userId:Number = (ns.client as NetStreamClient) ? (ns.client as NetStreamClient).data.user_id : null;
+
+            if(!userId) return;
+
             var vc:VideoContainer = new VideoContainer();
 
             vc.stream = ns;
             vc.from = userId;
             vc.isAdmin = Permissions.isAdmin(permissions);
             vc.addEventListener("removeStream", onRemoveLocalStream);
-            vc.addEventListener("removeUserStream", onRemoveUserStream);// убивает поток
-            vc.addEventListener("removeVideo", onRemoveLocalVideo); // при переключении в аудио режим, не убивает поток
+            vc.addEventListener("removeUserStream", onRemoveUserStream);
+            vc.addEventListener("removeVideo", onRemoveLocalVideo);
+
             elements.push(vc);
+            _streamsDic[ns] = vc;
             videoCont.addElement(vc);
             _streams++;
         }
@@ -110,6 +149,7 @@
             elements.splice(elements.indexOf(vc), 1);
             if (vc.stage)
                 videoCont.removeElement(vc);
+            delete _streamsDic[vc.stream];
             vc = null;
             _streams--;
         }
@@ -132,8 +172,7 @@
 
         private function onRemoveUserStream(event:Event):void {
             const vc:IVideoContainer = event.target as IVideoContainer
-            App.streams.closeUserStream(vc.from);
-            removeVideoContainer(vc);
+            App.streams.closeRemoteStream(vc.from);
         }
 
         private function onRemoveLocalVideo(event:Event):void {

@@ -168,7 +168,7 @@ public class Meeting{
         return true;
     }
 
-    //------------- API -------------------//
+    //------------- handlers -------------------//
 
 
     private function handleRequestStatusChange(usr:User, oldValue:uint):void {

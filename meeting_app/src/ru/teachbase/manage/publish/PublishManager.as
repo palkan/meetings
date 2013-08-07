@@ -13,14 +13,20 @@ import flash.net.NetConnection;
 import flash.net.NetStream;
 
 import ru.teachbase.constants.NetStreamStatusCodes;
+import ru.teachbase.constants.PacketType;
 import ru.teachbase.constants.PublishQuality;
 import ru.teachbase.manage.*;
+import ru.teachbase.manage.rtmp.RTMPListener;
 import ru.teachbase.manage.rtmp.RTMPManager;
+import ru.teachbase.manage.rtmp.events.RTMPEvent;
+import ru.teachbase.manage.rtmp.model.Packet;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.model.App;
 import ru.teachbase.model.SharingModel;
 import ru.teachbase.utils.CameraUtils;
 import ru.teachbase.utils.MicrophoneUtils;
+import ru.teachbase.utils.Permissions;
+import ru.teachbase.utils.Strings;
 import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.warning;
@@ -36,6 +42,8 @@ import ru.teachbase.utils.system.requestUserMediaAccess;
  */
 public class PublishManager extends Manager {
 
+    const listener:RTMPListener = new RTMPListener(PacketType.PUBLISH, true);
+
     protected var _stream:NetStream;
 
     private var _camera:Camera;
@@ -48,6 +56,7 @@ public class PublishManager extends Manager {
     private var _useH264:Boolean = true;
     private var _h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
     private var _quality:String;
+
 
     /**
      *  Reference to CurrentUser sharing model
@@ -79,6 +88,9 @@ public class PublishManager extends Manager {
         _model = App.user.sharing;
 
         setQuality(App.user.settings.publishQuality);
+
+        listener.addEventListener(RTMPEvent.DATA, handleMessage);
+        listener.readyToReceive = true;
 
         _initialized = true;
     }
@@ -426,13 +438,34 @@ public class PublishManager extends Manager {
 
         if (status === 0 && _streaming){    // stop stream and wait for events to update status
             _stream.publish(null);
-        }else                               // update status immediately
+        }else{                               // update status immediately
             App.session.setShareStatus(status);
+            _stream.send('@setDataFrame','onAudioVideoStatus',{hasVideo:Permissions.camAvailable(status), hasAudio:Permissions.micAvailable(status)});
+        }
+
+    }
+
+
+    //------------- remote calls -----------------//
+
+
+    private function remoteClose(data:Packet):void{
+
+        //todo: notify about remote closing!
+
+        closeAll();
 
     }
 
 
     //------------- handlers ----------------//
+
+    protected function handleMessage(e:RTMPEvent):void{
+
+        e.packet.data && e.packet.data['action'] && (this['remote'+Strings.capitalize(e.packet.data.action)] is Function) && this['remote'+Strings.capitalize(e.packet.data.action)](e.packet);
+
+    }
+
 
     protected function streamErrorHandler(e:ErrorEvent):void {
         warning("Publish failed: ", e.text);
