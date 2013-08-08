@@ -31,7 +31,7 @@ import ru.teachbase.utils.shortcuts.warning;
 
 public dynamic class StreamManager extends Manager {
 
-    private const _listener:RTMPListener = new RTMPListener(PacketType.STREAM);
+    private const listener:RTMPListener = new RTMPListener(PacketType.STREAM);
 
     private var _model:Meeting;
 
@@ -44,12 +44,12 @@ public dynamic class StreamManager extends Manager {
 
     //------------ initialize ------------//
 
-    override protected function initialize():void {
+    override protected function initialize(reinit:Boolean = false):void {
 
         _model = App.meeting;
 
-        _listener.initialize();
-        _listener.addEventListener(RTMPEvent.DATA, handleMessage);
+        listener.initialize();
+        listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
         GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, onUserLeave);
 
@@ -60,11 +60,20 @@ public dynamic class StreamManager extends Manager {
     }
 
 
+    override public function clear():void{
+        super.clear();
+        listener.dispose();
+        removeAllStreams();
+        listener.removeEventListener(RTMPEvent.DATA, handleMessage);
+        GlobalEvent.removeEventListener(GlobalEvent.USER_LEAVE, onUserLeave);
+    }
+
+
     //------------ API -------------------//
 
-    public function closeRemoteStream(uid:Number):void{
+    public function closeRemoteStream(uid:Number, type:uint = 0):void{
 
-        rtmp_send(PacketType.PUBLISH,{action:"close"},uid,null,false);
+        rtmp_send(PacketType.PUBLISH,{action:"close", type:type},uid,null,false);
 
     }
 
@@ -82,7 +91,7 @@ public dynamic class StreamManager extends Manager {
             }
         }
 
-        _listener.readyToReceive = true;
+        listener.readyToReceive = true;
         _initialized = true;
     }
 
@@ -179,10 +188,9 @@ public dynamic class StreamManager extends Manager {
 
     private function removeAllStreams():void{
 
-        for each(var ns:NetStream in _model.streamList){
+        for each(var ns:NetStream in _model.streamList)
             delete _model.streamsByName[(ns.client as NetStreamClient).data.name];
-            ns.dispose();
-        }
+
 
         _model.streamList.removeAll();
     }

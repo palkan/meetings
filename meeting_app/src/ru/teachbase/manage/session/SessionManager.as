@@ -1,9 +1,8 @@
 package ru.teachbase.manage.session {
 import mx.rpc.Responder;
-import mx.utils.ObjectUtil;
 
+import ru.teachbase.components.notifications.Notification;
 import ru.teachbase.constants.ErrorCodes;
-
 import ru.teachbase.constants.PacketType;
 import ru.teachbase.events.GlobalEvent;
 import ru.teachbase.manage.*;
@@ -23,9 +22,10 @@ import ru.teachbase.utils.helpers.getValue;
 import ru.teachbase.utils.helpers.isArray;
 import ru.teachbase.utils.shortcuts.config;
 import ru.teachbase.utils.shortcuts.error;
+import ru.teachbase.utils.shortcuts.notify;
 import ru.teachbase.utils.shortcuts.rtmp_call;
 import ru.teachbase.utils.shortcuts.rtmp_history;
-import ru.teachbase.utils.shortcuts.warning;
+import ru.teachbase.utils.shortcuts.translate;
 
 use namespace tb_internal;
 
@@ -47,9 +47,14 @@ public final class SessionManager extends Manager {
 
     //------------ initialize ------------//
 
-    override protected function initialize():void {
+    override protected function initialize(reinit:Boolean = false):void {
         if (initialized)
             return;
+
+        if(reinit){
+            reinitialize();
+            return;
+        }
 
         // register classes
 
@@ -69,6 +74,23 @@ public final class SessionManager extends Manager {
     }
 
 
+    protected function reinitialize():void{
+
+        loginBySessionId(App.meeting.id, App.user.sid);
+    }
+
+
+    override public function clear():void{
+        super.clear();
+
+        users_listener.dispose();
+        meeting_listener.dispose();
+        users_listener.removeEventListener(RTMPEvent.DATA, usersChangeHandler);
+        meeting_listener.removeEventListener(RTMPEvent.DATA, meetingUpdateHandler);
+
+    }
+
+
     //---------------- API -----------------//
 
     /**
@@ -84,6 +106,7 @@ public final class SessionManager extends Manager {
     public function login(meeting_id:uint, user_id:uint):void {
 
         _onAfterLogin = loadMeetingModel;
+        App.meeting.id = meeting_id;
         App.rtmp.callServer("tb_login", new Responder(loginSuccess, loginError), user_id, meeting_id);
 
     }
@@ -113,7 +136,10 @@ public final class SessionManager extends Manager {
 
     public function loginBySessionId(meeting_id:uint, sid:Number = 0):void {
         !sid && (sid = App.user.sid);
-        //TODO
+
+        _onAfterLogin = loadMeetingModel;
+
+        App.rtmp.callServer("tb_login_by_sid", new Responder(loginSuccess, loginError), sid, meeting_id);
     }
 
 
@@ -193,6 +219,17 @@ public final class SessionManager extends Manager {
         rtmp_call("set_permissions", null, sid, permissions);
     }
 
+    /**
+     * @param type Request type as uint code (@see Permissions)
+     */
+
+    public function toggleRequest(type:uint):void{
+
+        var flag:Boolean = !Permissions.hasRight(type,App.user.requestStatus);
+
+        setRequest(type,flag);
+
+    }
 
     /**
      * Call this function to make permission request or cancel existing one.
@@ -205,7 +242,7 @@ public final class SessionManager extends Manager {
 
 
     public function setRequest(value:uint, flag:Boolean = true, id:Number = 0):void {
-        if (!id && App.user.isAdmin()) id = App.user.sid;
+        if (!id && !App.user.isAdmin()) id = App.user.sid;
 
         var _usr:User = App.meeting.usersByID[id] as User;
 
@@ -260,6 +297,20 @@ public final class SessionManager extends Manager {
         rtmp_call("set_permissions", null, sid, rights);
     }
 
+    /**
+     * Kick off user from meeting room.
+     *
+     * @param sid
+     */
+
+
+    public function kickOff(sid:Number):void{
+
+        if(!App.user.isAdmin()) return;
+
+        rtmp_call("kick_off_user",null,sid);
+
+    }
 
     //------------------ API ------------------//
 
@@ -294,12 +345,18 @@ public final class SessionManager extends Manager {
 
         switch (data.type) {
             case "userJoin":
-                _model.addUser(data.value) && GlobalEvent.dispatch(GlobalEvent.USER_ADD, _model.usersByID[(data.value as User).sid]);
+                if(_model.addUser(data.value)){
+                    GlobalEvent.dispatch(GlobalEvent.USER_ADD, _model.usersByID[(data.value as User).sid]);
+                    notify(new Notification(translate('enter_room','notifications',[(data.value as User).fullName])));
+                }
                 break;
             case "userLeave":
             {
                 var user:User = _model.removeUser(data.id);
-                user && GlobalEvent.dispatch(GlobalEvent.USER_LEAVE, user);
+                if(user){
+                    GlobalEvent.dispatch(GlobalEvent.USER_LEAVE, user);
+                    notify(new Notification(translate('leave_room','notifications',[user.fullName])));
+                }
                 break;
             }
             case "userChange":
@@ -320,6 +377,7 @@ public final class SessionManager extends Manager {
                 break;
             case "state":
                 _model.tb_internal::setState(data.value);
+                notify(new Notification(_model.state == MeetingState.LIVE ? translate('stop_rec','notifications') : translate('start_rec','notifications')));
                 GlobalEvent.dispatch(GlobalEvent.MEETING_STATE_UPDATE, _model.state);
                 break;
         }

@@ -34,7 +34,7 @@ public class LocaleManager extends Manager
             if(instance) throw new SingletonError();
 		}
 		
-		override protected function initialize():void{
+		override protected function initialize(reinit:Boolean = false):void{
             var locales = config('locales');
 
             if(locales && (locales is Array)){

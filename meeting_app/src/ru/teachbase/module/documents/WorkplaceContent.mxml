@@ -27,7 +27,7 @@
         import ru.teachbase.manage.FileManager;
         import ru.teachbase.module.documents.model.DocChangeData;
         import ru.teachbase.module.documents.model.FileItem;
-        import ru.teachbase.manage.modules.model.ModuleSettings;
+        import ru.teachbase.components.callouts.SettingsItem;
         import ru.teachbase.model.User;
         import ru.teachbase.module.documents.components.SelectSourceWindow;
         import ru.teachbase.module.documents.model.WorkplaceRenderers;
@@ -43,17 +43,14 @@
         }
 
 
-
-
         private const listener:RTMPListener = new RTMPListener(PacketType.DOCUMENT);
 
-        public var setsDP:Vector.<ModuleSettings> = new Vector.<ModuleSettings>();
+        public var setsDP:Vector.<SettingsItem> = new Vector.<SettingsItem>();
 
         [Bindable]
         private var _isOwner:Boolean = true;
 
         private var _initilized:Boolean = false;
-
 
 
         private var _xmlLoader:AssetLoader = new AssetLoader()
@@ -69,9 +66,9 @@
 
             listener.initialize();
             listener.addEventListener(DocEvent.LOAD, handleMessage);
-            rtmp_history(PacketType.DOCUMENT+"::"+this.instanceID, new mx.rpc.Responder(historyHandler, $null));
-            setsDP.push(new ModuleSettings("clear_workplace", ModuleSettings.FUN, clearWorkplace));
-            setsDP.push(new ModuleSettings("save_screenshot", ModuleSettings.FUN, container.takeSnapshot))
+            rtmp_history(PacketType.DOCUMENT + "::" + this.instanceID, new mx.rpc.Responder(historyHandler, $null));
+            setsDP.push(new SettingsItem("clear_workplace", SettingsItem.FUN, clearWorkplace));
+            setsDP.push(new SettingsItem("save_screenshot", SettingsItem.FUN, container.takeSnapshot))
 
         }
 
@@ -87,7 +84,7 @@
             handleData(e.packet.data);
         }
 
-        private function historyHandler(data:*):void{
+        private function historyHandler(data:*):void {
             listener.readyToReceive = true;
             handleData(data);
         }
@@ -160,100 +157,100 @@
 
 
         /*private function convertFromLibrary(item:FileItem):void {
-            _fm = m(FileManager) as FileManager;
+         _fm = m(FileManager) as FileManager;
 
-            setFileListeners(_fm);
+         setFileListeners(_fm);
 
-            currentState = loading.name;
+         currentState = loading.name;
 
-            _fm.convert(item);
-
-
-        }
+         _fm.convert(item);
 
 
-        private function convertFromGoogle(item:FileItem):void {
-            _fm = m(FileManager) as FileManager;
-
-            setFileListeners(_fm);
-
-            currentState = loading.name;
-
-            //	_docTrait.output({type:"loading",id:App.room.user.sid},Recipients.ALL_EXCLUDE_ME);
-
-            _fm.grabImage(item);
+         }
 
 
-        }
+         private function convertFromGoogle(item:FileItem):void {
+         _fm = m(FileManager) as FileManager;
+
+         setFileListeners(_fm);
+
+         currentState = loading.name;
+
+         //	_docTrait.output({type:"loading",id:App.room.user.sid},Recipients.ALL_EXCLUDE_ME);
+
+         _fm.grabImage(item);
 
 
-        public function onStartLoad(event:Event = null):void {
-
-            _fm = m(FileManager) as FileManager;
-
-            setFileListeners(_fm);
-
-            currentState = loading.name;
-
-            _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-
-            _fm.upload_convert();
-        }
-          */
-
-           /* private function onFileDropped(event:FileDropEvent):void {
-
-                _fm = m(FileManager) as FileManager;
-
-                setFileListeners(_fm);
-
-                currentState = loading.name;
-
-                _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-
-                _fm.upload_file(event.file);
-            } */
-           /*
-        private function setFileListeners(fm:FileManager):void {
-            fm.addEventListener(FileStatusEvent.COMPLETE, onFileReady);
-            //fm.addEventListener(FileStatusEvent.PROGRESS, onFileProgress);
-            fm.addEventListener(ErrorEvent.ERROR, onFileError);
-            fm.addEventListener(FileStatusEvent.CANCEL, onFileCancel);
-            fm.addEventListener(FileStatusEvent.SELECTED, fileSelected)
-        }
+         }
 
 
-        private function removeFileListeners(fm:FileManager):void {
-            fm.removeEventListener(FileStatusEvent.COMPLETE, onFileReady);
-            //fm.removeEventListener(FileStatusEvent.PROGRESS, onFileProgress);
-            fm.removeEventListener(ErrorEvent.ERROR, onFileError);
-            fm.removeEventListener(FileStatusEvent.CANCEL, onFileCancel);
-            fm.removeEventListener(FileStatusEvent.SELECTED, fileSelected)
-        }
+         public function onStartLoad(event:Event = null):void {
 
-        private function fileSelected(evt:Event):void {
-            if (_panel) Core.removePopupFromTop(_panel);
-        }
+         _fm = m(FileManager) as FileManager;
 
-        private function onFileCancel(event:FileStatusEvent):void {
-            removeFileListeners(_fm);
-            currentState = idle.name;
-            _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-        }
+         setFileListeners(_fm);
 
-        private function onFileReady(event:FileStatusEvent):void {
+         currentState = loading.name;
+
+         _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+
+         _fm.upload_convert();
+         }
+         */
+
+        /* private function onFileDropped(event:FileDropEvent):void {
+
+         _fm = m(FileManager) as FileManager;
+
+         setFileListeners(_fm);
+
+         currentState = loading.name;
+
+         _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+
+         _fm.upload_file(event.file);
+         } */
+        /*
+         private function setFileListeners(fm:FileManager):void {
+         fm.addEventListener(FileStatusEvent.COMPLETE, onFileReady);
+         //fm.addEventListener(FileStatusEvent.PROGRESS, onFileProgress);
+         fm.addEventListener(ErrorEvent.ERROR, onFileError);
+         fm.addEventListener(FileStatusEvent.CANCEL, onFileCancel);
+         fm.addEventListener(FileStatusEvent.SELECTED, fileSelected)
+         }
 
 
-            _docTrait.output({url: event.value.url, type: "load", dataType: event.value.type, title: _fm.filename, id: this.instanceID}, Recipients.ALL);//_EXCLUDE_ME);
+         private function removeFileListeners(fm:FileManager):void {
+         fm.removeEventListener(FileStatusEvent.COMPLETE, onFileReady);
+         //fm.removeEventListener(FileStatusEvent.PROGRESS, onFileProgress);
+         fm.removeEventListener(ErrorEvent.ERROR, onFileError);
+         fm.removeEventListener(FileStatusEvent.CANCEL, onFileCancel);
+         fm.removeEventListener(FileStatusEvent.SELECTED, fileSelected)
+         }
 
-            //(ownerModule as DocumentsModule).registerNewDoc(this.instanceID,_fm.filename);
+         private function fileSelected(evt:Event):void {
+         if (_panel) Core.removePopupFromTop(_panel);
+         }
 
-            currentState = loading.name;
+         private function onFileCancel(event:FileStatusEvent):void {
+         removeFileListeners(_fm);
+         currentState = idle.name;
+         _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+         }
 
-            removeFileListeners(_fm);
-            //		loadConfigXML(event.value);
+         private function onFileReady(event:FileStatusEvent):void {
 
-        }    */
+
+         _docTrait.output({url: event.value.url, type: "load", dataType: event.value.type, title: _fm.filename, id: this.instanceID}, Recipients.ALL);//_EXCLUDE_ME);
+
+         //(ownerModule as DocumentsModule).registerNewDoc(this.instanceID,_fm.filename);
+
+         currentState = loading.name;
+
+         removeFileListeners(_fm);
+         //		loadConfigXML(event.value);
+
+         }    */
 
         private function loadConfigXML(url:String):void {
             _xmlLoader.addEventListener(Event.COMPLETE, onConfLoaded)
@@ -283,15 +280,15 @@
         //progressBar.progress = Number(event.value/100);
         //}
 
-       /*
-        private function onFileError(event:ErrorEvent):void {
+        /*
+         private function onFileError(event:ErrorEvent):void {
 
-            Logger.log(event.text, "file");
+         Logger.log(event.text, "file");
 
-            removeFileListeners(_fm);
-            _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-            currentState = idle.name;
-        }
+         removeFileListeners(_fm);
+         _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
+         currentState = idle.name;
+         }
          */
         protected function onWBChoose(event:MouseEvent):void {
             if (event) {
@@ -354,7 +351,7 @@
                     break;
                 case "GOOGLE_IMAGE":
                     rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "loading", id: App.user.sid}), Recipients.ALL_EXCLUDE_ME);
-                   // convertFromGoogle(obj);
+                    // convertFromGoogle(obj);
                     break;
 
             }
@@ -374,7 +371,7 @@
         }
 
 
-        override public function get settings():Vector.<ModuleSettings> {
+        override public function get settings():Vector.<SettingsItem> {
 
             return setsDP;
 

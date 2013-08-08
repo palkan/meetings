@@ -64,10 +64,12 @@ public class RTMPListener extends EventDispatcher {
     }
 
     public function set readyToReceive(value:Boolean):void {
-        if (_readyToReceive)
+        if (_readyToReceive == value)
             return;
 
         _readyToReceive = value;
+
+        if(!value) return;
 
         for each (var _d:Packet in _messagesToSend)
             dispatchData(_d);

@@ -24,6 +24,8 @@ public final class Initializer extends EventDispatcher {
 
     private static var _complete:Boolean;
 
+    private var _reinitializeMode:Boolean = false;
+
     private var _total:int;
 
     //------------ constructor ------------//
@@ -44,6 +46,16 @@ public final class Initializer extends EventDispatcher {
         instance.initializeSequence(managers);
     }
 
+    /**
+     *
+     * @param managers
+     */
+
+    public static function reinitializeManagers(...managers):void{
+        instance._reinitializeMode = true;
+        instance.initializeSequence(managers);
+    }
+
     private function initializeSequence(managers:Array):void {
         Shared.DISPATCHER.addEventListener(ManagerEvent.INITIALIZED, managerInited);
         Shared.DISPATCHER.addEventListener(ManagerEvent.ERROR, managerFailed);
@@ -60,7 +72,7 @@ public final class Initializer extends EventDispatcher {
         if (managersToDo && managersToDo.length) {
             var manager:Manager = managersToDo[0] as Manager;
             dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, _total - managersToDo.length, _total));
-            managersToDo[0].preinitialize();
+            managersToDo[0].preinitialize(_reinitializeMode);
         }
     }
 
@@ -69,6 +81,7 @@ public final class Initializer extends EventDispatcher {
     //------------ get / set -------------//
 
     public function get complete():Boolean {
+        _reinitializeMode = false;
         return _complete;
     }
 
@@ -95,6 +108,7 @@ public final class Initializer extends EventDispatcher {
     private function managerFailed(e:ManagerEvent):void {
         Shared.DISPATCHER.removeEventListener(ManagerEvent.INITIALIZED, managerInited);
         Shared.DISPATCHER.removeEventListener(ManagerEvent.ERROR, managerFailed);
+        _reinitializeMode = false;
         dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, "Manager failed: " + e.manager.toString()));
     }
 

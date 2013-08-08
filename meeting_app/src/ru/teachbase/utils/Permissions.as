@@ -91,7 +91,7 @@ public class Permissions {
     /**
      *
      * @param right mask of the right to check
-     * @param permissions total user premissions
+     * @param permissions total user permissions
      * @return <i>true</i> if user already has these rights
      *
      */

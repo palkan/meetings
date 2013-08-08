@@ -35,6 +35,32 @@ public class RTMPManager extends Manager {
         super(register);
     }
 
+    override protected function initialize(reinit:Boolean = false):void{
+
+        var _url = config('net/rtmp');
+
+        if(!_url){
+            error("Missing RTMP options");
+            _failed = true;
+            return;
+        }
+
+        _factory.ng.addEventListener(ErrorEvent.ERROR, connectionErrorHandler);
+        _factory.ng.addEventListener(Event.COMPLETE, connectionCreatedHandler);
+        _factory.createConnection(_url);
+    }
+
+
+    /**
+     * @inherit
+     */
+
+    override public function clear():void{
+        super.clear();
+        listeners.clear();
+        _connection = null;
+    }
+
 
     // --------- API (Begin) --------- //
 
@@ -107,26 +133,7 @@ public class RTMPManager extends Manager {
         (listeners[name] is Function) && listeners[name].apply(null,args);
     }
 
-
-    override public function dispose():void{
-        //TODO: dispose
-    }
-    // ---------- API (End) ---------- //
-
-    override protected function initialize():void{
-
-        var _url = config('net/rtmp');
-
-        if(!_url){
-            error("Missing RTMP options");
-            _failed = true;
-            return;
-        }
-
-        _factory.ng.addEventListener(ErrorEvent.ERROR, connectionErrorHandler);
-        _factory.ng.addEventListener(Event.COMPLETE, connectionCreatedHandler);
-        _factory.createConnection(_url);
-    }
+   // ---------- API (End) ---------- //
 
 
     protected function connectionErrorHandler(e:ErrorCodeEvent):void {
@@ -191,10 +198,9 @@ public class RTMPManager extends Manager {
                 else
                     error(e.info.text, ErrorCodes.CONNECTION_FAILED);
                 break;
-            case NetConnectionStatusCodes.FAILED: //TODO: here we are going to reconnect!
             case NetConnectionStatusCodes.CLOSED:
+                initialized && error('Connection dropped',ErrorCodes.CONNECTION_DROPPED);
                 _initialized = false;
-                error('Connection dropped',ErrorCodes.CONNECTION_DROPPED);
                 break;
         }
 

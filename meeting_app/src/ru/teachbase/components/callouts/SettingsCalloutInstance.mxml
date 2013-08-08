@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<callouts:TempCallout xmlns:fx="http://ns.adobe.com/mxml/2009"
+                      xmlns:s="library://ns.adobe.com/flex/spark"
+                      xmlns:callouts="ru.teachbase.components.callouts.*"
+                      backgroundColor="0x000000" backgroundAlpha="0.9" contentBackgroundAlpha="0"
+                      skinClass="ru.teachbase.skins.CalloutSkinAS"
+        >
+    <callouts:layout>
+        <s:VerticalLayout gap="0"/>
+    </callouts:layout>
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+
+    <fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElement;
+
+        import ru.teachbase.components.callouts.SettingsItem;
+        import ru.teachbase.skins.CalloutButtonSkin;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        import spark.components.Button;
+
+
+        private var _dataProvider:Vector.<SettingsItem>;
+
+        public function set dataProvider(value:Vector.<SettingsItem>):void {
+
+            removeAllElements();
+
+            var but:Button;
+
+            for each(var set:SettingsItem in value) {
+
+                but = new Button();
+                but.label = translate(set.label, "settings_callout");
+                but.setStyle("skinClass", CalloutButtonSkin);
+                but.setStyle("fontSize", 11);
+                but.addEventListener(MouseEvent.CLICK, handler);
+                addElement(but);
+            }
+
+            _dataProvider = value;
+
+
+        }
+
+
+        private function handler(event:MouseEvent):void {
+
+            var index:int = getElementIndex(event.target as IVisualElement);
+
+            _dataProvider[index].handler.apply(null, _dataProvider[index].args);
+
+            close();
+
+        }
+        ]]>
+	</fx:Script>
+
+</callouts:TempCallout>

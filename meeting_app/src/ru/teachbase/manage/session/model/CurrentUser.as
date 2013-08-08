@@ -4,11 +4,14 @@
  * Time: 12:34 PM
  */
 package ru.teachbase.manage.session.model {
+import ru.teachbase.components.notifications.Notification;
 import ru.teachbase.events.GlobalEvent;
 import ru.teachbase.model.*;
 import ru.teachbase.tb_internal;
 import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.shortcuts.config;
+import ru.teachbase.utils.shortcuts.notify;
+import ru.teachbase.utils.shortcuts.translate;
 
 
 /**
@@ -56,6 +59,18 @@ public class CurrentUser extends User {
         fullName = user.fullName;
         _permissions = user.permissions;
 
+        // if initialized - set other fields to defaults
+
+        if(initialized){
+
+            sharing.audioSharing = sharing.videoSharing = false;
+
+            shareStatus = 0;
+            requestStatus = 0;
+            permissions = _permissions;
+
+        }
+
         _initialized = true;
     }
 
@@ -68,8 +83,16 @@ public class CurrentUser extends User {
 
 
     override public function set permissions(value:uint):void{
+        const oldRole = role;
+
         super.permissions = value;
+
+
+
         GlobalEvent.dispatch(GlobalEvent.PERMISSIONS_UPDATE,value);
+
+        if(role != oldRole) notify(new Notification(translate('role_changed','notifications')));
+
     }
 
     /**

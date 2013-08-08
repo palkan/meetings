@@ -13,6 +13,7 @@
         import mx.events.PropertyChangeEvent;
 
         import ru.teachbase.events.ChangeEvent;
+        import ru.teachbase.events.GlobalEvent;
 
         import ru.teachbase.manage.streams.model.NetStreamClient;
         import ru.teachbase.manage.streams.model.StreamType;
@@ -24,7 +25,7 @@
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
-        private var elements:Vector.<IVideoContainer> = new Vector.<IVideoContainer>;
+        private var _elements:Vector.<IVideoContainer> = new Vector.<IVideoContainer>;
 
         [Bindable]
         private var _camVideoContainerInstance:IVideoContainer;
@@ -55,6 +56,18 @@
             App.meeting.streamList.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStreamChangeEvent);
 
             App.user.addEventListener(ChangeEvent.CHANGED, userChangeHandler);
+
+            GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
+
+        }
+
+
+        private function handleReconnect(e:GlobalEvent):void{
+
+            _p_enabled = Permissions.camAvailable(App.user.permissions);
+
+            for each(var ns:NetStream in App.meeting.streamList.toArray().filter(filter))
+                addVideo(ns);
 
         }
 
@@ -92,6 +105,9 @@
                     }
                     break;
                  }
+                 case CollectionEventKind.RESET:{
+                    for each(var el:IVideoContainer in _elements) removeVideo(el);
+                 }
              }
         }
 
@@ -101,7 +117,7 @@
         }
 
         private function getVideoContainer(userId:Number):IVideoContainer {
-            for each (var vc:IVideoContainer in elements) {
+            for each (var vc:IVideoContainer in _elements) {
                 if (vc.from == userId) {
                     return vc;
                 }
@@ -125,7 +141,7 @@
             vc.addEventListener("removeUserStream", onRemoveUserStream);
             vc.addEventListener("removeVideo", onRemoveLocalVideo);
 
-            elements.push(vc);
+            _elements.push(vc);
             _streamsDic[ns] = vc;
             videoCont.addElement(vc);
             _streams++;
@@ -137,7 +153,7 @@
                 _camVideoContainerInstance = new VideoContainer();
                 _camVideoContainerInstance.isAdmin = true;
                 _camVideoContainerInstance.addEventListener("removeStream", onRemoveLocalStream);
-                elements.push(_camVideoContainerInstance);
+                _elements.push(_camVideoContainerInstance);
                 _camVideoContainerInstance.camera = cam;
                 videoCont.addElement(_camVideoContainerInstance);
             } else {
@@ -146,7 +162,7 @@
         }
 
         private function removeVideo(vc:IVideoContainer):void {
-            elements.splice(elements.indexOf(vc), 1);
+            _elements.splice(_elements.indexOf(vc), 1);
             if (vc.stage)
                 videoCont.removeElement(vc);
             delete _streamsDic[vc.stream];
@@ -156,7 +172,7 @@
 
         private function removeCamera():void {
             if (_camVideoContainerInstance) {
-                elements.splice(elements.indexOf(_camVideoContainerInstance), 1);
+                _elements.splice(_elements.indexOf(_camVideoContainerInstance), 1);
                 videoCont.removeElement(_camVideoContainerInstance);
                 _camVideoContainerInstance.camera = null;
                 _camVideoContainerInstance = null;
@@ -192,7 +208,7 @@
             super.hide();
             App.publisher.disable();
 
-            for each(var el:IVideoContainer in elements) {
+            for each(var el:IVideoContainer in _elements) {
                 removeVideoContainer(el);
             }
         }
@@ -208,7 +224,7 @@
         override public function set permissions(value:uint):void {
             _p_enabled = Permissions.camAvailable(value);
 
-            for each(var el:IVideoContainer in elements)
+            for each(var el:IVideoContainer in _elements)
                 el.isAdmin = Permissions.isAdmin(value);
 
 

@@ -10,6 +10,8 @@ import mx.core.FlexGlobals;
 import mx.managers.FocusManager;
 import mx.managers.IFocusManagerContainer;
 
+import ru.teachbase.components.web.MainApplication;
+
 import ru.teachbase.manage.layout.LayoutManager;
 
 import ru.teachbase.manage.Manager;
@@ -23,24 +25,33 @@ import ru.teachbase.manage.rtmp.RTMPManager;
 import ru.teachbase.manage.session.model.CurrentUser;
 import ru.teachbase.manage.session.model.Meeting;
 import ru.teachbase.manage.streams.StreamManager;
+import ru.teachbase.tb_internal;
 
 public class App {
-    private static var _focusManager:FocusManager;
-
     public static const meeting:Meeting = new Meeting();
 
     public static const user:CurrentUser = new CurrentUser();
 
-    //------------ constructor ------------//
+    private static var _view:MainApplication;
 
-    public function App()
-    {
-    }
+    private static var _focusManager:FocusManager;
+
+
+    //------------ constructor ------------//
 
     //------------ initialize ------------//
 
     //--------------- ctrl ---------------//
 
+
+    tb_internal static function setView(value:MainApplication):void{
+        _view = value;
+    }
+
+
+    public static function get view():MainApplication{
+        return _view;
+    }
 
     public static function get rtmp():RTMPManager{
         return (Manager.getManagerInstance(RTMPManager,true) as RTMPManager);

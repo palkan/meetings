@@ -13,15 +13,21 @@
 				<element name="confirm"><![CDATA[confirm]]></element>
 				<element name="decline"><![CDATA[decline]]></element>
 				<element name="accept"><![CDATA[accept]]></element>
+                <element name="allow"><![CDATA[allow]]></element>
+                <element name="disallow"><![CDATA[disallow]]></element>
 				<element name="or">or</element>
 				<element name="and">and</element>
 				<element name="turn_on">enable</element>
 				<element name="turn_off">disable</element>
 				<element name="save">save</element>
                 <element name="offline">offline</element>
+                <element name="yes">yes</element>
+                <element name="no">no</element>
+                <element name="admin">administrator</element>
+                <element name="user">participant</element>
 			</elements>
 		</component>
-		<component name="module_settings">
+		<component name="settings_callout">
 			<elements>
 				<element name="clear_chat"><![CDATA[Clear Chat]]></element>
 				<element name="copy_chat"><![CDATA[Copy Chat]]></element>
@@ -30,6 +36,11 @@
 				<element name="clear_workplace"><![CDATA[Clear Workplace]]></element>
 				<element name="save_screenshot"><![CDATA[Save Screenshot]]></element>
                 <element name="export_user_list"><![CDATA[Save Users List]]></element>
+                <element name="user_set_user">Make Presenter</element>
+                <element name="user_set_admin">Make Participants</element>
+                <element name="user_private_chat">Start Private Chat</element>
+                <element name="user_change_name">Edit Name</element>
+                <element name="user_kick_off">Remove From Meeting</element>
 			</elements>
 		</component>
 		<component name="chat">
@@ -74,14 +85,12 @@
 				<element name="me"><![CDATA[${1} (Me)]]></element>
 				<element name="admins">Presenters</element>
 				<element name="users">Participants</element>
-				<element name="set_user">Make Participant</element>
-				<element name="set_admin">Make Presenter</element>
-				<element name="start_private">Start Private Chat</element>
 				<element name="are_you_sure_delete"><![CDATA[Are you sure to remove ${1}?]]></element>
-				<element name="sure_to_change_right_cam"><![CDATA[Are you sure to ${1} camera?]]></element>
-				<element name="sure_to_change_right_mic"><![CDATA[Are you sure to ${1} microphone?]]></element>
-				<element name="sure_to_change_right_doc"><![CDATA[Are you sure to ${1} workplace?]]></element>
+				<element name="audio_sharing"><![CDATA[audio sharing]]></element>
+				<element name="video_sharing"><![CDATA[video sharing]]></element>
+				<element name="docs_sharing"><![CDATA[documents sharing]]></element>
 				<element name="request_cam"><![CDATA[Camera Share Request]]></element>
+                <element name="request_docs"><![CDATA[Documents Share Request]]></element>
 				<element name="request_mic"><![CDATA[Microphone Share Request]]></element>
 				<element name="set_label">Attendees Panel</element>
 				<element name="set_requests_off"><![CDATA[Disable camera and microphone 
@@ -92,6 +101,12 @@ requests]]></element>
 			<elements>
 				<element name="label"><![CDATA[Video]]></element>
 				<element name="tooltip"><![CDATA[video]]></element>
+                <element name="pause_camera"><![CDATA[Pause camera]]></element>
+                <element name="publish_camera"><![CDATA[Publish camera]]></element>
+                <element name="pause_stream"><![CDATA[Pause video]]></element>
+                <element name="play_stream"><![CDATA[Play video]]></element>
+                <element name="close_sharing"><![CDATA[Stop Sharing]]></element>
+                <element name="close_user_stream"><![CDATA[Stop User Stream]]></element>
 			</elements>
 		</component>
 		<component name="screenshare">
@@ -177,7 +192,17 @@ are connected and turned on]]></element>
 				<element name="leave_room"><![CDATA[${1} left the meeting]]></element>
 				<element name="start_rec"><![CDATA[Start recording]]></element>
 				<element name="stop_rec"><![CDATA[Stop recording]]></element>
-				<element name="new_message"><![CDATA[New message from ${1} ${2}]]></element>
+				<element name="new_message"><![CDATA[New message from ${1}:
+${2}]]></element>
+                <element name="stream_stopped"><![CDATA[${1} closed your stream]]></element>
+                <element name="audio_stopped"><![CDATA[${1} stopped your audio sharing]]></element>
+                <element name="video_stopped"><![CDATA[${1} stopped your camera sharing]]></element>
+                <element name="audio_rights"><![CDATA[You are allowed to share audio]]></element>
+                <element name="video_rights"><![CDATA[You are allowed to share camera]]></element>
+                <element name="docs_rights"><![CDATA[You are allowed to share documents]]></element>
+                <element name="role_changed"><![CDATA[Role is changed]]></element>
+                <element name="layout_locked"><![CDATA[Layout is locked]]></element>
+                <element name="layout_unlocked"><![CDATA[${1} is editing layout]]></element>
 			</elements>
 		</component>		
 		<component name="error">

@@ -30,15 +30,31 @@ public class ModulesManager extends Manager {
     }
 
 
-    override protected function initialize():void{
+    override protected function initialize(reinit:Boolean = false):void{
 
         if(initialized) return;
+
+        if(reinit){
+            reinitialize();
+            return;
+        }
 
         _model = App.meeting;
 
        rtmp_history(PacketType.MODULE,new Responder(handleHistory,function (...args):void{ error("Modules history load failed");_failed = true;}));
     }
 
+    /**
+     *
+     * We assume that available modules are not changed, so simply dispatch INITIALIZED event.
+     *
+     * @inherit
+     */
+
+    protected function reinitialize():void{
+
+        _initialized = true;
+    }
 
     //------------- API -----------------//
 

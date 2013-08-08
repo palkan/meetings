@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Callout xmlns:fx="http://ns.adobe.com/mxml/2009"
+           xmlns:s="library://ns.adobe.com/flex/spark"
+           xmlns:components="ru.teachbase.components.*"
+           width="254" height="72"
+           verticalPosition="auto"
+           horizontalPosition="end"
+           mouseDownOutside="this.close()"
+           creationComplete="onCreationComplete(event)"
+           skinClass="ru.teachbase.skins.CalloutSkinAS"
+           backgroundColor="0x000000"
+           backgroundAlpha="0.7"
+           contentBackgroundAlpha="0">
+	<fx:Script>
+		<![CDATA[
+
+        import ru.teachbase.utils.shortcuts.style;
+
+        private var _message:String;
+        private var _submitLabel:String;
+        private var _cancelLabel:String;
+
+        private var _submitFunction:Function;
+        private var _cancelFunction:Function;
+
+        private function onCreationComplete(event:Event):void {
+            messageLabel.text = _message;
+            submitButton.label = _submitLabel;
+            cancelButton.label = _cancelLabel;
+        }
+
+        public function set message(value:String):void {
+            _message = value;
+            messageLabel && (messageLabel.text = _message);
+        }
+
+        private function onSubmitClick(evt:Event = null):void {
+            _submitFunction && _submitFunction();
+            close();
+        }
+
+        private function onCancelClick(evt:Event = null):void {
+            _cancelFunction && _cancelFunction();
+            close();
+        }
+
+        public function get cancelLabel():String {
+            return _cancelLabel;
+        }
+
+        public function set cancelLabel(value:String):void {
+            _cancelLabel = value;
+            cancelButton && (cancelButton.label = _cancelLabel);
+        }
+
+        public function get submitFunction():Function {
+            return _submitFunction;
+        }
+
+        public function set submitFunction(value:Function):void {
+            _submitFunction = value;
+        }
+
+        public function get cancelFunction():Function {
+            return _cancelFunction;
+        }
+
+        public function set cancelFunction(value:Function):void {
+            _cancelFunction = value;
+        }
+
+        public function get submitLabel():String {
+            return _submitLabel;
+        }
+
+        public function set submitLabel(value:String):void {
+            _submitLabel = value;
+            submitButton && (submitButton.label = _submitLabel);
+        }
+        ]]>
+	</fx:Script>
+	<components:CustomSkinableButton id="closeBut" click="close()" width="14" height="14" right="6" top="6"
+									 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+									 initialize="with(closeBut){icon=style('users','closeButton');  iconOver=style('users','closeButtonHover');}"
+									 />
+	<s:VGroup width="100%" height="100%" top="9" left="10" right="10" bottom="9" gap="0">
+		<s:HGroup width="100%" height="22">
+			<s:Label id="messageLabel" color="0xE8E8E8" fontSize="12" />
+			
+		</s:HGroup>
+		<s:HGroup horizontalCenter="0">
+			<components:CustomSkinableButton id="submitButton" width="86" height="22"
+                                             color="{style('modulecontainer','titleTextColor','string')}"
+											 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+											 initialize="with(submitButton){iconUp=style('users','deleteUserCancelBg');iconOver=style('users','deleteUserCancelBgHover');}"
+											 click="onSubmitClick(event)"/>
+			
+			<components:CustomSkinableButton id="cancelButton" width="86" height="22"
+                                             color="{style('modulecontainer','titleTextColor','string')}"
+											 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+											 initialize="with(cancelButton){iconUp=style('users','deleteUserCancelBg');iconOver=style('users','deleteUserCancelBgHover');}"
+											 click="onCancelClick(event)"/>
+		</s:HGroup>
+	</s:VGroup>
+</s:Callout>

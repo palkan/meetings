@@ -12,7 +12,7 @@
 		<![CDATA[
         import ru.teachbase.manage.modules.model.IModule;
         import ru.teachbase.manage.modules.model.IModulePanel;
-        import ru.teachbase.manage.modules.model.ModuleSettings;
+        import ru.teachbase.components.callouts.SettingsItem;
 
         private var _ownerModule:IModule;
         private var _instanceID:uint;
@@ -69,7 +69,7 @@
             return _permissions;
         }
 
-        public function get settings():Vector.<ModuleSettings> {
+        public function get settings():Vector.<SettingsItem> {
 
             return null;
         }
@@ -81,7 +81,6 @@
         public function set ownerPanel(value:IModulePanel):void {
             _ownerPanel = value;
         }
-
         ]]>
 	</fx:Script>
 </s:Group>

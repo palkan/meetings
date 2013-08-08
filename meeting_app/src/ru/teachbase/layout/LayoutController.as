@@ -36,6 +36,8 @@ public class LayoutController extends EventDispatcher {
     protected var _gap:int = 4;
     protected var _initialized:Boolean = false;
 
+    protected var _prevModel:LayoutModel;
+
     protected var _width:int = 0;
     protected var _height:int = 0;
 
@@ -135,6 +137,23 @@ public class LayoutController extends EventDispatcher {
         _active = true;
         _container = container;
     }
+
+    /**
+     * Rollback to previous state.
+     *
+     * Use when you want to cancel last commited change (e.g. when you cancel drag'n'drop).
+     */
+
+    public function rollback():void{
+
+        if(!_prevModel) return;
+
+        _model = _prevModel;
+        _prevModel = null;
+
+        updateDisplayList();
+    }
+
 
     /**
      * Define Resizer generator function.
@@ -270,26 +289,8 @@ public class LayoutController extends EventDispatcher {
 
     public function addElement(element:ITreeLayoutElement, elementTo:ITreeLayoutElement, direction:uint, dispatch:Boolean = false):void {
 
-        var layout:uint = 0;
-        var index:uint = 0;
-
-
-        switch (DragDirection.getNameByValue(direction)) {
-
-            case "up":
-                layout = 1;
-                break;
-            case "down":
-                layout = 1;
-                index = 1;
-                break;
-            case "right":
-                index = 1;
-                break;
-            default:
-                break;
-
-        }
+        var layout:uint = DragDirection.getLayoutDirectionByValue(direction);
+        var index:uint = DragDirection.getLayoutIndexByValue(direction);
 
         var w:int = 100;
         var h:int = 100;
@@ -335,11 +336,13 @@ public class LayoutController extends EventDispatcher {
     /** Removes element from the model and (if not <i>weak</i>) from the container.'
      *
      * @param element element to remove
-     * @param weak if <i>false</i> then element will be removed from the container;  otherwise not. Use <i>true</i> when dragging modules.
+     * @param weak if <i>false</i> then element will be removed from the container;  otherwise not. Use <i>true</i> when dragging modules. Commits layout model if <i>true</i>.
      */
 
     public function removeElement(element:ITreeLayoutElement, weak:Boolean = true, dispatch:Boolean = true):void {
         if (_expandedTarget == element) _expanded = false;
+
+        weak && (_prevModel = _model.clone());
 
         _model.remove(element.layoutIndex);
         element.visible = false;

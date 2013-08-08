@@ -20,7 +20,8 @@ package ru.teachbase.behaviours.dragdrop
 		
 		// sorted NUMERIC in binary
 		private static const ALL:Array = [ANY, ORTHOGONAL, VERTICAL, HORIZONTAL, DOWN, UP, LEFT, RIGHT, NO_DIRECTION];
-		
+
+
 		public static function getNameByValue(value:uint):String
 		{
 			switch(value)
@@ -137,6 +138,33 @@ package ru.teachbase.behaviours.dragdrop
 			
 			return result;
 		}
+
+
+        /**
+         * Return layout element index by direction value (0 if 'left' or 'up', 1 if 'right' or 'top')
+         *
+         * @param value
+         * @return
+         */
+
+
+        public static function getLayoutIndexByValue(value:uint):uint{
+
+            return (value & LEFT) || (value & UP) ? 0 : 1;
+        }
+
+        /**
+         * Return layout group direction by direction value (0 if 'left' or 'right', 1 if 'up' or 'top')
+         *
+         * @param value
+         * @return
+         */
+
+
+        public static function getLayoutDirectionByValue(value:uint):uint{
+
+            return (value & VERTICAL) ? 1 : 0;
+        }
 		
 		/**
 		 * 

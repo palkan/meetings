@@ -17,9 +17,11 @@
         import mx.events.FlexEvent;
         import mx.rpc.Responder;
 
+        import ru.teachbase.components.notifications.Notification;
+
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.events.GlobalEvent;
-        import ru.teachbase.manage.modules.model.ModuleSettings;
+        import ru.teachbase.components.callouts.SettingsItem;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
         import ru.teachbase.manage.rtmp.model.Recipients;
@@ -34,6 +36,7 @@
         import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.Strings;
         import ru.teachbase.utils.shortcuts.$null;
+        import ru.teachbase.utils.shortcuts.notify;
         import ru.teachbase.utils.shortcuts.rtmp_call;
         import ru.teachbase.utils.shortcuts.rtmp_history;
         import ru.teachbase.utils.shortcuts.rtmp_send;
@@ -49,7 +52,7 @@
         private const listener:RTMPListener = new RTMPListener(PacketType.CHAT);
         private const user:User = App.user;
 
-        private var _settings:Vector.<ModuleSettings> = new Vector.<ModuleSettings>();
+        private var _settings:Vector.<SettingsItem> = new Vector.<SettingsItem>();
 
 
         private var _rooms:ArrayCollection;
@@ -109,9 +112,9 @@
             _currentRoom.visible = true;
             messagesList.textFlow = _currentRoom.textFlow;
 
-            _settings.push(new ModuleSettings("copy_chat", ModuleSettings.FUN, getRawText));
-            _settings.push(new ModuleSettings("save_chat", ModuleSettings.FUN, saveAsCSV));
-            _settings.push(new ModuleSettings("clear_chat", ModuleSettings.FUN, clearChatHandler));
+            _settings.push(new SettingsItem("copy_chat", SettingsItem.FUN, getRawText));
+            _settings.push(new SettingsItem("save_chat", SettingsItem.FUN, saveAsCSV));
+            _settings.push(new SettingsItem("clear_chat", SettingsItem.FUN, clearChatHandler));
 
             listener.addEventListener(RTMPEvent.DATA, handleMessage);
             listener.initialize();
@@ -119,6 +122,7 @@
             _privateChatEnabled = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
             GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, settingsUpdate);
             GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, userLeaveHandler);
+            GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
 
             rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null), 0, App.user.isAdmin() ? [Recipients.ALL, Recipients.ADMINS] : [Recipients.ALL]);
         }
@@ -127,6 +131,28 @@
         //--------------- handlers --------------------//
 
 
+
+
+        private function handleReconnect(e:GlobalEvent):void{
+
+            listener.dispose();
+            listener.initialize();
+
+
+            /// deactivate chats with users left
+
+            for (var uid:String in _roomsByUserId){
+
+                if(!App.meeting.usersByID[uid] && (_roomsByUserId[uid] as ChatRoom).active) deactivateRoom(_roomsByUserId[uid] as ChatRoom);
+
+            }
+
+            const room_ids:Array = _rooms.source.map(function(r:ChatRoom,ind:int,arr:Array):Number{ return r.roomId;});
+
+            rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null), _lastMessageId, room_ids);
+
+        }
+
         private function settingsUpdate(e:GlobalEvent):void {
 
 
@@ -134,9 +160,9 @@
 
             if (_privateChatEnabled) return;
 
-            if (currentState != chatState.name) {
+            if (_currentRoom.roomId != Recipients.ALL) {
                 inputField.text = '';
-                currentState = chatState.name;
+                switchChatRoom(Recipients.ALL);
             }
 
         }
@@ -148,19 +174,7 @@
 
             if (_roomsByUserId[uid]) {
                 const room:ChatRoom = _roomsByUserId[uid] as ChatRoom;
-                room.active = false;
-                room.roomName += ' (' + translate('offline') + ')';
-
-                if (_currentRoom.roomId == room.roomId) {
-                    label = translate('label', 'chat') + ": " + _currentRoom.roomName;
-                    inputField.enabled = false;
-                }
-
-                if (currentState == roomsState.name) {
-                    _rooms.source.sort(compareChatRooms);
-                    _rooms.refresh();
-                    roomsList.validateNow();
-                }
+                deactivateRoom(room);
             }
         }
 
@@ -207,6 +221,7 @@
             switch (m.type) {
                 case ChatMessage.MESSAGE:
                     addMessage(m);
+                    if(m.roomId != _currentRoom.roomId) notify(new Notification(translate('new_message','notifications', m.name, m.body)));
                     break;
                 case ChatMessage.TYPING:
                     (m.roomId == _currentRoom.roomId) && (m.uid != user.sid) && typingGroup.add(App.meeting.usersByID[m.uid]);
@@ -284,6 +299,23 @@
 
         //--------------- controllers -----------------//
 
+
+
+        private function deactivateRoom(room:ChatRoom):void{
+            room.active = false;
+            room.roomName += ' (' + translate('offline') + ')';
+
+            if (_currentRoom.roomId == room.roomId) {
+                label = translate('label', 'chat') + ": " + _currentRoom.roomName;
+                inputField.enabled = false;
+            }
+
+            if (currentState == roomsState.name) {
+                _rooms.source.sort(compareChatRooms);
+                _rooms.refresh();
+                roomsList.validateNow();
+            }
+        }
 
         private function clearChat(roomId:Number):void {
 
@@ -461,7 +493,7 @@
 
         }
 
-        override public function get settings():Vector.<ModuleSettings> {
+        override public function get settings():Vector.<SettingsItem> {
             return _settings;
         }
 

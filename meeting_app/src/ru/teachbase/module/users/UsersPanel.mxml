@@ -16,7 +16,7 @@
         import mx.collections.ArrayCollection;
         import mx.events.CollectionEvent;
 
-        import ru.teachbase.manage.modules.model.ModuleSettings;
+        import ru.teachbase.components.callouts.SettingsItem;
         import ru.teachbase.model.App;
         import ru.teachbase.model.User;
         import ru.teachbase.utils.Localizer;
@@ -36,7 +36,7 @@
             const compared:Array = App.meeting.usersList.source.sort(compare);
 
             ownersList.dataProvider = new ArrayCollection(compared.filter(filterAdmin));
-            usersList.dataProvider =  new ArrayCollection(compared.filter(filterUser));
+            usersList.dataProvider = new ArrayCollection(compared.filter(filterUser));
 
         }
 
@@ -79,7 +79,7 @@
         }
 
 
-        override public function get settings():Vector.<ModuleSettings> {
+        override public function get settings():Vector.<SettingsItem> {
             return (ownerModule as UsersModule).settings;
         }
         ]]>

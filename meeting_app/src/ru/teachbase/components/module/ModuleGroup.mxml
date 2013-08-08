@@ -219,7 +219,7 @@
 
             _permissions = value;
 
-            titleBar && (titleBar.p_enabled = Permissions.docsAvailable(value));
+            titleBar && (titleBar.p_enabled = App.user.isAdmin());
 
             _content && (_content.permissions = value);
 

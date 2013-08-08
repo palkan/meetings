@@ -10,10 +10,6 @@
             import caurina.transitions.Tweener;
 
             import mx.collections.ArrayCollection;
-            import mx.events.CollectionEvent;
-
-            import ru.teachbase.model.App;
-            import ru.teachbase.model.User;
 
             [Bindable]
             private var _dataProvider:ArrayCollection;

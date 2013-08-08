@@ -16,19 +16,26 @@
         [Bindable]
         private var _dataProvider:ArrayList;
 
-        public function set dataprovider(value:ArrayList):void {
+
+        public function add(item:Notification):void{
+            if(_dataProvider.length == 0) this.visible = true;
+
+            _dataProvider.addItem(item);
+        }
+
+        public function set dataProvider(value:ArrayList):void {
             _dataProvider = value;
-            if (_dataProvider.length == 0) {
-                this.height = 1;
-                //  Core.removeFromTop(this);
-                return;
-            }
             _dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE, onChange);
-            resizeContainer()
+            resizeContainer();
         }
 
         private function onChange(evt:Event):void {
-            resizeContainer()
+            if (_dataProvider.length == 0) {
+                this.height = 1;
+                this.visible = false;
+                return;
+            }
+            resizeContainer();
         }
 
         private function resizeContainer():void {
@@ -37,6 +44,6 @@
         ]]>
 	</fx:Script>
 	
-	<s:List id="itemsList" height="100%" itemRenderer="ru.teachbase.module.notification.NotificationItemRenderer"  contentBackgroundAlpha="0" dataProvider="{_dataProvider}"  useVirtualLayout="false"/>
+	<s:List id="itemsList" height="100%" itemRenderer="ru.teachbase.components.notifications.NotificationItemRenderer"  contentBackgroundAlpha="0" dataProvider="{_dataProvider}"  useVirtualLayout="false"/>
 	
 </s:Group>

@@ -251,17 +251,17 @@
 				<element name="closeButton" src="closeButton.png"></element>
 				<element name="closeButtonHover" src="closeButtonHover.png"></element>
 				
-				<element name="screenEnabled" src="screenEnabled.png"></element>
-				<element name="screenDisabled" src="screenDisabled.png"></element>
-				<element name="screenAttempt" src="screenAttempt.png"></element>
+				<element name="docsActive" src="screenEnabled.png"></element>
+				<element name="docsEnabled" src="screenDisabled.png"></element>
+				<element name="docsRequested" src="screenAttempt.png"></element>
 				
-				<element name="micEnabled" src="micEnabled.png"></element>
-				<element name="micDisabled" src="micDisabled.png"></element>
-				<element name="micAttempt" src="micAttempt.png"></element>
+				<element name="micActive" src="micEnabled.png"></element>
+				<element name="micEnabled" src="micDisabled.png"></element>
+				<element name="micRequested" src="micAttempt.png"></element>
 				
-				<element name="camEnabled" src="cameraEnabled.png"></element>
-				<element name="camDisabled" src="cameraDisabled.png"></element>
-				<element name="camAttempt" src="cameraAttempt.png"></element>
+				<element name="camActive" src="cameraEnabled.png"></element>
+				<element name="camEnabled" src="cameraDisabled.png"></element>
+				<element name="camRequested" src="cameraAttempt.png"></element>
 				
 				<element name="toggleButtonBg" src="toggleButtonBg.png"></element>
 				

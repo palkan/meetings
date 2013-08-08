@@ -34,7 +34,7 @@ public dynamic class SkinManager extends Manager
             if(instance) throw new SingletonError();
 		}
 
-		override protected function initialize():void{
+		override protected function initialize(reinit:Boolean = false):void{
 			load(config("skin"));	
 		}
 		

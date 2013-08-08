@@ -21,6 +21,7 @@ public class UserLocalSettings {
     private var _camID:String = null;
     private var _lang:String = "ru";
     private var _publishQuality:String = "medium";
+    private var _showNotifications:Boolean = true;
 
 
     /**
@@ -119,6 +120,19 @@ public class UserLocalSettings {
     public function set micID(value:int):void {
         _micID = value;
         cookie('micID',value);
+    }
+
+    /**
+     *  @default true
+     */
+
+    public function get showNotifications():Boolean {
+        return _showNotifications;
+    }
+
+    public function set showNotifications(value:Boolean):void {
+        _showNotifications = value;
+        cookie('showNotifications',value);
     }
 }
 }

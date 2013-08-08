@@ -24,6 +24,8 @@
         import ru.teachbase.behaviours.interfaces.IDraggleSnapshot;
         import ru.teachbase.behaviours.interfaces.IDropCoordinateSpace;
         import ru.teachbase.components.*;
+        import ru.teachbase.components.callouts.SettingsCallout;
+        import ru.teachbase.components.callouts.SettingsCalloutInstance;
         import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.events.PermissionEvent;
         import ru.teachbase.layout.LayoutController;
@@ -33,7 +35,7 @@
         import ru.teachbase.manage.modules.model.IModule;
         import ru.teachbase.manage.modules.model.IModulePanel;
         import ru.teachbase.manage.modules.model.ModuleInstanceData;
-        import ru.teachbase.manage.modules.model.ModuleSettings;
+        import ru.teachbase.components.callouts.SettingsItem;
         import ru.teachbase.model.App;
         import ru.teachbase.skins.cursors.HorizontalResizerCursor;
         import ru.teachbase.skins.cursors.VerticalResizerCursor;
@@ -63,8 +65,6 @@
         private var _snapshot:DraggleSnapshot = null;
 
         private var _dragging:Boolean = false;
-
-        private var _settingsCallout:SettingsCallout = new SettingsCallout();
 
         //-------------- init handlers --------------//
 
@@ -107,7 +107,7 @@
             }
 
 
-            GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE,onPermissionsChanged);
+            GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE, onPermissionsChanged);
 
             App.session.userReady();
         }
@@ -130,7 +130,7 @@
 
         public function lock():void {
 
-            //TODO: check if dragging!
+            if(_dragging) cancelDragDrop();
 
             for each(var el:IModulePanel in _panels)
                 el.locked = true;
@@ -214,7 +214,8 @@
             _dragging = true;
 
             // if source is Panel
-            if (snapshot.source is IModulePanel) {
+            if (snapshot.source is IModulePanel){
+
                 _controller.removeElement(snapshot.source as ITreeLayoutElement, true, false);
             } else if (snapshot.source is ActionBarButtonDraggle) {
                 //THINK: ???
@@ -259,33 +260,13 @@
 
                 const button:ActionBarButtonDraggle = snapshot.source as ActionBarButtonDraggle;
 
+                var dir:uint = DragDirection.getLayoutDirectionByValue(_dropDirection);
+                var index:uint = DragDirection.getLayoutIndexByValue(_dropDirection);
 
-                //TODO: dry the following block (see LayoutController.as:277)
-
-                var dir:uint = 0;
-                var index:uint = 0;
-
-
-                switch (DragDirection.getNameByValue(_dropDirection)) {
-
-                    case "up":
-                        dir = 1;
-                        break;
-                    case "down":
-                        dir = 1;
-                        index = 1;
-                        break;
-                    case "right":
-                        index = 1;
-                        break;
-                    default:
-                        break;
-
-                }
 
                 const mod:IModule = App.meeting.modules[button.module.moduleId];
 
-                if(!mod) return;
+                if (!mod) return;
 
                 App.layout.commitAddElement(
                         _hoveredElement.elementId,
@@ -302,6 +283,8 @@
         public function cancelDrop(__snapshot:IDraggleSnapshot):void {
             var snapshot:DraggleSnapshot = __snapshot as DraggleSnapshot;
             decoreLayer.visible = false;
+
+            _controller.rollback();
 
             if (snapshot.source is IModulePanel) {
                 snapshot.source.visible = true;
@@ -361,20 +344,17 @@
 
         protected function onSettingsHandler(event:ModuleEvent):void {
 
-            if (_settingsCallout.opened) _settingsCallout.close();
-
-            var _s:Vector.<ModuleSettings> = (event.target as ModuleGroup).content.settings;
+            var _s:Vector.<SettingsItem> = (event.target as ModuleGroup).content.settings;
 
             if (!_s) return;
 
-            _settingsCallout.dataProvider = _s;
-            _settingsCallout.open((event.target as ModuleGroup).titleBar.settings_btn);
+            SettingsCallout.open((event.target as ModuleGroup).titleBar.settings_btn,_s);
 
         }
 
         protected function onPermissionsChanged(event:GlobalEvent):void {
 
-            if (App.layout.is_owner && !Permissions.isAdmin(event.value)){
+            if (App.layout.is_owner && !Permissions.isAdmin(event.value)) {
                 App.layout.lock();
             }
 

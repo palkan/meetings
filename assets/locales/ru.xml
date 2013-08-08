@@ -13,15 +13,21 @@
 				<element name="confirm"><![CDATA[подтвердить]]></element>
 				<element name="decline"><![CDATA[отклонить]]></element>
 				<element name="accept"><![CDATA[принять]]></element>
+                <element name="allow"><![CDATA[разрешить]]></element>
+                <element name="disallow"><![CDATA[запретить]]></element>
 				<element name="or">или</element>
 				<element name="and">и</element>
 				<element name="turn_on">включить</element>
 				<element name="turn_off">выключить</element>
 				<element name="save">сохранить</element>
                 <element name="offline">не в сети</element>
+                <element name="yes">да</element>
+                <element name="no">нет</element>
+                <element name="admin">администратор</element>
+                <element name="user">участник</element>
 			</elements>
 		</component>
-		<component name="module_settings">
+		<component name="settings_callout">
 			<elements>
 				<element name="clear_chat"><![CDATA[Очистить чат]]></element>
 				<element name="copy_chat"><![CDATA[Копировать чат]]></element>
@@ -30,7 +36,12 @@
 				<element name="clear_workplace"><![CDATA[Очистить рабочую область]]></element>
 				<element name="save_screenshot"><![CDATA[Сохранить скриншот]]></element>
                 <element name="export_user_list"><![CDATA[Сохранить список пользователей]]></element>
-			</elements>
+                <element name="user_set_user">Сделать участником</element>
+                <element name="user_set_admin">Сделать администратором</element>
+                <element name="user_private_chat">Начать личный чат</element>
+                <element name="user_change_name">Изменить имя</element>
+                <element name="user_kick_off">Удалить из комнаты</element>
+            </elements>
 		</component>
 		<component name="chat">
 			<elements>
@@ -74,15 +85,13 @@
 				<element name="me"><![CDATA[${1} (Я)]]></element>
 				<element name="admins">Администраторы</element>
 				<element name="users">Участники</element>
-				<element name="set_user">Сделать участником</element>
-				<element name="set_admin">Сделать администратором</element>
-				<element name="start_private">Начать личный чат</element>
 				<element name="are_you_sure_delete"><![CDATA[Вы уверены, что хотите удалить ${1} из списка участников?]]></element>
-				<element name="sure_to_change_right_cam"><![CDATA[Точно ${1} камеру?]]></element>
-				<element name="sure_to_change_right_mic"><![CDATA[Точно ${1} микрофон?]]></element>
-				<element name="sure_to_change_right_doc"><![CDATA[Точно ${1} рабочую область?]]></element>
+				<element name="audio_sharing"><![CDATA[аудио трансляцию]]></element>
+				<element name="video_sharing"><![CDATA[видео трансляцию]]></element>
+				<element name="docs_sharing"><![CDATA[управление документами]]></element>
 				<element name="request_cam"><![CDATA[Запрос на подключение веб камеры]]></element>
-				<element name="requset_mic"><![CDATA[Запрос на подключение микрофона]]></element>
+                <element name="request_docs"><![CDATA[Запрос на управление документами]]></element>
+				<element name="request_mic"><![CDATA[Запрос на подключение микрофона]]></element>
 				<element name="set_label">Модуль участники</element>
 				<element name="set_requests_off"><![CDATA[Отмена возможности запроса камеры
 и микрофона]]></element>
@@ -92,6 +101,12 @@
 			<elements>
 				<element name="label"><![CDATA[Видео]]></element>
 				<element name="tooltip"><![CDATA[видео]]></element>
+                <element name="pause_camera"><![CDATA[Пауза]]></element>
+                <element name="publish_camera"><![CDATA[Возбновить]]></element>
+                <element name="pause_stream"><![CDATA[Пауза]]></element>
+                <element name="play_stream"><![CDATA[Возобновить]]></element>
+                <element name="close_sharing"><![CDATA[Закрыть трансляцию]]></element>
+                <element name="close_user_stream"><![CDATA[Закрыть трансляцию]]></element>
 			</elements>
 		</component>
 		<component name="screenshare">
@@ -179,7 +194,17 @@
 				<element name="leave_room"><![CDATA[${1} вышел из комнаты]]></element>
 				<element name="start_rec"><![CDATA[Встреча записывается]]></element>
 				<element name="stop_rec"><![CDATA[Запись встречи остановлена]]></element>
-				<element name="new_message"><![CDATA[Вам сообщение от ${1} ${2}]]></element>
+				<element name="new_message"><![CDATA[Вам сообщение от ${1}:
+${2}]]></element>
+                <element name="stream_stopped"><![CDATA[${1} отключил Вашу трансляцию]]></element>
+                <element name="audio_stopped"><![CDATA[${1} отключил Ваш микрофон]]></element>
+                <element name="video_stopped"><![CDATA[${1} отключил Вашу камеру]]></element>
+                <element name="audio_rights"><![CDATA[Вам предоставлен доступ к аудио трансляции]]></element>
+                <element name="video_rights"><![CDATA[Вам предоставлен доступ к видео трансляции]]></element>
+                <element name="docs_rights"><![CDATA[Вам предоставлен доступ к рабочей области]]></element>
+                <element name="role_changed"><![CDATA[Роль изменена]]></element>
+                <element name="layout_locked"><![CDATA[Макет зафиксирован]]></element>
+                <element name="layout_unlocked"><![CDATA[${1} редактирует макет]]></element>
 			</elements>
 		</component>		
 		<component name="error">

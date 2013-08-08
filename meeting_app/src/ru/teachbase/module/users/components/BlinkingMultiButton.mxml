@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+         mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
+    <fx:Metadata>
+        [Style(name="iconActive", type="flash.display.DisplayObject")]
+        [Style(name="iconEnabled",type="flash.display.DisplayObject")]
+        [Style(name="iconRequested",type="flash.display.DisplayObject")]
+    </fx:Metadata>
+    <fx:Script><![CDATA[
+        import mx.events.FlexEvent;
+
+        import spark.filters.GlowFilter;
+
+        public static const IDLE:String = "bmb:idle";
+        public static const ENABLED:String = "bmb:enabled";
+        public static const ACTIVE:String = "bmb:active";
+        public static const REQUESTED:String = "bmb:requested";
+        public static const ACCEPTED:String = "bmb:accepted";
+
+        private const BLINK_INTERVAL:int = 400;
+
+        private var _state:String =  IDLE;
+
+        private var _tid:uint;
+
+        private function applyFilter(evt:Event):void {
+            const obj:DisplayObject = evt.target as DisplayObject;
+            obj.filters = [new GlowFilter(0xFFFFFF, 1, 2, 2, 10, 1)];
+        }
+
+        private function removeFilter(evt:Event):void {
+            const obj:DisplayObject = evt.target as DisplayObject;
+            obj.filters = [];
+        }
+
+
+        private function blink():void{
+            iconImg.visible = !iconImg.visible;
+        }
+
+        private function updateIcon():void{
+            blinking = false;
+
+            switch(_state){
+                case IDLE:{
+                    iconImg.visible = false;
+                    break;
+                }
+                case ENABLED:{
+                    iconImg.source = getStyle('iconEnabled');
+                    iconImg.visible = true;
+                    break;
+                }
+                case ACTIVE:{
+                    iconImg.source = getStyle('iconActive');
+                    iconImg.visible = true;
+                    break;
+                }
+                case REQUESTED:{
+                    iconImg.source = getStyle('iconRequested');
+                    iconImg.visible = true;
+                    blinking = true;
+                    break;
+                }
+                case ACCEPTED:{
+                    iconImg.source = getStyle('iconRequested');
+                    iconImg.visible = true;
+                    break;
+                }
+            }
+
+        }
+
+        private function set blinking(value:Boolean):void{
+
+            if(value){
+                _tid = setInterval(blink,BLINK_INTERVAL);
+            }else{
+                _tid && clearInterval(_tid);
+            }
+
+        }
+
+        public function get state():String {
+            return _state;
+        }
+
+        public function set state(value:String):void {
+            if(value == _state) return;
+            _state = value;
+            updateIcon();
+        }
+
+        ]]></fx:Script>
+     <s:BitmapImage id="iconImg"/>
+</s:Group>

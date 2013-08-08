@@ -1,6 +1,6 @@
-package ru.teachbase.manage.modules.model
+package ru.teachbase.components.callouts
 {
-	public class ModuleSettings
+	public class SettingsItem
 	{
 		
 		public static const FUN:String = "function";
@@ -9,12 +9,10 @@ package ru.teachbase.manage.modules.model
 		
 		public var type:String;
 		public var handler:Function;
-		public var moduleId:String;
-		public var instanceId:int = 1;
 		public var label:String;
 		public var args:Array;
 		
-		public function ModuleSettings(label:String, type:String, handler:Function, ...args)			
+		public function SettingsItem(label:String, type:String, handler:Function, ...args)
 		{
 			this.type = type;
 			this.handler = handler;

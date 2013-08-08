@@ -4,10 +4,16 @@ import flash.utils.Dictionary;
 import mx.collections.ArrayCollection;
 import mx.events.CollectionEvent;
 
+import ru.teachbase.components.notifications.Notification;
+
 import ru.teachbase.manage.modules.model.ModuleInstanceData;
 
 import ru.teachbase.model.*;
 import ru.teachbase.tb_internal;
+import ru.teachbase.utils.Permissions;
+import ru.teachbase.utils.helpers.lambda;
+import ru.teachbase.utils.shortcuts.notify;
+import ru.teachbase.utils.shortcuts.translate;
 
 use namespace tb_internal;
 
@@ -173,13 +179,38 @@ public class Meeting{
 
     private function handleRequestStatusChange(usr:User, oldValue:uint):void {
         if (oldValue > usr.requestStatus)   return;
-        //TODO: notification notify(NotificationTypes.PERMISSION_NOTIFICATION, String(usr.requestStatus - oldValue), usr);
+
+        const reqId:uint = usr.requestStatus - oldValue;
+        var message:String='';
+
+        switch(reqId){
+            case Permissions.CAMERA:
+                message = translate('req_cam','notifications',usr.extName);
+                break;
+            case Permissions.MIC:
+                message = translate('req_mic','notifications',usr.extName);
+                break;
+            case Permissions.DOCS:
+                message = translate('req_doc','notifications',usr.extName);
+                break;
+        }
+
+        notify(new Notification(
+                message,
+                null,
+                translate('Accept'),
+                lambda(App.session.setUserRights, usr.sid, reqId,true),
+                translate('Decline'),
+                lambda(App.session.setRequest,reqId,false,usr.sid)
+        ));
     }
 
     //------------ get / set -------------//
 
     public function set users(value:Array):void {
         usersList.source = value;
+
+        usersByID = {};
 
         for each (var usr:User in value)
             usersByID[usr.sid] = usr;

@@ -2,6 +2,9 @@ package ru.teachbase.events {
 import flash.events.Event;
 
 public class GlobalEvent extends Event {
+
+    public static const RECONNECT:String = "tb:global_reconnect";
+
     public static const USER_LEAVE:String = "tb:global_user_leave";
     public static const USER_ADD:String = "tb:global_user_add";
 

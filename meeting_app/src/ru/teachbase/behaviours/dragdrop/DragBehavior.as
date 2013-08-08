@@ -515,12 +515,14 @@ import ru.teachbase.utils.shortcuts.debug;
 		{
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, moveHandler, true, EventPriority.CURSOR_MANAGEMENT);
 			stage.addEventListener(Event.MOUSE_LEAVE, leaveHandler);
+            stage.addEventListener(Event.DEACTIVATE, leaveHandler);
 		}
 		
 		protected function disposeTempListeners():void
 		{
 			stage && stage.removeEventListener(MouseEvent.MOUSE_MOVE, moveHandler, true);
 			stage && stage.removeEventListener(Event.MOUSE_LEAVE, leaveHandler);
+            stage && stage.removeEventListener(Event.DEACTIVATE, leaveHandler);
 		}
 		
 

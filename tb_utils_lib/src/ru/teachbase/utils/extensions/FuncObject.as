@@ -33,9 +33,14 @@ use namespace flash_proxy;
 		
 		//--------------- ctrl ---------------//
 
+        public function clear():void{
+            for(var key:* in storage) delete storage[key];
+        }
+
+
 
         public function dispose():void{
-            for(var key:* in storage) delete storage[key];
+             clear();
             _disposed = true;
         }
 

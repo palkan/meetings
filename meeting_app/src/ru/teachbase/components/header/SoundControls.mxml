@@ -192,6 +192,7 @@
                                         iconOver=style('actionBar','cameraIcoDisabledHover');
                                         iconSelected=style('actionBar','cameraIcoDisabledHover');
                                         }"
+                       change="App.session.toggleRequest(Permissions.CAMERA)"
                        preventToggle="true"
             >
     </c:ActionBarButton>
@@ -216,6 +217,7 @@
                                     iconSelected=style('actionBar','micIcoDisabledHover');
                                     iconOver=style('actionBar','micIcoDisabledHover');
                                     icon=style('actionBar','micIcoDisabled');}"
+                       change="App.session.toggleRequest(Permissions.MIC)"
                        preventToggle="true"
             >
     </c:ActionBarButton>

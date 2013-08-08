@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+        click="close()">
+    <fx:Script><![CDATA[
+        import mx.core.IVisualElement;
+        import mx.core.IVisualElementContainer;
+
+        /**
+         *  Parent component of lightbox
+         */
+
+        public var container:IVisualElementContainer;
+
+        private var _canClose:Boolean = true;
+
+        /**
+         *  Close lightbox
+         */
+
+        public function close():void {
+
+            _canClose && container && (container.getElementIndex(this) > -1) && container.removeElement(this) && this.removeAllElements();
+
+        }
+
+
+        public function show(element:IVisualElement, canClose:Boolean = true):void{
+            _canClose = canClose;
+
+            element.verticalCenter = 0;
+            element.horizontalCenter = 0;
+
+            addElement(element);
+
+        }
+
+        /**
+         *  Define whether close UI is available
+         */
+
+        public function get canClose():Boolean {
+            return _canClose;
+        }
+        ]]></fx:Script>
+</s:SkinnableContainer>

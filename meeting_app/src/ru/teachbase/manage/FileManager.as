@@ -38,7 +38,7 @@ import ru.teachbase.module.documents.model.FileItem;
 		}
 		
 		
-		override protected function initialize():void
+		override protected function initialize(reinit:Boolean = false):void
 		{
 			
 			_initialized = true;

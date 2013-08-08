@@ -2,6 +2,8 @@ package ru.teachbase.manage.modules.model
 {
 import mx.core.IVisualElement;
 
+import ru.teachbase.components.callouts.SettingsItem;
+
 /**
 	 * Any module's content must implement this interface.
 	 * @author Teachbase (created: Mar 2, 2012)
@@ -17,7 +19,7 @@ import mx.core.IVisualElement;
 		function get panelID():uint;
 		function set panelID(value:uint):void;
 
-        function get settings():Vector.<ModuleSettings>;
+        function get settings():Vector.<SettingsItem>;
 		
 		function get instanceID():uint;
 		

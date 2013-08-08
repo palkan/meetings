@@ -12,6 +12,8 @@ import flash.media.Microphone;
 import flash.net.NetConnection;
 import flash.net.NetStream;
 
+import ru.teachbase.components.notifications.Notification;
+
 import ru.teachbase.constants.NetStreamStatusCodes;
 import ru.teachbase.constants.PacketType;
 import ru.teachbase.constants.PublishQuality;
@@ -23,12 +25,15 @@ import ru.teachbase.manage.rtmp.model.Packet;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.model.App;
 import ru.teachbase.model.SharingModel;
+import ru.teachbase.model.User;
 import ru.teachbase.utils.CameraUtils;
 import ru.teachbase.utils.MicrophoneUtils;
 import ru.teachbase.utils.Permissions;
 import ru.teachbase.utils.Strings;
 import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
+import ru.teachbase.utils.shortcuts.notify;
+import ru.teachbase.utils.shortcuts.translate;
 import ru.teachbase.utils.shortcuts.warning;
 import ru.teachbase.utils.system.requestUserMediaAccess;
 
@@ -76,7 +81,7 @@ public class PublishManager extends Manager {
     //------------ initialize ------------//
 
 
-    override protected function initialize():void {
+    override protected function initialize(reinit:Boolean = false):void {
 
         if (!App.rtmp || !App.rtmp.connected) {
             error("Can not find RTMPManager or RTMPManager is disconnected");
@@ -94,6 +99,17 @@ public class PublishManager extends Manager {
 
         _initialized = true;
     }
+
+
+    override public function clear():void{
+
+        super.clear();
+        listener.dispose();
+        listener.removeEventListener(RTMPEvent.DATA, handleMessage);
+
+    }
+
+
 
     //------------- API -----------------//
 
@@ -451,9 +467,22 @@ public class PublishManager extends Manager {
 
     private function remoteClose(data:Packet):void{
 
-        //todo: notify about remote closing!
+        const user:User = App.meeting.usersByID[data.from];
 
-        closeAll();
+        switch(data.data.type){
+
+            case Permissions.CAMERA:
+                closeCamera();
+                notify(new Notification(translate('video_stopped','notifications', user ? user.extName : translate('Admin'))),true);
+                break;
+            case Permissions.MIC:
+                closeAudio();
+                notify(new Notification(translate('audio_stopped','notifications', user ? user.extName : translate('Admin'))),true);
+                break;
+            default:
+                closeAll();
+                notify(new Notification(translate('stream_stopped','notifications', user ? user.extName : translate('Admin'))),true);
+        }
 
     }
 

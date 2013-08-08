@@ -15,6 +15,7 @@
         import ru.teachbase.model.App;
         import ru.teachbase.model.User;
         import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
 
         private var video:Video = null;
 
@@ -36,6 +37,9 @@
         private var _isAdmin:Boolean;
 
         private var _rotated:Boolean = false;
+
+        [Bindable]
+        private var _closeTooltip:String;
 
         [Event(name="removeVideo")]
         [Event(name="removeStream")]
@@ -106,6 +110,8 @@
 
             if (camera)
                 video.attachCamera(camera);
+
+            _closeTooltip = camera ? translate('close_sharing','video') : translate('close_user_stream','video');
 
             uic.addChild(video);
         }
@@ -249,6 +255,7 @@
 			  click="onCloseHandler(event)" 
 			  skinClass="ru.teachbase.skins.SimpleButtonSkin" 
 			  id="closeButton"
+              toolTip="{_closeTooltip}"
 			  initialize="closeButton.setStyle('icon',style('video','closeButton'))"
 			  visible="{_mouseOver &amp;&amp; _isAdmin}"/>
 	<s:Rect width="{this.width}" height="24" left="0" right="0" bottom="0">
@@ -261,17 +268,21 @@
 	<s:Button id="playButton" 
 			  skinClass="ru.teachbase.skins.SimpleButtonSkin" 
 			  initialize="playButton.setStyle('icon',style('video','playButton'))"
+              toolTip="{translate('publish_camera','video')}"
 			  bottom="3" right="2" visible="{_paused &amp;&amp; camera &amp;&amp; _mouseOver}" click="onPlayCamera()"/>
 	<s:Button id="playButtonPause" 
 			  skinClass="ru.teachbase.skins.SimpleButtonSkin" 
 			  initialize="playButtonPause.setStyle('icon',style('video','playButtonPused'))"
+              toolTip="{translate('pause_camera','video')}"
 			  bottom="3" right="2" visible="{!_paused &amp;&amp; camera &amp;&amp; _mouseOver}" click="onPauseCamera()" />
 	<s:Button id="streamButton" 
 			  skinClass="ru.teachbase.skins.SimpleButtonSkin" 
 			  initialize="streamButton.setStyle('icon',style('video','cameraButton'))"
+              toolTip="{translate('play_stream','video')}"
 			  bottom="3" right="2" visible="{_paused &amp;&amp; stream &amp;&amp; _mouseOver}" click="onStreamPlay()"/>
 	<s:Button id="streamButtonPause" 
 			  skinClass="ru.teachbase.skins.SimpleButtonSkin" 
 			  initialize="streamButtonPause.setStyle('icon',style('video','cameraButtonPaused'))"
+              toolTip="{translate('pause_stream','video')}"
 			  bottom="3" right="2" visible="{!_paused &amp;&amp; stream &amp;&amp; _mouseOver}" click="onStreamPause()"/>
 </s:Group>

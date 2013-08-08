@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
                 xmlns:s="library://ns.adobe.com/flex/spark"
-                xmlns:ns1="*"
+                xmlns:users="ru.teachbase.module.users.components.*"
                 autoDrawBackground="false" width="100%" height="32">
     <fx:Script>
 		<![CDATA[
+        import ru.teachbase.components.callouts.ConfirmCallout;
+        import ru.teachbase.components.callouts.SettingsCallout;
+        import ru.teachbase.manage.modules.ModuleID;
         import ru.teachbase.model.App;
         import ru.teachbase.model.User;
+        import ru.teachbase.module.users.UsersModule;
         import ru.teachbase.utils.Permissions;
+        import ru.teachbase.utils.helpers.lambda;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
-        import spark.filters.GlowFilter;
-
-        private var _callout1:CalloutOne;
-        private var _callout2:CalloutTwo;
-        private var bitmaskSize:uint = 1;
-
-        [Bindable]
-        private var _userName:String = "";
-
-        [Bindable]
-        private var _isViewerOrAdmin:Boolean;
-
-        [Bindable]
         private var _user:User;
+
+        [Bindable]
+        private var _name:String = '';
+
+        [Bindable]
+        private var _camState:String = BlinkingMultiButton.IDLE;
+        [Bindable]
+        private var _micState:String = BlinkingMultiButton.IDLE;
+        [Bindable]
+        private var _docsState:String = BlinkingMultiButton.IDLE;
+
+        private var _module:UsersModule;
 
         override public function set data(value:Object):void {
             super.data = value;
@@ -32,136 +36,217 @@
                 return;
             }
 
-            _user = value as User;
-            _userName = _user.extName;
+            _module = App.meeting.modules[ModuleID.getID(UsersModule)] as UsersModule;
 
-            _callout1 = new CalloutOne();
-            _callout1.user = value as User;
+            _user = value as User;
+
+            _name = _user.extName;
 
             _user.iam && nameLabel.setStyle("fontStyle", "italic");
-           !_user.iam && nameLabel.setStyle("fontStyle", "normal");
+            !_user.iam && nameLabel.setStyle("fontStyle", "normal");
 
-            _isViewerOrAdmin = (value as User).sid === App.user.sid || Permissions.isAdmin((value as User).permissions);
+            var _notAdminNotOwner:Boolean = App.user.isAdmin() && !_user.isAdmin() && !_user.iam;
+
+            _camState = getState(
+                    Permissions.camAvailable(_user.shareStatus),
+                    _notAdminNotOwner && Permissions.camAvailable(_user.requestStatus),
+                    _notAdminNotOwner && Permissions.camAvailable(_user.permissions),
+                    _notAdminNotOwner
+            );
+
+            _micState = getState(
+                    Permissions.micAvailable(_user.shareStatus),
+                    _notAdminNotOwner && Permissions.micAvailable(_user.requestStatus),
+                    _notAdminNotOwner && Permissions.micAvailable(_user.permissions),
+                    _notAdminNotOwner
+            );
+
+            _docsState = getState(
+                    Permissions.docsAvailable(_user.shareStatus),
+                    _notAdminNotOwner && Permissions.docsAvailable(_user.requestStatus),
+                    _notAdminNotOwner && Permissions.docsAvailable(_user.permissions),
+                    _notAdminNotOwner
+            );
+
+
         }
 
-        private function getShareStatusValue(pos:uint, status:uint):Boolean {
-            return Boolean(status & (bitmaskSize << pos));
+        /**
+         *
+         * Return BLinkingMultiButton state according to params
+         *
+         * @param share     is now sharing
+         * @param request   is now requesting
+         * @param right     has right?
+         * @param user     is user?
+         * @return
+         */
+
+        private function getState(share:Boolean, request:Boolean, right:Boolean, user:Boolean):String {
+
+            if (share) return BlinkingMultiButton.ACTIVE;
+
+            if (request) return BlinkingMultiButton.REQUESTED;
+
+            if (right && user) return BlinkingMultiButton.ACCEPTED;
+
+            if (user) return BlinkingMultiButton.ENABLED;
+
+            return BlinkingMultiButton.IDLE;
+
+        }
+
+        private function optionsCallout():void {
+
+            _module && SettingsCallout.open(nameLabel,_module.userOptions(_user));
+
+        }
+
+        private function confirm(type:uint, cont:BlinkingMultiButton):void {
+
+
+            if (!App.user.isAdmin() || _user.iam) return;
+
+
+            // first case: accept user request
+
+            if (cont.state == BlinkingMultiButton.REQUESTED) {
+
+                ConfirmCallout.open(
+                        cont,
+                        requestTextByType(type),
+                        translate('Accept'),
+                        translate('Decline'),
+                        lambda(App.session.setUserRights, _user.sid, type),
+                        lambda(App.session.setRequest, type, false, _user.sid)
+                );
+
+                return;
+            }
+
+            // second case: give a right if it is enabled
+
+            if (cont.state == BlinkingMultiButton.ENABLED) {
+
+                ConfirmCallout.open(
+                        cont,
+                        translate('Allow') + ' ' + confirmTextByType(type) + '?',
+                        translate('Yes'),
+                        translate('No'),
+                        lambda(App.session.setUserRights, _user.sid, type)
+                );
+
+                return;
+            }
+
+            // third case: cancel accepted request
+
+            if (cont.state == BlinkingMultiButton.ACCEPTED) {
+
+                ConfirmCallout.open(
+                        cont,
+                        translate('Disallow') + ' ' + confirmTextByType(type) + '?',
+                        translate('Yes'),
+                        translate('No'),
+                        lambda(App.session.setUserRights, _user.sid, type, false)
+                );
+
+                return;
+            }
+
+
+            // and the last one: turn off active user stream
+
+            if (cont.state == BlinkingMultiButton.ACTIVE) {
+
+
+                ConfirmCallout.open(
+                        cont,
+                        translate('Turn_off') + ' ' + confirmTextByType(type) + '?',
+                        translate('Yes'),
+                        translate('No'),
+                        lambda(App.streams.closeRemoteStream, _user.sid, type)
+                )
+
+                return;
+            }
+
+
+        }
+
+        private function confirmTextByType(type:uint):String {
+            switch (type) {
+                case Permissions.DOCS:
+                    return translate('docs_sharing', 'users');
+                case Permissions.CAMERA:
+                    return translate('video_sharing', 'users');
+                case Permissions.MIC:
+                    return translate('audio_sharing', 'users');
+            }
+            return '';
         }
 
 
-        private function confirmCalloutAllow(type:int, flag:Boolean, cont:DisplayObjectContainer, dialogType:String, str:String = ""):void {
-                _callout2 = new CalloutTwo();
-                _callout2.type = type;
-                _callout2.sid = (super.data as User).sid;
-                _callout2.flag = flag;
-                _callout2.confirmText = str;
-                _callout2.dialogType = dialogType;
-                _callout2.open(cont);
-        }
-
-        private function applyFilter(evt:Event):void {
-            const obj:DisplayObject = evt.target as DisplayObject;
-            obj.filters = [new GlowFilter(0xFFFFFF, 1, 2, 2, 10, 1)];
-        }
-
-        private function removeFilter(evt:Event):void {
-            const obj:DisplayObject = evt.target as DisplayObject;
-            obj.filters = [];
+        private function requestTextByType(type:uint):String {
+            switch (type) {
+                case Permissions.DOCS:
+                    return translate('request_docs', 'users');
+                case Permissions.CAMERA:
+                    return translate('request_cam', 'users');
+                case Permissions.MIC:
+                    return translate('request_mic', 'users');
+            }
+            return '';
         }
         ]]>
 	</fx:Script>
-	<s:states>
-		<s:State name="normal"/>
-		<s:State name="hovered"/>
-	</s:states> 
-	<s:Group  width="100%" height="100%">
-		<s:BitmapImage source="{style('users','background')}" fillMode="repeat" width="100%" height="100%"  includeIn="normal"/>
-		<s:BitmapImage source="{style('users','backgroundHover')}" fillMode="repeat" width="100%" height="100%"  includeIn="hovered"/>
-		<s:click>
-			<![CDATA[
-				_user.sid != App.user.sid && _callout1.open(calloutGroup);
-			]]>
-		</s:click>
-	 </s:Group>
-	<s:Group id="calloutGroup" width="100" mouseChildren="false" mouseEnabled="false">
-		<s:Label text="{_userName}" id="nameLabel" fontSize="13" mouseEnabled="false" left="28" top="10"/>
-	</s:Group>
-	<s:HGroup right="12" top="0" bottom="0" height="100%" >
-		<s:Group  height="100%" >
-			<s:Group id="screenImageEnabled" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.DOCS,false,screenImageEnabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_doc','users',translate('turn_off')))"
-					 visible="{getShareStatusValue(0,_user.shareStatus)}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage  source="{style('users','screenEnabled')}" verticalCenter="0"/>
-			</s:Group>
-			<s:Group id="screenImageDisabled" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp;  confirmCalloutAllow(Permissions.DOCS,true,screenImageDisabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_doc','users',translate('turn_on')))"
-					 visible="{!getShareStatusValue(0,_user.shareStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; App.user.isAdmin()}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage source="{style('users','screenDisabled')}"/>
-			</s:Group>
-			<s:Group  id="screenImageAttempted" verticalCenter="0"
-					  click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.DOCS,false,screenImageAttempted, CalloutTwo.CONFIRM2,translate('sure_to_change_right_doc','users',translate('turn_off')))"
-					  visible="{getShareStatusValue(0,_user.permissions) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(0,_user.shareStatus)}"
-					  mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage source="{style('users','screenAttempt')}"/>
-			</s:Group>
-		</s:Group>
-		<s:Group height="100%">
-			<s:Group id="micImageEnabled" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.MIC,false,micImageEnabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_mic','users',translate('turn_off')))"
-					 visible="{getShareStatusValue(1,_user.shareStatus)}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage  source="{style('users','micEnabled')}" />
-			</s:Group>
-			<s:Group id="micImageDisabled" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.MIC,true,micImageDisabled, CalloutTwo.CONFIRM2,translate('sure_to_change_right_mic','users',translate('turn_on')))"
-					 visible="{!getShareStatusValue(1,_user.shareStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(1,_user.requestStatus) &amp;&amp; App.user.isAdmin()}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage source="{style('users','micDisabled')}" />
-			</s:Group>
-			<s:Group id="micImageAttempted" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.MIC,false,micImageAttempted, CalloutTwo.CONFIRM2,translate('sure_to_change_right_mic','users',translate('turn_off')))"
-					 visible="{getShareStatusValue(1,_user.permissions) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(1,_user.shareStatus)}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage source="{style('users','micAttempt')}" />
-			</s:Group>
-			<s:Group id="micImageAttempt" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.MIC,true,micImageAttempt, CalloutTwo.CONFIRM, translate('request_mic','users'))"
-					 visible="{getShareStatusValue(1,_user.requestStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; App.user.isAdmin()}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<ns1:Blinker id="mic_blnk" blinkingElement = "{style('users','micAttempt')}"/>
-			</s:Group>
-		</s:Group>
-		<s:Group id="camImageButton" height="100%" >
-			<s:Group id="camImageEnabled" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,false,camImageEnabled, CalloutTwo.CONFIRM2, translate('sure_to_change_right_cam','users',translate('turn_off')))"
-					 visible="{getShareStatusValue(2,_user.shareStatus)}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage source="{style('users','camEnabled')}" />
-			</s:Group>
-			<s:Group id="camImageDisabled" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,true,camImageDisabled,CalloutTwo.CONFIRM2, translate('sure_to_change_right_cam','users',translate('turn_on')))"
-					 visible="{!getShareStatusValue(2,_user.shareStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(2,_user.requestStatus) &amp;&amp; App.user.isAdmin() }"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage  source="{style('users','camDisabled')}" />
-			</s:Group>
-			<s:Group id="camImageAttempted" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,false,camImageAttempted, CalloutTwo.CONFIRM2, translate('sure_to_change_right_cam','users',translate('turn_off')))"
-					 visible="{getShareStatusValue(2,_user.permissions) &amp;&amp; !_isViewerOrAdmin &amp;&amp; !getShareStatusValue(2,_user.shareStatus)}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<s:BitmapImage  source="{style('users','camAttempt')}"/>
-			</s:Group>
-			<s:Group id="camImageAttempt" verticalCenter="0"
-					 click="App.user.isAdmin() &amp;&amp; confirmCalloutAllow(Permissions.CAMERA,true,camImageAttempt, CalloutTwo.CONFIRM, translate('request_cam','users'))"
-					 visible="{getShareStatusValue(2,_user.requestStatus) &amp;&amp; !_isViewerOrAdmin &amp;&amp; App.user.isAdmin()}"
-					 mouseOver="applyFilter(event)" mouseOut="removeFilter(event)" mouseChildren="false">
-				<ns1:Blinker id="cam_blnk" blinkingElement="{style('users','camAttempt')}"/>
-			</s:Group>
-		</s:Group>
-	</s:HGroup>
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="hovered"/>
+    </s:states>
+    <s:Group width="100%" height="100%" click="optionsCallout()">
+        <s:BitmapImage source="{style('users','background')}" fillMode="repeat" width="100%" height="100%"
+                       includeIn="normal"/>
+        <s:BitmapImage source="{style('users','backgroundHover')}" fillMode="repeat" width="100%" height="100%"
+                       includeIn="hovered"/>
+    </s:Group>
+    <s:Group id="calloutGroup" width="100" mouseChildren="false" mouseEnabled="false">
+        <s:Label text="{_name}" id="nameLabel" fontSize="13" mouseEnabled="false" left="28" top="10"/>
+    </s:Group>
+    <s:HGroup right="12" top="0" bottom="0" height="100%">
+        <s:Group height="100%">
+        <users:BlinkingMultiButton id="docsButton"
+                                   verticalCenter="0"
+                                   iconActive="{style('users','docsActive')}"
+                                   iconRequested="{style('users','docsRequested')}"
+                                   iconEnabled="{style('users','docsEnabled')}"
+                                   state="{_docsState}"
+                                   click="confirm(Permissions.DOCS, docsButton)"
+                ></users:BlinkingMultiButton>
+        </s:Group>
+        <s:Group height="100%">
+        <users:BlinkingMultiButton id="camButton"
+                                   verticalCenter="0"
+                                   iconActive="{style('users','camActive')}"
+                                   iconRequested="{style('users','camRequested')}"
+                                   iconEnabled="{style('users','camEnabled')}"
+                                   state="{_camState}"
+                                   click="confirm(Permissions.CAMERA,camButton)"
+                ></users:BlinkingMultiButton>
+        </s:Group>
+        <s:Group height="100%">
+        <users:BlinkingMultiButton id="micButton"
+                                   verticalCenter="0"
+                                   iconActive="{style('users','micActive')}"
+                                   iconRequested="{style('users','micRequested')}"
+                                   iconEnabled="{style('users','micEnabled')}"
+                                   state="{_micState}"
+                                   click="confirm(Permissions.MIC,micButton)"
+                ></users:BlinkingMultiButton>
+        </s:Group>
+    </s:HGroup>
 
-	<s:layout>
-		<s:BasicLayout/>
-	</s:layout>
+    <s:layout>
+        <s:BasicLayout/>
+    </s:layout>
 </s:ItemRenderer>
