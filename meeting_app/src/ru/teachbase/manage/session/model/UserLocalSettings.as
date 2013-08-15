@@ -4,6 +4,7 @@
  * Time: 1:07 PM
  */
 package ru.teachbase.manage.session.model{
+import ru.teachbase.constants.PublishQuality;
 import ru.teachbase.utils.shortcuts.cookie;
 import ru.teachbase.utils.shortcuts.debug;
 
@@ -20,7 +21,7 @@ public class UserLocalSettings {
     private var _micLevel:int = 80;
     private var _camID:String = null;
     private var _lang:String = "ru";
-    private var _publishQuality:String = "medium";
+    private var _publishQuality:String = PublishQuality.HIGH;
     private var _showNotifications:Boolean = true;
 
 

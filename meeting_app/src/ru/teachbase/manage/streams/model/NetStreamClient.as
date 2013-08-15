@@ -5,12 +5,17 @@
  */
 package ru.teachbase.manage.streams.model {
 import ru.teachbase.model.App;
+import ru.teachbase.net.stats.RTMPWatch;
 import ru.teachbase.utils.Strings;
 import ru.teachbase.utils.shortcuts.debug;
 
 public dynamic class NetStreamClient {
 
     private var _data:StreamData;
+
+    private var _metadata:Object = {};
+
+    private var _watcher:RTMPWatch;
 
     private var _hasVideo:Boolean = false;
 
@@ -27,22 +32,26 @@ public dynamic class NetStreamClient {
     public function onMetaData(metadata:Object):void{
         debug('stream meta:',metadata);
 
+        for (var key:String in metadata) _metadata[key] = metadata[key];
+
         updateAVStatus(metadata);
+
+        _data && App.meeting.streamsByName[_data.name] && App.meeting.streamList.itemUpdated(App.meeting.streamsByName[_data.name]);
     }
 
     public function onAudioVideoStatus(status:Object):void{
         debug('stream av status: ',status);
 
         updateAVStatus(status);
+
+        _data && App.meeting.streamsByName[_data.name] && App.meeting.streamList.itemUpdated(App.meeting.streamsByName[_data.name]);
     }
 
 
     private function updateAVStatus(object:Object):void{
 
-        _hasAudio = object['hasAudio'] ? Strings.serialize(object['hasAudio']) : false;
-        _hasVideo = object['hasVideo'] ? Strings.serialize(object['hasVideo']) : false;
-
-        _data && App.meeting.streamsByName[_data.name] && App.meeting.streamList.itemUpdated(App.meeting.streamsByName[_data.name]);
+        (object['hasAudio'] != undefined) && (_hasAudio =  Strings.serialize(object['hasAudio']));
+        (object['hasVideo'] != undefined) && (_hasVideo =  Strings.serialize(object['hasVideo']));
 
     }
 
@@ -53,6 +62,18 @@ public dynamic class NetStreamClient {
 
     public function get hasVideo():Boolean {
         return _hasVideo;
+    }
+
+    public function get watcher():RTMPWatch {
+        return _watcher;
+    }
+
+    public function set watcher(value:RTMPWatch):void {
+        _watcher = value;
+    }
+
+    public function get metadata():Object {
+        return _metadata;
     }
 }
 }

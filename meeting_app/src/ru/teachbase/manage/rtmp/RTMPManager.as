@@ -18,6 +18,7 @@ import ru.teachbase.events.ErrorCodeEvent;
 import ru.teachbase.manage.*;
 import ru.teachbase.net.factory.ConnectionFactory;
 import ru.teachbase.net.factory.FactoryErrorCodes;
+import ru.teachbase.net.stats.NetworkStats;
 import ru.teachbase.utils.extensions.FuncObject;
 import ru.teachbase.utils.shortcuts.config;
 import ru.teachbase.utils.shortcuts.debug;
@@ -28,6 +29,8 @@ public class RTMPManager extends Manager {
     private var _connection:NetConnection;
 
     private var _factory:ConnectionFactory = new ConnectionFactory();
+
+    private var _stats:NetworkStats;
 
     private static const listeners:FuncObject = new FuncObject();
 
@@ -129,7 +132,6 @@ public class RTMPManager extends Manager {
 
 
     tb_rtmp function incomingCall(name, ...args):void{
-        debug('Incoming Call:',args);
         (listeners[name] is Function) && listeners[name].apply(null,args);
     }
 
@@ -159,7 +161,20 @@ public class RTMPManager extends Manager {
         _connection = _factory.connection;
         removeFactoryListeners();
         setupConnection();
-        _initialized = true;
+        if(!_stats) _stats = new NetworkStats();
+
+        _stats.addEventListener(Event.COMPLETE, function(e:Event){
+            _stats.removeEventListener(Event.COMPLETE, arguments.callee);
+            _initialized = true;
+        });
+
+        _stats.addEventListener(ErrorEvent.ERROR, function(e:ErrorEvent){
+            _stats.removeEventListener(ErrorEvent.ERROR, arguments.callee);
+            _failed = true;
+        });
+
+
+        _stats.initialize(_connection);
     }
 
     private function setupConnection():void{
@@ -204,6 +219,10 @@ public class RTMPManager extends Manager {
                 break;
         }
 
+    }
+
+    public function get stats():NetworkStats {
+        return _stats;
     }
 }
 }

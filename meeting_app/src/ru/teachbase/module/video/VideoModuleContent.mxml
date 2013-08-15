@@ -107,6 +107,7 @@
                  }
                  case CollectionEventKind.RESET:{
                     for each(var el:IVideoContainer in _elements) removeVideo(el);
+                    break;
                  }
              }
         }
@@ -162,9 +163,11 @@
         }
 
         private function removeVideo(vc:IVideoContainer):void {
+            if(!vc) return;
+
             _elements.splice(_elements.indexOf(vc), 1);
-            if (vc.stage)
-                videoCont.removeElement(vc);
+
+            if (vc.stage) videoCont.removeElement(vc);
             delete _streamsDic[vc.stream];
             vc = null;
             _streams--;

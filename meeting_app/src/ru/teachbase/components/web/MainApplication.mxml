@@ -10,12 +10,14 @@
         import mx.graphics.BitmapFillMode;
 
         import ru.teachbase.components.LightboxContainer;
+        import ru.teachbase.components.RTMPMonitor;
 
         import ru.teachbase.components.header.Header;
         import ru.teachbase.components.module.ModuleContainer;
         import ru.teachbase.controller.ApplicationController;
         import ru.teachbase.components.notifications.Notification;
         import ru.teachbase.components.notifications.NotificationContainer;
+        import ru.teachbase.model.App;
         import ru.teachbase.utils.shortcuts.style;
 
         import spark.components.SkinnableContainer;
@@ -29,6 +31,10 @@
         private var _notifications:NotificationContainer;
 
         private var _lightbox:LightboxContainer;
+
+        //TEMP!
+
+        private var _monitor:RTMPMonitor;
 
         public function draw():void {
 
@@ -63,6 +69,19 @@
             _lightbox.setStyle('backgroundColor', 0x000000);
             _lightbox.setStyle('backgroundAlpha', .5);
 
+            _monitor = new RTMPMonitor();
+
+            _monitor.width = 300;
+            _monitor.height = 150;
+            _monitor.top = 43;
+            _monitor.right = 14;
+            _monitor.visible = false;
+
+            _monitor.source = App.rtmp.stats;
+
+            addElement(_monitor);
+
+
         }
 
 
@@ -74,6 +93,10 @@
 
         public function get lightbox():LightboxContainer {
             return _lightbox;
+        }
+
+        public function get monitor():RTMPMonitor {
+            return _monitor;
         }
         ]]>
 	</fx:Script>

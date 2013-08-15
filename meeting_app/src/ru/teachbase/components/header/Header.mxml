@@ -164,6 +164,7 @@
 						                       toolTip=translate('settings',NAME);
 						                       icon=style('actionBar','settingsIco');
 						                       iconOver=style('actionBar','settingsIcoHover');}"
+                           click="App.view.monitor.visible = !App.view.monitor.visible;"
                 />
         <c:ActionBarButton id="switchFullscreenButton"
                            focusSkin="{null}"

@@ -10,6 +10,7 @@
 	
 	<fx:Script>
 		<![CDATA[
+        import mx.events.CollectionEvent;
         import mx.events.FlexEvent;
 
         import ru.teachbase.model.App;
@@ -80,12 +81,20 @@
         }
 
         private function onStreamPause():void {
-            stream && stream.receiveVideo(false);
+            if(stream){
+                stream.receiveVideo(false);
+                stream.client.metadata['paused'] = true;
+                App.meeting.streamList.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE));
+            }
             _paused = true;
         }
 
         private function onStreamPlay():void {
-            stream && stream.receiveVideo(true);
+            if(stream){
+                (stream.client.metadata['fps'] > 0) && stream.receiveVideo(true);
+                stream.client.metadata['paused'] = false;
+                App.meeting.streamList.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE));
+            }
             _paused = false;
         }
 

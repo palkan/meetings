@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+        creationComplete="onComplete()">
+
+    <fx:Script><![CDATA[
+        import ru.teachbase.utils.shortcuts.$null;
+        import ru.teachbase.utils.shortcuts.debug;
+
+        private var nc:NetConnection;
+
+
+        private var latency:Number;
+
+        private function onComplete():void {
+
+
+            nc = new NetConnection();
+
+            nc.client = {
+                onBWCheck: onBWCheck,
+                onBWDone: onBWDone
+            };
+
+            nc.addEventListener(NetStatusEvent.NET_STATUS, onStatus);
+
+            nc.connect('rtmp://127.0.0.1:443/');
+
+        }
+
+
+        private function onBWCheck(...args):int {
+
+            debug(args);
+
+            args.length && nc.call('checkBandwidth', null, args[0]);
+
+            return 0;
+
+        }
+
+
+        private function onBWDone(data:Object):void {
+
+            const time:Number = data['time'];
+            const bytes:Number = data['bytes'];
+
+            debug('speed down: ', (((bytes * 8) / 1024) / (time / 1000)).toPrecision(4));
+
+        }
+
+
+        private function onStatus(e:NetStatusEvent):void {
+
+            debug(e.info.code);
+
+        }
+
+
+        private function checkBandwidth(e:Event = null):void {
+
+            nc && nc.connected && nc.call('checkBandwidth', null);
+
+        }
+
+
+        private function checkBandwidthUp(e:Event = null):void {
+
+            const start:Number = (new Date()).getTime();
+
+            nc && nc.connected && nc.call('ping', new Responder(onBWCheckUp, $null), dummyBytes(32 * 1024));
+
+
+            function onBWCheckUp(...args):int {
+
+                const time:Number = ((new Date()).getTime() - start - latency);
+
+                debug('speed up: ', ((32 * 8) / (time / 1000)).toPrecision(4));
+
+                return 0;
+
+            }
+
+        }
+
+
+        private function ping(e:Event = null):void {
+
+            const start:Number = (new Date()).getTime();
+
+            nc && nc.connected && nc.call('ping', new Responder(
+                    function () {
+                        latency = ((new Date()).getTime() - start);
+                        debug('Ping: ' + latency + ' ms');
+                    },
+                    function (...args) {
+                        debug('ping failed');
+                    }
+            ));
+
+        }
+
+
+        private function dummyBytes(length:int):ByteArray {
+
+            var ba:ByteArray = new ByteArray();
+
+            while (length > 0) {
+                ba.writeByte(0);
+                length--;
+            }
+
+            return ba;
+
+        }
+        ]]></fx:Script>
+
+
+      <s:HGroup>
+          <s:Button label="ping" click="ping()"></s:Button>
+          <s:Button label="bandwidth" click="checkBandwidth()"></s:Button>
+          <s:Button label="bandwidth_up" click="checkBandwidthUp()"></s:Button>
+      </s:HGroup>
+
+</s:Application>

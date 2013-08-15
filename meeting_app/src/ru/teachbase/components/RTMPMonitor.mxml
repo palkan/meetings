@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark">
+
+
+    <fx:Script><![CDATA[
+        import ru.teachbase.events.ChangeEvent;
+        import ru.teachbase.net.stats.NetworkStats;
+
+        private var _source:NetworkStats;
+
+
+        public function set source(value:NetworkStats):void {
+
+            if (_source == value) return;
+
+            _source && _source.removeEventListener(ChangeEvent.CHANGED, updateProps);
+
+            _source = value;
+
+            _source && _source.addEventListener(ChangeEvent.CHANGED, updateProps);
+
+        }
+
+
+        protected function updateProps(e:Event = null):void {
+
+            var _textData:Array = [];
+
+            _textData.push('Protocol: ' + _source.protocol);
+
+            _textData.push('Traffic in (kB/s): ' + (_source.total_in).toFixed(1));
+            _textData.push('Traffic out (kB/s): ' + (_source.total_out).toFixed(1));
+            _textData.push('Latency (ms): ' + _source.latency);
+
+            _textData.push('Bandwidth (kB/s): ' + _source.bandwidth_down.toFixed(1) + ' / ' + _source.bandwidth_up.toFixed(1));
+
+            textfield.text = _textData.join('\n');
+
+        }
+
+
+        override public function set visible(value:Boolean):void {
+
+            super.visible = value;
+
+            if (!_source) return;
+
+            if (value) _source.startCollect(), updateProps();
+            else _source.stopCollect();
+
+        }
+        ]]></fx:Script>
+
+
+
+    <s:Rect width="100%" height="100%">
+        <s:fill>
+            <s:SolidColor alpha=".8" color="0x393939"></s:SolidColor>
+        </s:fill>
+    </s:Rect>
+
+    <s:RichEditableText color="0xFFFFFF" fontSize="12" left="5" right="10" top="10" bottom="10" id="textfield"></s:RichEditableText>
+
+</s:Group>

@@ -205,6 +205,9 @@ ${2}]]></element>
                 <element name="role_changed"><![CDATA[Роль изменена]]></element>
                 <element name="layout_locked"><![CDATA[Макет зафиксирован]]></element>
                 <element name="layout_unlocked"><![CDATA[${1} редактирует макет]]></element>
+                <element name="bw_video_quality_decreased"><![CDATA[Качество видео снижено из-за недостаточной пропускной способности сети]]></element>
+                <element name="bw_cam_not_allowed"><![CDATA[Трансляция видео недоступна из-за недостаточной пропускной способности сети]]></element>
+                <element name="bw_instream_low_fps"><![CDATA[Качество входящего видео снижено из-за недостаточной пропускной способности сети]]></element>
 			</elements>
 		</component>		
 		<component name="error">

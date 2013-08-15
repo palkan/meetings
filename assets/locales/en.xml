@@ -203,6 +203,9 @@ ${2}]]></element>
                 <element name="role_changed"><![CDATA[Role is changed]]></element>
                 <element name="layout_locked"><![CDATA[Layout is locked]]></element>
                 <element name="layout_unlocked"><![CDATA[${1} is editing layout]]></element>
+                <element name="bw_video_quality_decreased"><![CDATA[Video quality have been decreased due to low network bandwidth]]></element>
+                <element name="bw_cam_not_allowed"><![CDATA[Camera sharing not allowed due to low network bandwidth]]></element>
+                <element name="bw_instream_low_fps"><![CDATA[Incoming video quality have been decreased due to low network bandwidth]]></element>
 			</elements>
 		</component>		
 		<component name="error">

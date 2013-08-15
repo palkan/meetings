@@ -17,6 +17,7 @@ import ru.teachbase.components.notifications.Notification;
 import ru.teachbase.constants.NetStreamStatusCodes;
 import ru.teachbase.constants.PacketType;
 import ru.teachbase.constants.PublishQuality;
+import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.manage.*;
 import ru.teachbase.manage.rtmp.RTMPListener;
 import ru.teachbase.manage.rtmp.RTMPManager;
@@ -26,6 +27,8 @@ import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.model.App;
 import ru.teachbase.model.SharingModel;
 import ru.teachbase.model.User;
+import ru.teachbase.net.stats.RTMPWatch;
+import ru.teachbase.utils.CameraQuality;
 import ru.teachbase.utils.CameraUtils;
 import ru.teachbase.utils.MicrophoneUtils;
 import ru.teachbase.utils.Permissions;
@@ -60,8 +63,9 @@ public class PublishManager extends Manager {
 
     private var _useH264:Boolean = true;
     private var _h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
-    private var _quality:String;
+    private var _qualityId:String;
 
+    private var _maxQuality:String = PublishQuality.HIGH;
 
     /**
      *  Reference to CurrentUser sharing model
@@ -215,12 +219,14 @@ public class PublishManager extends Manager {
      *
      * @param quality
      * @default PublishQuality.MEDIUM
-     * @see PublishQuality
+     * @see ru.teachbase.constants.PublishQuality
      */
 
     public function setQuality(quality:String):void{
 
-        _quality = quality;
+        if(quality > _maxQuality) quality = _maxQuality;
+
+        _qualityId = quality;
 
         switch(quality){
 
@@ -232,12 +238,20 @@ public class PublishManager extends Manager {
                 CameraUtils.setHighQuality(_camera);
                 _useH264 && _h264Settings.setProfileLevel(H264Profile.MAIN, H264Level.LEVEL_3_2);
                 break;
+            case PublishQuality.NO_CAM:
+                closeCamera();
+                _camera = null;
+                break;
             case PublishQuality.MEDIUM:
             default:
                 CameraUtils.setMediumQuality(_camera);
                 _useH264 && _h264Settings.setProfileLevel(H264Profile.MAIN, H264Level.LEVEL_3_1);
                 break;
         }
+
+        App.user.settings.publishQuality = _qualityId;
+
+        _streaming && _stream.send('@setDataFrame','onMetaData',{quality:_qualityId});
 
        _useH264 && _stream && (_stream.videoStreamSettings = _h264Settings);
     }
@@ -264,11 +278,17 @@ public class PublishManager extends Manager {
     private function setCamera(force:Boolean = false):void{
 
         if (_camera || !force) return;
+
+        if(_qualityId == PublishQuality.NO_CAM){
+            notify(new Notification(translate('bw_cam_not_allowed','notifications')),true);
+            return;
+        }
+
         _camera = CameraUtils.getCamera(App.user.settings.camID);
 
         if (!_camera) return;
 
-        setQuality(_quality);
+        setQuality(_qualityId);
 
         _camera.setLoopback(true);
     }
@@ -507,20 +527,31 @@ public class PublishManager extends Manager {
         debug("Publish: ",e.info.code);
 
         switch(e.info.code){
-            case NetStreamStatusCodes.PUBLISH_START:
+            case NetStreamStatusCodes.PUBLISH_START:{
                 statusUpdate();
+                _stream.send('@setDataFrame','onMetaData',{quality:_qualityId, fps:CameraUtils.DEFAULT_FPS});
+
+                var _watcher:RTMPWatch = new RTMPWatch(_stream);
+                App.rtmp.stats.registerOutput(_watcher);
                 break;
-            case NetStreamStatusCodes.UNPUBLISH_SUCCESS:
+            }
+            case NetStreamStatusCodes.UNPUBLISH_SUCCESS:{
                 videoSharing = audioSharing = false;
                 _stream.close();
                 _streaming  = false;
                 statusUpdate();
+
+                App.rtmp.stats.unregisterOutput();
                 break;
-            case NetStreamStatusCodes.FAILED:
+            }
+            case NetStreamStatusCodes.FAILED:{
                 warning("Publish failed");
                 _streaming = false;
                 closeAll();
+
+                App.rtmp.stats.unregisterOutput();
                 break;
+            }
         }
     }
 
@@ -559,7 +590,15 @@ public class PublishManager extends Manager {
 
     public function set useH264(value:Boolean):void {
         _useH264 = value;
-        setQuality(_quality);
+        setQuality(_qualityId);
+    }
+
+    public function get maxQuality():String {
+        return _maxQuality;
+    }
+
+    public function set maxQuality(value:String):void {
+        _maxQuality = value;
     }
 }
 

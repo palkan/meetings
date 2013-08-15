@@ -17,8 +17,7 @@ package ru.teachbase.model
 		public var audioSharing:Boolean = false;
 		
 		public var videoSharing:Boolean = false;
-		
-		
+
 		public function SharingModel()
 		{
 			

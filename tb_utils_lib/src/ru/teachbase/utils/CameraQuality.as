@@ -8,21 +8,25 @@ import flash.media.Camera;
 
 public class CameraQuality{
 
-    public var quality:int;
-    public var key_frame_interval:int;
-    public var fps:int;
-    public var width:int;
-    public var height:int;
-    public var bandwidth:int;
+    private var _id:String;
+    private var _quality:int;
+    private var _key_frame_interval:int;
+    private var _fps:int;
+    private var _width:int;
+    private var _height:int;
+    private var _bandwidth:int;
+    private var _bitrate:int;
 
-    function CameraQuality(quality:int,kfi:int,fps:int,width:int,height:int,bandwidth:int = 0){
+    function CameraQuality(id:String,quality:int,kfi:int,fps:int,width:int,height:int,bandwidth:int = 0, bitrate:int = 0){
 
-        this.quality = quality;
-        this.key_frame_interval = kfi;
-        this.fps = fps;
-        this.width = width;
-        this.height = height;
-        this.bandwidth = bandwidth;
+        this._id = id;
+        this._quality = quality;
+        this._key_frame_interval = kfi;
+        this._fps = fps;
+        this._width = width;
+        this._height = height;
+        this._bandwidth = bandwidth;
+        this._bitrate = bitrate;
 
     }
 
@@ -30,11 +34,47 @@ public class CameraQuality{
     public function setup(cam:Camera):Camera{
         if(!cam) return null;
 
-        cam.setKeyFrameInterval(key_frame_interval);
-        cam.setMode(width,height,fps);
-        cam.setQuality(bandwidth,quality);
+        cam.setKeyFrameInterval(_key_frame_interval);
+        cam.setMode(_width,_height,_fps);
+        cam.setQuality(_bandwidth,_quality);
 
         return cam;
+    }
+
+
+
+
+
+    public function get bandwidth():int {
+        return _bandwidth;
+    }
+
+    public function get width():int {
+        return _width;
+    }
+
+    public function get quality():int {
+        return _quality;
+    }
+
+    public function get id():String {
+        return _id;
+    }
+
+    public function get bitrate():int {
+        return _bitrate;
+    }
+
+    public function get fps():int {
+        return _fps;
+    }
+
+    public function get height():int {
+        return _height;
+    }
+
+    public function get key_frame_interval():int {
+        return _key_frame_interval;
     }
 }
 }

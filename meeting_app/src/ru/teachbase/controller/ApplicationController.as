@@ -29,6 +29,8 @@ import ru.teachbase.manage.rtmp.RTMPManager;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.manage.streams.StreamManager;
 import ru.teachbase.model.App;
+import ru.teachbase.supervisors.InStreamSup;
+import ru.teachbase.supervisors.OutStreamSup;
 import ru.teachbase.tb_internal;
 import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.GlobalError;
@@ -69,7 +71,7 @@ public class ApplicationController extends EventDispatcher{
         switch (e.code) {
             case ErrorCodes.KICKEDOFF:
                 errorMessage = translate("kickedoff", "error");
-                setTimeout(reinitialize,REINITIALIZE_INTERVAL); //TEMP!!!
+                setTimeout(reinitialize,REINITIALIZE_INTERVAL); //todo: don't forget about it!
                 break;
             case ErrorCodes.LIMIT:
                 errorMessage = translate("limit", "error");
@@ -150,6 +152,9 @@ public class ApplicationController extends EventDispatcher{
 
         managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr.clear();});
 
+        OutStreamSup.stop();
+        InStreamSup.stop();
+
         addInitializerListeners(reinirializationComplete, reinitializationFailed);
 
         Initializer.reinitializeManagers.apply(null, managers);
@@ -173,6 +178,9 @@ public class ApplicationController extends EventDispatcher{
 
         removeInitializerListeners(reinirializationComplete,reinitializationFailed);
 
+        OutStreamSup.run(30000);
+        InStreamSup.run();
+
         App.session.userReady();
 
         GlobalEvent.dispatch(GlobalEvent.RECONNECT);
@@ -184,6 +192,10 @@ public class ApplicationController extends EventDispatcher{
     private function managersInitializedHandler(e:Event):void{
 
         removeInitializerListeners(managersInitializedHandler, managersErrorHandler, managersProgressHandler);
+
+        OutStreamSup.run(30000);
+        InStreamSup.run();
+
         _view.draw();
         dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_COMPLETE));
     }
