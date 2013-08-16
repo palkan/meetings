@@ -3,6 +3,7 @@ import ru.teachbase.components.callouts.SettingsItem;
 import ru.teachbase.events.GlobalEvent;
 import ru.teachbase.manage.modules.model.IModuleContent;
 import ru.teachbase.manage.modules.model.Module;
+import ru.teachbase.manage.session.model.MeetingSettings;
 import ru.teachbase.model.App;
 import ru.teachbase.model.User;
 import ru.teachbase.utils.LocalFile;
@@ -74,7 +75,7 @@ public final class UsersModule extends Module {
 
         if(user.iam) return _s;
 
-        _s.push(new SettingsItem('user_private_chat',SettingsItem.FUN, lambda(GlobalEvent.dispatch,GlobalEvent.START_PRIVATE_CHAT, user.sid)));
+        (App.meeting.settings & MeetingSettings.PRIVATE_CHAT) && _s.push(new SettingsItem('user_private_chat',SettingsItem.FUN, lambda(GlobalEvent.dispatch,GlobalEvent.START_PRIVATE_CHAT, user.sid)));
 
         if(!App.user.isAdmin()) return _s;
 

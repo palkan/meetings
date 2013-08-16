@@ -34,8 +34,8 @@ public class OutStreamSup extends Supervisor {
         super();
 
 
-        if(App.rtmp && App.rtmp.stats)
-            analyze(App.rtmp.stats.bandwidth_up);
+        if(App.rtmpMedia && App.rtmpMedia.stats)
+            analyze(App.rtmpMedia.stats.bandwidth_up);
         else
             state = SupervisorState.MONITORING;
 
@@ -78,11 +78,11 @@ public class OutStreamSup extends Supervisor {
 
     override public function monitor():void{
 
-        if(!App.rtmp || !App.rtmp.stats) state = SupervisorState.MONITORING;
+        if(!App.rtmpMedia || !App.rtmpMedia.stats) state = SupervisorState.MONITORING;
 
         addListeners();
 
-        App.rtmp.stats.checkBandwidthUp();
+        App.rtmpMedia.stats.checkBandwidthUp();
     }
 
 
@@ -103,15 +103,24 @@ public class OutStreamSup extends Supervisor {
 
     private function analyze(value:Number):void{
 
+        // zero bandwidth means that we've calculated with wrong data
+
+        if(value === 0){
+            state = SupervisorState.MONITORING;
+            return;
+        }
+
         debug('Analyze output bandwidth: '+value.toFixed(1)+' kB/s');
 
         const quality:CameraQuality = CameraUtils.getMaxAvailableQuality(value - RESERVED_BW);
 
-        App.publisher.maxQuality = quality.id;
+        quality && (App.publisher.maxQuality = quality.id);
 
         if(!quality){
-            App.publisher.setQuality(PublishQuality.NO_CAM);
-            notify(new Notification(translate('bw_cam_not_allowed','notifications')),true);
+            App.publisher.cameraEnabled = false;
+        }else if(!App.publisher.cameraEnabled){
+            App.publisher.cameraEnabled = true;
+            App.publisher.setQuality(quality.id);
         }
         else if(App.user.settings.publishQuality > quality.id){
             App.publisher.setQuality(quality.id);
@@ -130,14 +139,14 @@ public class OutStreamSup extends Supervisor {
 
 
     private function addListeners():void{
-        App.rtmp.stats.addEventListener(ChangeEvent.CHANGED, statsChanged);
-        App.rtmp.stats.addEventListener(ErrorEvent.ERROR, statsError);
+        App.rtmpMedia.stats.addEventListener(ChangeEvent.CHANGED, statsChanged);
+        App.rtmpMedia.stats.addEventListener(ErrorEvent.ERROR, statsError);
     }
 
 
     private function removeListeners():void{
-        App.rtmp.stats.removeEventListener(ChangeEvent.CHANGED, statsChanged);
-        App.rtmp.stats.removeEventListener(ErrorEvent.ERROR, statsError);
+        App.rtmpMedia.stats.removeEventListener(ChangeEvent.CHANGED, statsChanged);
+        App.rtmpMedia.stats.removeEventListener(ErrorEvent.ERROR, statsError);
     }
 
 

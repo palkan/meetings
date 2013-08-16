@@ -37,15 +37,7 @@
     </fx:Metadata>
     
     <fx:Script fb:purpose="styling">
-        /* Define the skin elements that should not be colorized. 
-         For toggle button, the graphics are colorized but the label is not. */
 
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.helpers.skin;
-        import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
 
         [Bindable]
@@ -73,9 +65,8 @@
         }
 
         private function onInit():void {
-            _icoOut = style(hostComponent.data.skinName, hostComponent.data.iconOut);
-            _icoOver = style(hostComponent.data.skinName, hostComponent.data.iconOver);
-            //labelDisplayTwo.text = hostComponent.label
+            _icoOut = hostComponent.data.iconOut;
+            _icoOver = hostComponent.data.iconOver;
         }
 
 

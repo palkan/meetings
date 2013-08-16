@@ -1,49 +1,59 @@
-package ru.teachbase.manage.settings
-{
+package ru.teachbase.manage.settings {
 
 import mx.collections.ArrayCollection;
 
-import ru.teachbase.module.settings.SettingsElement;
-import ru.teachbase.module.settings.SettingsPanel;
+import ru.teachbase.components.settings.SettingsElement;
+import ru.teachbase.components.settings.SettingsPanel;
+import ru.teachbase.model.App;
 
-public class SettingsManager
-	{
-		
-		private var _panel:SettingsPanel;
-		private var _settingsContents:Array = new Array();
-		private var _settingsLabels:ArrayCollection = new ArrayCollection();
-		
-		public function SettingsManager()
-		{
-			super();
-		}
-		
-		public function showDialog(id:int = 0):void{
-			/*if (_panel == null) _panel = new SettingsPanel()
-			Core.addPopupToTop(_panel);
-			_panel.navigateToPanel(id);*/
-		}
-		
-		public function addSettingsPanel(Element:Class):void{
-			_settingsContents.push(Element);
-			_settingsLabels.addItem({iconOut:Element.iconOut,iconOver:Element.iconOver,skinName:Element.skinName,loc_id:Element.label});
-		}
-		
-		
-			
-		
-		public function get panelsList():ArrayCollection {
-			return _settingsLabels;
-		}
-		
-		public function getSettingsElement(id:int):SettingsElement{
-			if (id>_settingsContents.length-1 || id == -1) {return null}
-			if (_settingsContents[id] is SettingsElement) {
-				return _settingsContents[id];
-			}else{
-				const SettingsClass:Class = _settingsContents[id] as Class;
-				return _settingsContents[id] = new SettingsClass();
-			}
-		}
-	}
+public class SettingsManager {
+
+    private var _panel:SettingsPanel = new SettingsPanel();
+    private var _settingsPanels:Vector.<SettingsElement> = new <SettingsElement>[];
+    private var _settingsLabels:ArrayCollection = new ArrayCollection();
+
+    public function SettingsManager() {
+        super();
+    }
+
+    /**
+     *
+     * @param id
+     */
+
+    public function show(id:int = 0):void {
+
+        _panel.dataProvider = _settingsLabels;
+        _panel.selectedIndex = id;
+
+        App.view.lightbox.show(_panel);
+
+    }
+
+    /**
+     *
+     * @param element
+     */
+
+
+    public function addPanel(element:SettingsElement):void {
+        _settingsPanels.push(element);
+        _settingsLabels.addItem({iconOut: element.iconOut, iconOver: element.iconOver, label_id: element.label});
+    }
+
+    /**
+     *
+     * Return SettingsElement by index
+     *
+     * @param index
+     * @return
+     */
+
+    public function getSettingsElement(index:int = 0):SettingsElement {
+
+        if (index > _settingsPanels.length - 1 || index < 0)  return null;
+
+        return _settingsPanels[index];
+    }
+}
 }

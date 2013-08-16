@@ -16,6 +16,7 @@ import flash.utils.setTimeout;
 
 import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.manage.rtmp.RTMPManager;
+import ru.teachbase.model.App;
 import ru.teachbase.utils.Arrays;
 import ru.teachbase.utils.helpers.dummyBytes;
 import ru.teachbase.utils.helpers.lambda;
@@ -34,7 +35,7 @@ import ru.teachbase.utils.shortcuts.warning;
 
 public class NetworkStats extends EventDispatcher{
 
-    private const LATENCY_UPDATE_INTERVAL:int = 20000;
+    private const LATENCY_UPDATE_INTERVAL:int = 30000;
 
     private const UPDATE_INTERVAL:int = 2000;
 
@@ -353,11 +354,11 @@ public class NetworkStats extends EventDispatcher{
         _connection = value;
 
         if(value){
-            RTMPManager.listen('onBWCheck',onBWCheck);
-            RTMPManager.listen('onBWDone',onBWDone);
+            _connection.client.onBWCheck = onBWCheck;
+            _connection.client.onBWDone = onBWDone;
         }else{
-            RTMPManager.unlisten('onBWCheck',onBWCheck);
-            RTMPManager.unlisten('onBWDone',onBWDone);
+            delete _connection.client['onBWCheck'];
+            delete _connection.client['onBWDone'];
         }
     }
 

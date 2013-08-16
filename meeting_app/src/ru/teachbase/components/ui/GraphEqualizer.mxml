@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         mask="{_mask}">
+    <fx:Metadata>
+        [Style(name="orientaion", type="String", enumeration="horizontal,vertical")]
+        [Style(name="eqColor", type="uint", format="Color")]
+        [Style(name="thickness", type="int", format="Length")]
+        [Style(name="length", type="int", format="Length")]
+        [Style(name="gap", type="int", format="Length")]
+    </fx:Metadata>
+    <fx:Script>
+        <![CDATA[
+        private var _timer:Timer = new Timer(500, 0);
+        [Bindable]
+        private var _mask:Sprite = new Sprite();
+
+        private var _sourceFunction:Function;
+
+        private var _color:uint;
+        private var _length:int;
+        private var _gap:int;
+        private var _thickness:int;
+        private var _orientation:String;
+
+
+        public function startDisplay(source:Function):void {
+            if(!source || !(source is Function)) return;
+
+            _sourceFunction = source;
+
+            _color = getStyle('eqColor') || 0x000000;
+            _thickness = getStyle('thickness') || 2;
+            _orientation = getStyle('orientation') || "horizontal";
+            _gap = getStyle('gap') || 2;
+            _length = getStyle('length') || 5;
+
+            _timer.addEventListener(TimerEvent.TIMER, tick);
+            _timer.start();
+            drawMask();
+        }
+
+        public function stopDisplay():void {
+            _timer.removeEventListener(TimerEvent.TIMER, tick);
+            _timer.stop();
+            _sourceFunction = null;
+            this.graphics.clear();
+        }
+
+        private function tick(e:Event):void {
+            this["updateDisplay_"+_orientation](_sourceFunction());
+        }
+
+        private function updateDisplay_vertical(val:Number):void {
+
+            const h:Number = (val / 100) * height;
+
+            this.graphics.clear();
+            this.graphics.beginFill(_color, 1);
+            this.graphics.drawRect(0, height - h, _thickness, h);
+            this.graphics.endFill();
+        }
+
+        private function updateDisplay_horizontal(val:Number):void {
+            const w:Number = (val / 100) * width;
+
+            this.graphics.clear();
+            this.graphics.beginFill(_color, 1);
+            this.graphics.drawRect(0, 0, w, _thickness);
+            this.graphics.endFill();
+        }
+
+        private function drawMask():void {
+            _mask.graphics.beginFill(0x0000FF, 1);
+            var pos:Number = 0;
+
+            if(_orientation == "horizontal"){
+                while (pos <= width) {
+                    _mask.graphics.drawRoundRect(pos, 0, _length, _thickness, 3);
+                    pos += _gap+_length;
+                }
+            }else{
+                while (pos <= height) {
+                    _mask.graphics.drawRoundRect(0, pos, _thickness, _length, 3);
+                    pos += _gap+_length;
+                }
+            }
+
+            _mask.graphics.endFill();
+        }
+        ]]>
+    </fx:Script>
+</s:Group>

@@ -51,7 +51,7 @@ public final class SessionManager extends Manager {
         if (initialized)
             return;
 
-        if(reinit){
+        if (reinit) {
             reinitialize();
             return;
         }
@@ -59,6 +59,7 @@ public final class SessionManager extends Manager {
         // register classes
 
         new UserChangeData();
+        new MeetingUpdateData();
         new User();
 
         _model = App.meeting;
@@ -66,21 +67,21 @@ public final class SessionManager extends Manager {
         if (config('user_id') && config('meeting_id')) {
             login(config('meeting_id'), config('user_id'));
         } else if (config('auth_hash') && config('meeting_id')) {
-            loginByHash(config('auth_hash'),config('meeting_id'));
-        } else{
+            loginByHash(config('auth_hash'), config('meeting_id'));
+        } else {
             error("Missing login parameters");
             _failed = true;
         }
     }
 
 
-    protected function reinitialize():void{
+    protected function reinitialize():void {
 
         loginBySessionId(App.meeting.id, App.user.sid);
     }
 
 
-    override public function clear():void{
+    override public function clear():void {
         super.clear();
 
         users_listener.dispose();
@@ -121,7 +122,7 @@ public final class SessionManager extends Manager {
      * @param meeting_id
      */
 
-    public function loginByHash(hash:String,meeting_id:uint):void {
+    public function loginByHash(hash:String, meeting_id:uint):void {
         //TODO
     }
 
@@ -212,8 +213,8 @@ public final class SessionManager extends Manager {
         var permissions:uint;
         const user:User = App.meeting.usersByID[sid];
 
-        if(role == "admin")  permissions = user.permissions | Permissions.ADMIN_MASK;
-        else if(role == "user") permissions = user.permissions ^ Permissions.ADMIN_MASK;
+        if (role == "admin")  permissions = user.permissions | Permissions.ADMIN_MASK;
+        else if (role == "user") permissions = user.permissions ^ Permissions.ADMIN_MASK;
         else return;
 
         rtmp_call("set_permissions", null, sid, permissions);
@@ -223,11 +224,11 @@ public final class SessionManager extends Manager {
      * @param type Request type as uint code (@see Permissions)
      */
 
-    public function toggleRequest(type:uint):void{
+    public function toggleRequest(type:uint):void {
 
-        var flag:Boolean = !Permissions.hasRight(type,App.user.requestStatus);
+        var flag:Boolean = !Permissions.hasRight(type, App.user.requestStatus);
 
-        setRequest(type,flag);
+        setRequest(type, flag);
 
     }
 
@@ -288,7 +289,6 @@ public final class SessionManager extends Manager {
             return;
 
 
-
         if (flag && rights === Permissions.CAMERA && !Permissions.micAvailable(_usr.permissions))
             rights += Permissions.MIC;
 
@@ -304,13 +304,35 @@ public final class SessionManager extends Manager {
      */
 
 
-    public function kickOff(sid:Number):void{
+    public function kickOff(sid:Number):void {
 
-        if(!App.user.isAdmin()) return;
+        if (!App.user.isAdmin()) return;
 
-        rtmp_call("kick_off_user",null,sid);
+        rtmp_call("kick_off_user", null, sid);
+    }
+
+
+    /**
+     *
+     * Activate (<code>flag == true</code>) or deactivate (<code>flag == false</code>) meeting option with code <code>code</code>
+     *
+     * @param code
+     * @param flag
+     */
+
+
+    public function updateMeetingSettings(code:uint, flag:Boolean = true):void {
+
+        if (!App.user.isAdmin()) return;
+
+        if (Boolean(_model.settings & code) == flag) return;
+
+        const newSettings:uint = _model.settings + (flag ? code : -code);
+
+        rtmp_call("meeting_settings", null, newSettings);
 
     }
+
 
     //------------------ API ------------------//
 
@@ -345,17 +367,17 @@ public final class SessionManager extends Manager {
 
         switch (data.type) {
             case "userJoin":
-                if(_model.addUser(data.value)){
+                if (_model.addUser(data.value)) {
                     GlobalEvent.dispatch(GlobalEvent.USER_ADD, _model.usersByID[(data.value as User).sid]);
-                    notify(new Notification(translate('enter_room','notifications',[(data.value as User).fullName])));
+                    notify(new Notification(translate('enter_room', 'notifications', [(data.value as User).fullName])));
                 }
                 break;
             case "userLeave":
             {
                 var user:User = _model.removeUser(data.id);
-                if(user){
+                if (user) {
                     GlobalEvent.dispatch(GlobalEvent.USER_LEAVE, user);
-                    notify(new Notification(translate('leave_room','notifications',[user.fullName])));
+                    notify(new Notification(translate('leave_room', 'notifications', [user.fullName])));
                 }
                 break;
             }
@@ -374,10 +396,15 @@ public final class SessionManager extends Manager {
             case "settings":
                 _model.tb_internal::setSettings(data.value);
                 GlobalEvent.dispatch(GlobalEvent.MEETING_SETTINGS_UPDATE, _model.settings);
+
+                // update current user model if we affected request settings
+
+                !(data.value & MeetingSettings.MAKE_REQUEST) && App.user.requestStatus > 0 && setRequest(App.user.requestStatus,false);
+
                 break;
             case "state":
                 _model.tb_internal::setState(data.value);
-                notify(new Notification(_model.state == MeetingState.LIVE ? translate('stop_rec','notifications') : translate('start_rec','notifications')));
+                notify(new Notification(_model.state == MeetingState.LIVE ? translate('stop_rec', 'notifications') : translate('start_rec', 'notifications')));
                 GlobalEvent.dispatch(GlobalEvent.MEETING_STATE_UPDATE, _model.state);
                 break;
         }

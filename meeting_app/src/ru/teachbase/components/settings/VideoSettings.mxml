@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings:SettingsElement xmlns:fx="http://ns.adobe.com/mxml/2009"
+                          xmlns:s="library://ns.adobe.com/flex/spark"
+                          xmlns:mx="library://ns.adobe.com/flex/mx"
+                          xmlns:settings="ru.teachbase.components.settings.*"
+                          xmlns:ui = "ru.teachbase.components.ui.*"
+                          implements="ru.teachbase.utils.interfaces.ILocalable"
+                          width="100%" height="100%" preinitialize="init()" addedToStage="added()">
+    <fx:Script>
+		<![CDATA[
+        import mx.collections.ArrayList;
+
+        import ru.teachbase.model.App;
+        import ru.teachbase.utils.CameraQuality;
+        import ru.teachbase.utils.CameraUtils;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.debug;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.system.requestUserMediaAccess;
+
+        public static const label:String = 'video_set';
+        public static const iconOut:String = 'settingsVideoButtonOut';
+        public static const iconOver:String = 'settingsVideoButtonOver';
+
+        private const VIDEO_CONTAINER_WIDTH:Number = 242;
+        private const VIDEO_CONTAINER_HEIGHT:Number = 181.5;
+
+        private var _video:Video;
+
+        [Bindable]
+        private var _enabled:Boolean = false;
+
+        [Bindable]
+        private var _no_cam_found:Boolean = false;
+
+
+        private function init():void {
+
+            if(_initialized) return;
+
+            _video = new Video();
+            Localizer.addItem(this);
+
+        }
+
+        private function added():void {
+
+            !_initialized && init();
+
+            _disposed = false;
+
+            scanHardware();
+
+            _video.width = VIDEO_CONTAINER_WIDTH;
+            _video.height = VIDEO_CONTAINER_HEIGHT;
+
+            videoContainer.addChild(_video);
+
+            qualityList.dataProvider = qualities();
+
+            debug(Camera.names);
+
+            if (Camera.names.length) {
+
+                _no_cam_found = false;
+
+                !App.publisher.videoSharing && requestUserMediaAccess(-2, -1, success, failure, stage);
+                App.publisher.videoSharing && success(true);
+
+                function success(flag:Boolean):void {
+
+                    !App.publisher.camera && App.publisher.updateCamera();
+
+                    _video.attachCamera(App.publisher.camera);
+
+                    camList.dataProvider = new ArrayList(Camera.names);
+
+                    camList.selectedIndex = App.publisher.camera.index;
+
+                    qualityList.enabled = App.publisher.cameraEnabled;
+
+                    qualityList.selectedIndex = CameraUtils.AVAILABLE_QUALITIES_ID.indexOf(App.user.settings.publishQuality);
+
+                    _enabled = true;
+                }
+
+                function failure(message:String = ''):void {
+                    _enabled = false;
+                }
+            } else {
+
+                _enabled = false;
+                _no_cam_found = true;
+
+            }
+
+        }
+
+
+        override public function dispose():void {
+
+            if(_disposed) return;
+
+            _video.attachCamera(null);
+            _video.clear();
+
+            while(videoContainer.numChildren > 0) videoContainer.removeChildAt(0);
+
+            _enabled = false;
+
+            _disposed = true;
+        }
+
+
+        private function qualities():ArrayList{
+
+            const list:ArrayList = new ArrayList();
+
+            for each(var q:CameraQuality in CameraUtils.AVAILABLE_QUALITIES){
+
+                list.addItem(
+                        {
+                            label: translate(q.id,'settings'),
+                            quality: q,
+                            enabled: App.publisher.cameraEnabled && App.publisher.maxQuality >= q.id
+                        }
+                );
+
+
+            }
+
+            return list;
+        }
+
+
+        private function videoQualityHandler():void {
+            App.publisher.setQuality(qualityList.selectedItem.quality.id);
+        }
+
+
+        private function cameraSelected():void {
+
+            const currentIndex:int = App.publisher.camera.index;
+
+            if (camList.selectedIndex == currentIndex) return;
+
+            App.user.settings.camID = Camera.names[camList.selectedIndex];
+
+            App.publisher.updateCamera();
+
+            _video.attachCamera(App.publisher.camera);
+        }
+
+
+        public function localize():void {
+            settingsLabel && (settingsLabel.text = translate('cam_choose', 'settings'));
+            translationLabel && (translationLabel.text = translate('translation', 'settings'));
+            no_translation && (no_translation.text = translate('no_translation', 'settings'));
+            qualityLabel && (qualityLabel.text = translate('quality_choose', 'settings'));
+            camNotFound && (camNotFound.text=translate('if_no_cam','settings'));
+        }
+
+
+        override public function get label():String {
+            return VideoSettings.label;
+        }
+
+        override public function get iconOut():DisplayObject {
+            return style('video', VideoSettings.iconOut);
+        }
+
+        override public function get iconOver():DisplayObject {
+            return style('video', VideoSettings.iconOver);
+        }
+        ]]>
+	</fx:Script>
+
+    <s:VGroup gap="10" top="14" width="100%">
+
+        <s:Label id="settingsLabel" initialize="with(settingsLabel){text=translate('cam_choose','settings');}"
+                 color="0x6892B5" fontSize="13" paddingLeft="22"/>
+        <s:Group>
+            <s:DropDownList id="camList" left="22" width="223" skinClass="ru.teachbase.skins.DropDownListSkin"
+                            changing="cameraSelected()" visible="{!_no_cam_found}" enabled="{_enabled}"/>
+            <s:Label id="camNotFound" paddingLeft="22" fontSize="13"
+                     initialize="with(camNotFound){text=translate('if_no_cam','settings');}" color="0x515151"
+                     visible="{_no_cam_found}"></s:Label>
+        </s:Group>
+        <s:Group>
+            <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
+                           source="{style('globalsettings','break')}"/>
+        </s:Group>
+        <s:VGroup paddingLeft="22">
+            <s:Label initialize="with(translationLabel){text=translate('translation','settings');}"
+                     id="translationLabel" color="0x6892B5" fontSize="13" left="22"/>
+            <s:Group>
+                <s:Rect width="{VIDEO_CONTAINER_WIDTH}" height="{VIDEO_CONTAINER_HEIGHT}" x="0" y="0">
+                    <s:fill>
+                        <s:SolidColor color="0xAEAEAE" alpha="1"/>
+                    </s:fill>
+                </s:Rect>
+                <s:Label initialize="with(no_translation){text=translate('no_translation','settings');}"
+                         id="no_translation" color="0xFFFFFF" textAlign="center" horizontalCenter="0" verticalCenter="0"
+                         fontSize="13">
+                    <s:filters>
+                        <s:DropShadowFilter color="0x555555" blurX="2" blurY="2" distance="1"/>
+                    </s:filters>
+                </s:Label>
+                <mx:UIComponent id="videoContainer" width="{VIDEO_CONTAINER_WIDTH}" height="{VIDEO_CONTAINER_HEIGHT}"
+                                horizontalCenter="0"/>
+            </s:Group>
+
+        </s:VGroup>
+
+        <s:Group>
+            <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
+                           source="{style('globalsettings','break')}"/>
+        </s:Group>
+
+        <s:Label initialize="with(qualityLabel){text=translate('quality_choose','settings');}" id="qualityLabel"
+                 color="0x6892B5" fontSize="13" paddingLeft="22"/>
+        <ui:RadioButtonList id="qualityList" buttonSkin="ru.teachbase.skins.RadioButtonSkin" change="videoQualityHandler()" enabled="{_enabled}">
+            <ui:layout>
+                <s:VerticalLayout paddingLeft="22"></s:VerticalLayout>
+            </ui:layout>
+        </ui:RadioButtonList>
+    </s:VGroup>
+</settings:SettingsElement>

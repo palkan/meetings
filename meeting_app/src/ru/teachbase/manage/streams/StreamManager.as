@@ -188,7 +188,7 @@ public dynamic class StreamManager extends Manager {
                 _model.streamList.addItem(ns);
 
                 var _watcher:RTMPWatch = new RTMPWatch(ns);
-                App.rtmp.stats.registerInput(_watcher);
+                App.rtmpMedia.stats.registerInput(_watcher);
                 _watcher.watch();
                 (ns.client as NetStreamClient).watcher = _watcher;
 
@@ -203,7 +203,7 @@ public dynamic class StreamManager extends Manager {
     //--------------- ctrl ---------------//
 
     private function addStream(stream:StreamData):void {
-        var ns:NetStream = new NetStream(App.rtmp.getMediaStreamsConnection());
+        var ns:NetStream = new NetStream(App.rtmpMedia.connection);
 
         ns.addEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler, false, EventPriority.DEFAULT_HANDLER);
 
@@ -218,7 +218,7 @@ public dynamic class StreamManager extends Manager {
 
         ns.bufferTime = 0;
         ns.backBufferTime = 0;
-        ns.play(stream.name);
+        ns.play(stream.name,0,false,App.user.sid.toString());
     }
 
     private function removeStreamsByUser(uid:Number):void{
@@ -236,7 +236,7 @@ public dynamic class StreamManager extends Manager {
         const watcher:RTMPWatch = (ns.client as NetStreamClient).watcher;
         watcher && watcher.unwatch();
 
-        App.rtmp.stats.unregisterInput(watcher);
+        App.rtmpMedia.stats.unregisterInput(watcher);
 
         ns.dispose();
         ns.removeEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);

@@ -125,7 +125,7 @@ import ru.teachbase.utils.shortcuts.debug;
 		function camStatusHandler(e:StatusEvent):void
 		{
 			debug('media access camera status', e.code);
-			if(e.code === "Camera.Unmuted")
+			if(e.code === "Camera.Unmuted" || e.code === "Microphone.Unmuted")
 				status = true;
 			else
 				status = false;

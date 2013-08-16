@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               width="566"
+               height="575"
+               implements="ru.teachbase.utils.interfaces.ILocalable"
+               initialize="init()"
+               removedFromStage="close()"
+               creationComplete="creationComplete()"
+               backgroundColor="0xE3E3E3"
+               skinClass="ru.teachbase.skins.TitleWindowSkin">
+
+    <fx:Script>
+	<![CDATA[
+        import mx.collections.ArrayCollection;
+
+        import ru.teachbase.model.App;
+        import ru.teachbase.skins.SettingsButtonBarSkin;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        import spark.events.IndexChangeEvent;
+
+
+        private var _currentElement:SettingsElement;
+        private var _dataProvider:ArrayCollection;
+        private var _selectedIndex:int;
+
+
+        private function init():void {
+            Localizer.addItem(this);
+        }
+
+        private function creationComplete():void {
+
+            btnBar.dataProvider = _dataProvider;
+
+            navigateToPanel(_selectedIndex);
+
+        }
+
+
+        private function close():void {
+
+            _currentElement && _currentElement.dispose();
+
+        }
+
+        public function navigateToPanel(id:int):void {
+
+            const settingsElement:SettingsElement = App.settings.getSettingsElement(id);
+
+            if (!settingsElement) return;
+
+            _currentElement && _currentElement.dispose();
+
+            _currentElement && settingsGroup.removeElement(_currentElement);
+
+            settingsGroup.addElement(settingsElement);
+
+            _currentElement = settingsElement;
+
+            btnBar.selectedIndex = id;
+
+            titleText.text = settingsElement.label ? translate(settingsElement.label, 'settings') : "";
+        }
+
+        private function changeSelection(event:IndexChangeEvent):void {
+            if (event.newIndex == -1)
+                return;
+            navigateToPanel(event.newIndex)
+        }
+
+        private function onAddedToStage(evt:Event = null):void {
+            btnBar.setStyle('skinClass', SettingsButtonBarSkin);
+        }
+
+
+        public function localize():void {
+            for each(var item:Object in btnBar.dataProvider) {
+                btnBar.dataProvider.itemUpdated(item, "label");
+            }
+        }
+
+
+        private function getSettingsLabel(item:Object):String {
+            return translate(item.label_id, 'settings');
+        }
+
+        public function get dataProvider():ArrayCollection {
+            return _dataProvider;
+        }
+
+        public function set dataProvider(value:ArrayCollection):void {
+            _dataProvider = value;
+
+            btnBar && (btnBar.dataProvider = value);
+        }
+
+        public function get selectedIndex():int {
+            return _selectedIndex;
+        }
+
+        public function set selectedIndex(value:int):void {
+            _selectedIndex = value;
+            settingsGroup && navigateToPanel(_selectedIndex);
+        }
+        ]]>
+</fx:Script>
+    <s:VGroup>
+        <s:Group width="100%" height="50">
+            <s:Label color="0x515151" fontSize="16" left="18" bottom="8" id="titleText"/>
+        </s:Group>
+        <s:HGroup width="100%" height="100%" top="50">
+            <s:Group width="225">
+                <s:ButtonBar id="btnBar" width="100%" requireSelection="true"
+                             horizontalCenter="0" verticalCenter="0"
+                             change="changeSelection(event)"
+                             labelFunction="getSettingsLabel"
+                             addedToStage="onAddedToStage()"
+                             top="10" left="18" right="18" selectedIndex="0">
+                    <s:layout>
+                        <s:VerticalLayout gap="1"/>
+                    </s:layout>
+                </s:ButtonBar>
+            </s:Group>
+            <s:VGroup>
+                <s:Group clipAndEnableScrolling="true" width="320" height="470">
+                    <s:Rect height="100%" width="100%">
+                        <s:fill>
+                            <s:SolidColor color="0xDADADA"/>
+                        </s:fill>
+                        <s:filters>
+                            <s:GlowFilter inner="true" color="0x878787" blurX="5" blurY="5" strength="1"/>
+                        </s:filters>
+                    </s:Rect>
+                    <s:Group id="settingsGroup" height="100%" width="100%"/>
+                </s:Group>
+            </s:VGroup>
+        </s:HGroup>
+    </s:VGroup>
+</s:SkinnableContainer>

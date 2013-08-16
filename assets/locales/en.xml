@@ -56,6 +56,7 @@
 				<element name="message_field"><![CDATA[Message...]]></element>
 				<element name="send_button"><![CDATA[Send]]></element>
 				<element name="public_label"><![CDATA[Public chat]]></element>
+                <element name="private_chat"><![CDATA[Private chat]]></element>
                 <element name="admin_label"><![CDATA[Administrators]]></element>
 			</elements>
 		</component>
@@ -93,7 +94,7 @@
                 <element name="request_docs"><![CDATA[Documents Share Request]]></element>
 				<element name="request_mic"><![CDATA[Microphone Share Request]]></element>
 				<element name="set_label">Attendees Panel</element>
-				<element name="set_requests_off"><![CDATA[Disable camera and microphone 
+				<element name="set_requests_off"><![CDATA[Camera and microphone
 requests]]></element>
 			</elements>
 		</component>
@@ -170,11 +171,14 @@ are connected and turned on]]></element>
 				<element name="translation"><![CDATA[Your Video]]></element>
 				<element name="no_translation"><![CDATA[No Video Stream]]></element>
 				<element name="quality_choose"><![CDATA[Choose Quality]]></element>
-				<element name="q_low"><![CDATA[Low]]></element>
-				<element name="q_med"><![CDATA[Medium]]></element>
+				<element name="1_quality_low"><![CDATA[Low]]></element>
+				<element name="2_quality_medium"><![CDATA[Medium]]></element>
 				<element name="q_normal"><![CDATA[Normal]]></element>
-				<element name="q_high"><![CDATA[High]]></element>
+				<element name="3_quality_high"><![CDATA[High]]></element>
 				<element name="lang_choose"><![CDATA[Language]]></element>
+                <element name="loopback_mic"><![CDATA[Microphone Loopback]]></element>
+                <element name="if_no_mic"><![CDATA[No Microphone Available]]></element>
+                <element name="if_no_cam"><![CDATA[No Camera Available]]></element>
 			</elements>
 		</component>
 		<component name="modules">
@@ -183,7 +187,7 @@ are connected and turned on]]></element>
 		</component>
 		<component name="notifications">
 			<elements>
-				<element name="set_label"><![CDATA[Notifications]]></element>
+				<element name="label"><![CDATA[Notifications]]></element>
 				<element name="set_receive"><![CDATA[Receive Notifications]]></element>
 				<element name="req_doc"><![CDATA[${1} is making request to enable workplace]]></element>
 				<element name="req_mic"><![CDATA[${1} is making request to enable microphone]]></element>

@@ -10,17 +10,12 @@
     <fx:Script>
 		<![CDATA[
         import mx.events.FlexEvent;
-        import mx.events.ResizeEvent;
 
-        import ru.teachbase.components.*;
         import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.layout.events.LayoutEvent;
-
-        import ru.teachbase.manage.settings.SettingsManager;
         import ru.teachbase.model.App;
         import ru.teachbase.utils.BrowserUtils;
         import ru.teachbase.utils.Localizer;
-        import ru.teachbase.utils.helpers.*;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
         import ru.teachbase.utils.system.isFullScreenMode;
@@ -35,7 +30,7 @@
 
             GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE, permissionsHandler);
 
-            if(App.layout.layout_owner) layoutLockButton.enabled = layoutLockButton.selected = false;
+            if (App.layout.layout_owner) layoutLockButton.enabled = layoutLockButton.selected = false;
 
             permissionsHandler();
 
@@ -48,13 +43,13 @@
 
         private function layoutLockHandler(e:LayoutEvent):void {
 
-            if(!App.layout.layout_owner){
+            if (!App.layout.layout_owner) {
 
                 layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = false;
 
                 layoutLockButton.enabled = true;
 
-            }else{
+            } else {
 
                 layoutLockButton.enabled = layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = App.layout.is_owner;
             }
@@ -62,11 +57,9 @@
         }
 
 
-
-        private function permissionsHandler(e:GlobalEvent = null):void{
+        private function permissionsHandler(e:GlobalEvent = null):void {
             layoutGroup.visible = layoutGroup.includeInLayout = modulesGroup.visible = modulesGroup.includeInLayout = App.user.isAdmin();
         }
-
         ]]>
 	</fx:Script>
 
@@ -151,12 +144,13 @@
     </s:titleContent>
 
     <s:actionContent>
-        <!--c:ActionBarButton id="helpButton"
-						   icon="{s('actionBar','helpIco')}"
-						   iconOver="{s('actionBar','helpIcoHover')}"
+        <c:ActionBarButton id="helpButton"
+                           initialize="with(helpButton){
+                           icon = style('actionBar','helpIco');
+                           iconOver = style('actionBar','helpIcoHover');}"
 						   skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
-						   click="Alert.show('TODO', 'Help');"
-						   /-->
+						   click="App.view.monitor.visible = !App.view.monitor.visible;"
+						   />
         <c:ActionBarButton id="applicationPropertiesButton"
                            focusSkin="{null}"
                            skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
@@ -164,7 +158,7 @@
 						                       toolTip=translate('settings',NAME);
 						                       icon=style('actionBar','settingsIco');
 						                       iconOver=style('actionBar','settingsIcoHover');}"
-                           click="App.view.monitor.visible = !App.view.monitor.visible;"
+                           click="App.settings.show();"
                 />
         <c:ActionBarButton id="switchFullscreenButton"
                            focusSkin="{null}"

@@ -27,6 +27,8 @@ public class SettingsCallout {
 
     public static function open(target:DisplayObjectContainer, data:Vector.<SettingsItem>):void {
 
+        if(!data || !data.length) return;
+
         instance.dataProvider = data;
         instance.open(target);
 

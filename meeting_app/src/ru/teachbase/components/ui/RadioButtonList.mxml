@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark">
+    <fx:Declarations>
+        <s:RadioButtonGroup id="rbg"
+                            itemClick="itemClicked(event);" enabled="{this.enabled}"/>
+    </fx:Declarations>
+    <fx:Metadata>
+        [Event(type="flash.events.Event", name="change")]
+        [Style(type="Class", format="Class", name="buttonSkin")]
+    </fx:Metadata>
+
+    <fx:Script><![CDATA[
+        import mx.collections.ArrayList;
+        import mx.events.ItemClickEvent;
+
+        import spark.components.RadioButton;
+
+        private var _dataProvider:ArrayList;
+
+        private var _elements:Vector.<RadioButton> = new <RadioButton>[];
+
+        private var _selectedItem:Object;
+
+        private var _selectedIndex:int;
+
+        /**
+         * Remove all elements from list
+         */
+
+        public function clear():void {
+            removeAllElements();
+            _elements.length = 0;
+            _dataProvider = null;
+        }
+
+
+        protected function itemClicked(e:ItemClickEvent):void {
+
+            _selectedIndex = _elements.indexOf(e.relatedObject);
+
+            dispatchEvent(new Event(Event.CHANGE));
+        }
+
+        public function set dataProvider(value:ArrayList):void {
+            clear();
+
+            _dataProvider = value;
+
+            for each(var item:Object in _dataProvider.source) {
+                var button:RadioButton = new RadioButton();
+                button.label = item['label'] || '';
+                button.value = item;
+                button.group = rbg;
+                button.enabled = !(item['enabled'] === false);
+                button.setStyle('skinClass', getStyle('buttonSkin'));
+                button.selected = !!item['selected'];
+                addElement(button);
+
+                _elements.push(button);
+            }
+        }
+
+        public function get selectedIndex():int {
+            return _selectedIndex;
+        }
+
+        public function set selectedIndex(value:int):void {
+
+            _selectedIndex = value;
+
+            rbg.selection = null;
+
+            _elements[_selectedIndex].selected = true;
+
+        }
+
+        public function get selectedItem():Object {
+            return _selectedIndex > -1 ? _dataProvider.getItemAt(_selectedIndex) : null;
+        }
+        ]]></fx:Script>
+
+
+
+</s:Group>

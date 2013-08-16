@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings:SettingsElement xmlns:fx="http://ns.adobe.com/mxml/2009"
+                          xmlns:s="library://ns.adobe.com/flex/spark"
+                          xmlns:settings="ru.teachbase.components.settings.*"
+                          xmlns:ui="ru.teachbase.components.ui.*"
+                          implements="ru.teachbase.utils.interfaces.ILocalable"
+                          width="400" height="300" preinitialize="init()" addedToStage="added()">
+
+    <fx:Script>
+		<![CDATA[
+        import mx.collections.ArrayList;
+
+        import ru.teachbase.assets.sound.SoundSample;
+        import ru.teachbase.events.ClickEvent;
+        import ru.teachbase.model.App;
+        import ru.teachbase.utils.DelayedWriter;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.system.requestUserMediaAccess;
+
+        public static const label:String = 'sound_set';
+        public static const iconOut:String = 'settingsAudioButtonOut';
+        public static const iconOver:String = 'settingsAudioButtonOver';
+
+        private var _sound_sample:Sound = SoundSample.create() as Sound;
+        private var _chanel:SoundChannel;
+
+        private var _volumeSaver:DelayedWriter;
+        private var _micLevelSaver:DelayedWriter;
+
+        private var _loopbacked:Boolean = false;
+
+        [Bindable]
+        private var _enabled:Boolean = false;
+
+        [Bindable]
+        private var _no_mic_found:Boolean = false;
+
+        private function init():void {
+
+            if(_initialized) return;
+
+            _volumeSaver = new DelayedWriter(1000, function (value:Number):void {
+                App.user.settings.volumeLevel = value;
+            });
+
+            _micLevelSaver = new DelayedWriter(1000, function (value:Number):void {
+                App.user.settings.micLevel = value;
+
+            });
+
+            Localizer.addItem(this);
+        }
+
+
+        private function added():void {
+
+            !_initialized && init();
+
+           _disposed = false;
+
+            audioVolume.value = App.user.settings.volumeLevel;
+            micVolume.value = App.user.settings.micLevel;
+
+            scanHardware();
+
+            if (Microphone.names.length) {
+
+                _no_mic_found = false;
+
+                !App.publisher.audioSharing && requestUserMediaAccess(-1, -2, success, failure, stage);
+
+
+                function success(flag:Boolean):void {
+
+                    !App.publisher.microphone && App.publisher.updateMicrophone();
+
+                    micSelector.dataProvider = new ArrayList(Microphone.names);
+                    micSelector.addEventListener(ClickEvent.TYPE, micSelected, false, 0, true);
+                    micSelector.selectedIndex = App.publisher.microphone.index;
+
+                    _enabled = true;
+
+                }
+
+
+                function failure(message:String):void {
+
+                    _enabled = false;
+
+                }
+
+            } else {
+
+                _no_mic_found = true;
+
+                _enabled = false;
+
+            }
+        }
+
+
+        private function playTestSound(evt:Event):void {
+            if (_sound_sample == null) {
+                return;
+            }
+            if (_chanel) {
+                _chanel.stop();
+                _chanel = null;
+                checkAudio.selected = false;
+            } else {
+                var transform:SoundTransform = new SoundTransform(audioVolume.value / 100);
+                _chanel = _sound_sample.play(0, 0, transform);
+                checkAudio.selected = true;
+                if (_chanel) {
+                    _chanel.addEventListener(Event.SOUND_COMPLETE, function (evt:Event):void {
+                        _chanel = null;
+                        checkAudio.selected = false;
+                    }, false, 0, true);
+                }
+            }
+        }
+
+        private function onVolumeChanged(evt:Event):void {
+            SoundMixer.soundTransform = new SoundTransform(audioVolume.value / 100);
+            _volumeSaver.write(audioVolume.value);
+        }
+
+        private function micSelected(evt:Event):void {
+            const currentIndex:int = App.publisher.microphone.index;
+
+            if (micSelector.selectedIndex == currentIndex) return;
+
+            App.user.settings.micID = micSelector.selectedIndex;
+
+            App.publisher.updateMicrophone();
+
+            micEq.stopDisplay();
+            App.publisher.microphone && micEq.startDisplay(function ():Number {
+                return App.publisher.microphone.activityLevel;
+            });
+
+        }
+
+        private function onMicVolumeCommit(evt:Event):void {
+
+            App.publisher.microphone && (App.publisher.microphone.gain = micVolume.value);
+
+            _micLevelSaver.write(micVolume.value);
+        }
+
+        private function micToggleLoopback():void {
+
+            const mic:Microphone = App.publisher.microphone;
+
+            if (!mic) return;
+
+            _loopbacked = !_loopbacked;
+
+            mic.setLoopBack(_loopbacked);
+
+            _loopbacked && micEq.startDisplay(function ():Number {
+                return App.publisher.microphone.activityLevel;
+            });
+            !_loopbacked && micEq.stopDisplay();
+
+        }
+
+
+        override public function dispose():void {
+
+            if(_disposed) return;
+
+            if (_chanel) {
+                _chanel.stop();
+                _chanel = null;
+            }
+
+            checkAudio.selected = false;
+            loopback_cb.selected = false;
+
+            micEq.stopDisplay();
+
+            _loopbacked && micToggleLoopback();
+
+            _disposed = true;
+        }
+
+        public function localize():void {
+            levelCheck && (levelCheck.text = translate('level_check', 'settings'));
+            if_no_sound_label && (if_no_sound_label.text = translate('if_no_sound', 'settings'));
+            levelSetterLabel && (levelSetterLabel.text = translate('level_setter', 'settings'));
+            micChooseLabel && (micChooseLabel.text = translate('mic_choose', 'settings'));
+            micLevelSetter && micLevelSetter && (micLevelSetter.text = translate('mic_level_setter', 'settings'));
+            micCheckLabel1 && (micCheckLabel1.text = translate('mic_check', 'settings'));
+            micNotFound && (micNotFound.text=translate('if_no_mic','settings'));
+        }
+
+
+        override public function get label():String {
+            return AudioSettings.label;
+        }
+
+        override public function get iconOut():DisplayObject {
+            return style('video', AudioSettings.iconOut);
+        }
+
+        override public function get iconOver():DisplayObject {
+            return style('video', AudioSettings.iconOver);
+        }
+        ]]>
+	</fx:Script>
+
+    <s:VGroup gap="10" top="14" width="100%">
+        <s:Label initialize="with(levelCheck){text=translate('level_check','settings');}" id="levelCheck"
+                 color="0x6892B5" fontSize="13" paddingLeft="22"/>
+        <s:HGroup paddingLeft="22">
+            <s:ToggleButton id="checkAudio" label="Check Audio" click="playTestSound(event)" width="22" height="22"
+                            skinClass="ru.teachbase.skins.video.PlayButtonSkin"/>
+            <s:Label id="if_no_sound_label"
+                     initialize="with(if_no_sound_label){text=translate('if_no_sound','settings');}" color="0x515151"
+                     fontSize="13"/>
+        </s:HGroup>
+
+        <s:Group>
+            <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
+                           source="{style('globalsettings','break')}"/>
+        </s:Group>
+
+        <s:Label initialize="with(levelSetterLabel){text=translate('level_setter','settings');}" id="levelSetterLabel"
+                 color="0x6892B5" fontSize="13" paddingLeft="22"/>
+        <s:Group>
+            <s:HSlider id="audioVolume" value="50" width="140" maximum="100" minimum="0" snapInterval="1"
+                       change="onVolumeChanged(event)"
+                       skinClass="ru.teachbase.skins.video.SettingsHSliderSkin" left="12"/>
+        </s:Group>
+        <s:Group>
+            <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
+                           source="{style('globalsettings','break')}"/>
+        </s:Group>
+
+        <s:Label initialize="with(micChooseLabel){text=translate('mic_choose','settings');}" id="micChooseLabel"
+                 color="0x6892B5" fontSize="13" paddingLeft="22"/>
+        <s:Group>
+            <s:DropDownList id="micSelector"
+                            skinClass="ru.teachbase.skins.DropDownListSkin"
+                            labelField="name" left="22" change="micSelected(event)" enabled="{_enabled}"
+                            visible="{!_no_mic_found}"/>
+            <s:Label id="micNotFound" paddingLeft="22" fontSize="13"
+                     initialize="with(micNotFound){text=translate('if_no_mic','settings');}" color="0x515151"
+                     visible="{_no_mic_found}"></s:Label>
+
+        </s:Group>
+        <s:Group>
+            <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
+                           source="{style('globalsettings','break')}"/>
+        </s:Group>
+
+
+        <s:Label id="micLevelSetter" initialize="with(micLevelSetter){text=translate('mic_level_setter','settings');}"
+                 color="0x6892B5" fontSize="13" paddingLeft="22"/>
+        <s:Group>
+            <s:HSlider id="micVolume" width="140" maximum="100" minimum="0" snapInterval="1" left="12"
+                       change="onMicVolumeCommit(event)" enabled="{_enabled}"
+                       skinClass="ru.teachbase.skins.video.SettingsHSliderSkin"/>
+        </s:Group>
+        <s:HGroup paddingLeft="12" enabled="{_enabled}">
+            <s:CheckBox id="loopback_cb" label="" skinClass="ru.teachbase.skins.CheckBoxSkin"
+                        click="micToggleLoopback()" enabled="{_enabled}"/>
+            <s:Label id="loopback_lb" initialize="loopback_lb.text=translate('loopback_mic','settings')"
+                     color="0x515151" fontSize="13" paddingLeft="10"/>
+        </s:HGroup>
+        <s:Group>
+            <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
+                           source="{style('globalsettings','break')}"/>
+        </s:Group>
+
+        <s:Label id="micCheckLabel1" initialize="with(micCheckLabel1){text=translate('mic_check','settings');}"
+                 color="0x6892B5" fontSize="13" paddingLeft="22" left="22"/>
+
+        <s:Group width="100%" height="5">
+            <ui:GraphEqualizer left="12" right="12" id="micEq" width="100%" height="5" thickness="5" length="3"
+                               gap="1" eqColor="#994bff" orientaion="horizontal"></ui:GraphEqualizer>
+        </s:Group>
+
+    </s:VGroup>
+</settings:SettingsElement>

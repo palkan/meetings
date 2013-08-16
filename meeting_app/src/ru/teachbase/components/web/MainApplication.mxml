@@ -77,7 +77,7 @@
             _monitor.right = 14;
             _monitor.visible = false;
 
-            _monitor.source = App.rtmp.stats;
+            _monitor.source = App.rtmpMedia.stats;
 
             addElement(_monitor);
 
@@ -87,7 +87,7 @@
 
         public function notification(item:Notification):void {
 
-            _notifications.add(item);
+            _notifications && _notifications.add(item);
 
         }
 

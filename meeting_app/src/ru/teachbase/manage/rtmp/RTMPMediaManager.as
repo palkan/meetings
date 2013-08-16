@@ -1,6 +1,6 @@
 /**
  * User: palkan
- * Date: 5/28/13
+ * Date: 8/15/13
  * Time: 2:42 PM
  */
 package ru.teachbase.manage.rtmp {
@@ -24,15 +24,21 @@ import ru.teachbase.utils.shortcuts.config;
 import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
 
-public class RTMPManager extends Manager {
+/**
+ *
+ * Creates and controls NetConnection for NetStreams only.
+ *
+ */
+
+public class RTMPMediaManager extends Manager {
 
     private var _connection:NetConnection;
 
     private var _factory:ConnectionFactory = new ConnectionFactory();
 
-    private static const listeners:FuncObject = new FuncObject();
+    private var _stats:NetworkStats;
 
-    public function RTMPManager(register:Boolean = false){
+    public function RTMPMediaManager(register:Boolean = false){
         super(register);
     }
 
@@ -41,7 +47,7 @@ public class RTMPManager extends Manager {
         var _url = config('net/rtmp');
 
         if(!_url){
-            error("Missing RTMP options");
+            error("Missing RTMP stream options");
             _failed = true;
             return;
         }
@@ -59,7 +65,6 @@ public class RTMPManager extends Manager {
     override public function clear():void{
         super.clear();
         _connection.connected && _connection.close();
-        listeners.clear();
         _connection = null;
     }
 
@@ -67,62 +72,6 @@ public class RTMPManager extends Manager {
     // --------- API (Begin) --------- //
 
 
-    /**
-     *  Register new RTMP listener
-     *
-     * @param type
-     * @param handler
-     */
-
-    public static function listen(type:String, handler:Function):void{
-        (handler is Function) && (listeners[type] = handler);
-    }
-
-
-    /**
-     *
-     * Unregister RTMP listener
-     *
-     * @param type
-     * @param handler
-     */
-
-
-    public static function unlisten(type:String, handler:Function):void{
-        listeners.deleteFromProperty(type,handler);
-    }
-
-
-    /**
-     *
-     * Make RTMP call
-     * @param method    server method name
-     * @param responder
-     * @param rest    method arguments
-     *
-     */
-
-    public function callServer(method:*, responder:IResponder, ...rest):void
-    {
-        rest.unshift(method, (responder ? new Responder(sendResult, sendError) : null));
-        _connection.call.apply(null, rest);
-
-        function sendResult(result:*):void
-        {
-            responder && responder.result(result);
-        }
-
-        function sendError(error:*):void
-        {
-            responder && responder.fault(error);
-        }
-    }
-
-
-
-    tb_rtmp function incomingCall(name, ...args):void{
-        (listeners[name] is Function) && listeners[name].apply(null,args);
-    }
 
    // ---------- API (End) ---------- //
 
@@ -150,13 +99,31 @@ public class RTMPManager extends Manager {
         _connection = _factory.connection;
         removeFactoryListeners();
         setupConnection();
+        if(!_stats) _stats = new NetworkStats();
 
-        _initialized = true;
+
+        function statsInited(e:Event){
+            _stats.removeEventListener(Event.COMPLETE, statsInited);
+            _stats.removeEventListener(ErrorEvent.ERROR, statsFailed);
+            _initialized = true;
+        }
+
+        function statsFailed(e:ErrorEvent){
+            _stats.removeEventListener(ErrorEvent.ERROR, statsFailed);
+            _stats.removeEventListener(Event.COMPLETE, statsInited);
+            _failed = true;
+        }
+
+        _stats.addEventListener(Event.COMPLETE, statsInited);
+
+        _stats.addEventListener(ErrorEvent.ERROR, statsFailed);
+
+        _stats.initialize(_connection);
     }
 
     private function setupConnection():void{
         _connection.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
-        _connection.client = new RTMPClient(this);
+        _connection.client = {};
     }
 
 
@@ -180,7 +147,7 @@ public class RTMPManager extends Manager {
 
     protected function netStatusHandler(e:NetStatusEvent):void {
 
-        debug("[rtmp data] NetStatus: "+e.info.code);
+        debug("[rtmp media] NetStatus: "+e.info.code);
 
         switch(e.info.code){
             case NetConnectionStatusCodes.REJECTED:
@@ -198,5 +165,8 @@ public class RTMPManager extends Manager {
 
     }
 
+    public function get stats():NetworkStats {
+        return _stats;
+    }
 }
 }

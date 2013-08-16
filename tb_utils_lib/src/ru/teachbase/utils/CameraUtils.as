@@ -20,6 +20,8 @@ public class CameraUtils {
 
     public static const AVAILABLE_QUALITIES:Array = [LOW_QUALITY, MEDIUM_QUALITY, HIGH_QUALITY];
 
+    public static const AVAILABLE_QUALITIES_ID:Array = [PublishQuality.LOW, PublishQuality.MEDIUM, PublishQuality.HIGH];
+
     public static function getCamera(id:String = null):Camera {
 
         var camera:Camera;

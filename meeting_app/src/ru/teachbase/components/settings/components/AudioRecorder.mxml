@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:components="ru.teachbase.components.settings.components.*"
+        implements="ru.teachbase.utils.interfaces.ILocalable"
+        addedToStage="init()">
+    <fx:Script><![CDATA[
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        private function init():void{
+           Localizer.addItem(this);
+        }
+
+
+        /* private function startRecord():void {
+
+         (m(PublishManager) as PublishManager).closeAll();
+
+         if (!reccordProgres.isStarted) {
+         _wavEncoder = new WaveEncoder(Number(micVolume.value) / 100);
+
+         var mic:Microphone = Microphone.getEnhancedMicrophone(_micId);
+         mic.codec = SoundCodec.NELLYMOSER;
+
+         recorder = new MicRecorder(_wavEncoder, mic, micVolume.value);
+
+         recorder.addEventListener(Event.COMPLETE, recordComplete)
+
+         recorder.record();
+
+         reccordProgres.visible = true;
+         reccordProgres.start();
+         micCheckLabel2.visible = false;
+         onAirText.visible = true;
+         checkMicPlay.visible = false;
+         } else {
+         stopRecord();
+         }
+         }
+
+         private function stopRecord(evt:Event = null):void {
+         recorder.stop();
+         reccordProgres.reset();
+         reccordProgres.visible = false;
+         micCheckLabel2.visible = true;
+         onAirText.visible = false;
+         var mic:Microphone = Microphone.getEnhancedMicrophone(_micId);
+         mic.codec = SoundCodec.SPEEX;
+         }
+
+         private function recordComplete(evt:Event):void {
+         micRecord.selected = false;
+         checkMicPlay.visible = true;
+         }
+
+         private function playMicSound():void {
+         if (!recorder.output) {
+         return;
+         }
+         if (checkMicPlay.selected) {
+         var player:WavSound = new WavSound(recorder.output);
+         _wavSoundChannel = player.play();
+         _wavSoundChannel.addEventListener(Event.SOUND_COMPLETE, function (event:Event):void {
+         _wavSoundChannel && _wavSoundChannel.stop();
+         checkMicPlay.selected = false;
+         });
+         } else {
+         _wavSoundChannel && _wavSoundChannel.stop();
+         }
+         }       */
+
+        public function localize():void{
+            onAirText && (onAirText.text = translate('attention_rec', 'settings'));
+            micCheckLabel2 && (micCheckLabel2.text = translate('if_no_sound_rec', 'settings'));
+        }
+
+
+        ]]></fx:Script>
+    <s:ToggleButton id="micRecord" label="Check Audio" width="22" height="22" left="22" click="//startRecord()"
+                    skinClass="ru.teachbase.skins.video.RecordButtonSkin"/>
+
+    <components:TimeProgressBar visible="false" id="reccordProgres" width="246" left="50" top="4"
+                                 progressComplete="//stopRecord(event)"/>
+    <s:Label id="micCheckLabel2"
+             initialize="with(micCheckLabel2){text=translate('if_no_sound_rec','settings');}" left="50" top="4"
+             fontSize="13" color="0x515151"/>
+
+    <s:ToggleButton id="checkMicPlay" label="Check Audio" width="22" height="22" left="22" top="27"
+                    skinClass="ru.teachbase.skins.video.PlayButtonSkin" click="//playMicSound()" visible="false"/>
+    <s:Label id="onAirText" initialize="with(onAirText){text=translate('attention_rec','settings');}"
+             visible="false" width="250" fontSize="13" color="0xEB0000" paddingLeft="50" top="32"
+             maxDisplayedLines="1"/>
+</s:Group>

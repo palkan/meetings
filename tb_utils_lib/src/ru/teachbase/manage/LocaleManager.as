@@ -137,7 +137,7 @@ public class LocaleManager extends Manager
 			return obj;
 		}
 		
-		protected function changeLocale(lang:String):void{
+		public function changeLocale(lang:String):void{
 			
 			if(lang === _locale || (_availableLocales[lang] == undefined))
 				return;

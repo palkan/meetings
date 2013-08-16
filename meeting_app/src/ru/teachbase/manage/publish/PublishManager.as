@@ -67,6 +67,8 @@ public class PublishManager extends Manager {
 
     private var _maxQuality:String = PublishQuality.HIGH;
 
+    private var _cameraEnabled:Boolean = true;
+
     /**
      *  Reference to CurrentUser sharing model
      */
@@ -87,13 +89,13 @@ public class PublishManager extends Manager {
 
     override protected function initialize(reinit:Boolean = false):void {
 
-        if (!App.rtmp || !App.rtmp.connected) {
+        if (!App.rtmpMedia || !App.rtmpMedia.connected) {
             error("Can not find RTMPManager or RTMPManager is disconnected");
             _failed = true;
             return;
         }
 
-        _connection = App.rtmp.connection;
+        _connection = App.rtmpMedia.connection;
         _model = App.user.sharing;
 
         setQuality(App.user.settings.publishQuality);
@@ -224,6 +226,8 @@ public class PublishManager extends Manager {
 
     public function setQuality(quality:String):void{
 
+        if(!_cameraEnabled) return;
+
         if(quality > _maxQuality) quality = _maxQuality;
 
         _qualityId = quality;
@@ -238,10 +242,6 @@ public class PublishManager extends Manager {
                 CameraUtils.setHighQuality(_camera);
                 _useH264 && _h264Settings.setProfileLevel(H264Profile.MAIN, H264Level.LEVEL_3_2);
                 break;
-            case PublishQuality.NO_CAM:
-                closeCamera();
-                _camera = null;
-                break;
             case PublishQuality.MEDIUM:
             default:
                 CameraUtils.setMediumQuality(_camera);
@@ -255,6 +255,35 @@ public class PublishManager extends Manager {
 
        _useH264 && _stream && (_stream.videoStreamSettings = _h264Settings);
     }
+
+
+    /**
+     *
+     */
+
+    public function updateMicrophone():void{
+
+        setMicrophone(true);
+
+        if(audioSharing) _stream.attachAudio(_microphone);
+
+    }
+
+
+    /**
+     *
+     *
+     */
+
+    public function updateCamera():void{
+
+        setCamera(true);
+
+        if(videoSharing)  _stream.attachCamera(_camera);
+
+    }
+
+
 
     public function enable():void {
         _model.enabled = true;
@@ -279,7 +308,7 @@ public class PublishManager extends Manager {
 
         if (_camera || !force) return;
 
-        if(_qualityId == PublishQuality.NO_CAM){
+        if(!_cameraEnabled){
             notify(new Notification(translate('bw_cam_not_allowed','notifications')),true);
             return;
         }
@@ -450,8 +479,7 @@ public class PublishManager extends Manager {
 
     protected function initStream():void {
         if (!_stream) {
-            //THINK: Do we need a special connection for streams?
-            _stream = new NetStream(App.rtmp.connection);
+            _stream = new NetStream(App.rtmpMedia.connection);
             var ns_client:Object = new Object();
             ns_client.onMetaData = function (metadata:Object):void {
                 //nothing to do
@@ -532,7 +560,7 @@ public class PublishManager extends Manager {
                 _stream.send('@setDataFrame','onMetaData',{quality:_qualityId, fps:CameraUtils.DEFAULT_FPS});
 
                 var _watcher:RTMPWatch = new RTMPWatch(_stream);
-                App.rtmp.stats.registerOutput(_watcher);
+                App.rtmpMedia.stats.registerOutput(_watcher);
                 break;
             }
             case NetStreamStatusCodes.UNPUBLISH_SUCCESS:{
@@ -541,7 +569,7 @@ public class PublishManager extends Manager {
                 _streaming  = false;
                 statusUpdate();
 
-                App.rtmp.stats.unregisterOutput();
+                App.rtmpMedia.stats.unregisterOutput();
                 break;
             }
             case NetStreamStatusCodes.FAILED:{
@@ -549,7 +577,7 @@ public class PublishManager extends Manager {
                 _streaming = false;
                 closeAll();
 
-                App.rtmp.stats.unregisterOutput();
+                App.rtmpMedia.stats.unregisterOutput();
                 break;
             }
         }
@@ -599,6 +627,20 @@ public class PublishManager extends Manager {
 
     public function set maxQuality(value:String):void {
         _maxQuality = value;
+    }
+
+    public function get cameraEnabled():Boolean {
+        return _cameraEnabled;
+    }
+
+    public function set cameraEnabled(value:Boolean):void {
+        _cameraEnabled = value;
+
+        if(!value){
+            closeCamera();
+            _camera = null;
+            notify(new Notification(translate('bw_cam_not_allowed','notifications')),true);
+        }
     }
 }
 

@@ -294,7 +294,7 @@
 
             label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
 
-            _netStream = new NetStream(App.rtmp.getMediaStreamsConnection());
+            _netStream = new NetStream(App.rtmpMedia.connection);
 
             _netStream.addEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler);
             _netStream.addEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
@@ -327,7 +327,7 @@
             CONFIG::LIVE{
 
                 _netStream.backBufferTime = 0;
-                _netStream.play(stream);
+                _netStream.play(stream, App.user.sid);
             }
 
 

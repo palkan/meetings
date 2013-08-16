@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <module:ModuleInstance xmlns:fx="http://ns.adobe.com/mxml/2009"
-                           xmlns:s="library://ns.adobe.com/flex/spark"
-                           xmlns:components="ru.teachbase.components.*" xmlns:module="ru.teachbase.components.module.*"
-                           xmlns:chat = "ru.teachbase.module.chat.components.*"
-                           implements="ru.teachbase.utils.interfaces.ILocalable"
-                           creationComplete="creationCompleteHandler()"
+                       xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:components="ru.teachbase.components.*" xmlns:module="ru.teachbase.components.module.*"
+                       xmlns:chat="ru.teachbase.module.chat.components.*" xmlns:ui="ru.teachbase.components.ui.*"
+                       implements="ru.teachbase.utils.interfaces.ILocalable"
+                       creationComplete="creationCompleteHandler()"
         >
     <fx:Script>
 		<![CDATA[
@@ -131,9 +131,7 @@
         //--------------- handlers --------------------//
 
 
-
-
-        private function handleReconnect(e:GlobalEvent):void{
+        private function handleReconnect(e:GlobalEvent):void {
 
             listener.dispose();
             listener.initialize();
@@ -141,13 +139,15 @@
 
             /// deactivate chats with users left
 
-            for (var uid:String in _roomsByUserId){
+            for (var uid:String in _roomsByUserId) {
 
-                if(!App.meeting.usersByID[uid] && (_roomsByUserId[uid] as ChatRoom).active) deactivateRoom(_roomsByUserId[uid] as ChatRoom);
+                if (!App.meeting.usersByID[uid] && (_roomsByUserId[uid] as ChatRoom).active) deactivateRoom(_roomsByUserId[uid] as ChatRoom);
 
             }
 
-            const room_ids:Array = _rooms.source.map(function(r:ChatRoom,ind:int,arr:Array):Number{ return r.roomId;});
+            const room_ids:Array = _rooms.source.map(function (r:ChatRoom, ind:int, arr:Array):Number {
+                return r.roomId;
+            });
 
             rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null), _lastMessageId, room_ids);
 
@@ -221,7 +221,7 @@
             switch (m.type) {
                 case ChatMessage.MESSAGE:
                     addMessage(m);
-                    if(m.roomId != _currentRoom.roomId) notify(new Notification(translate('new_message','notifications', m.name, m.body)));
+                    if (m.roomId != _currentRoom.roomId) notify(new Notification(translate('new_message', 'notifications', m.name, m.body)));
                     break;
                 case ChatMessage.TYPING:
                     (m.roomId == _currentRoom.roomId) && (m.uid != user.sid) && typingGroup.add(App.meeting.usersByID[m.uid]);
@@ -300,8 +300,7 @@
         //--------------- controllers -----------------//
 
 
-
-        private function deactivateRoom(room:ChatRoom):void{
+        private function deactivateRoom(room:ChatRoom):void {
             room.active = false;
             room.roomName += ' (' + translate('offline') + ')';
 
@@ -424,6 +423,8 @@
 
         private function globalEventHandler(evt:GlobalEvent):void {
 
+            if(!_privateChatEnabled) return;
+
             const room_name:String = (App.meeting.usersByID[Number(evt.value)] as User).extName;
 
             rtmp_call("create_chat", new mx.rpc.Responder(success, $null), [App.user.sid, Number(evt.value)]);
@@ -518,7 +519,6 @@
     </fx:Declarations>
 
 
-
     <module:states>
         <s:State id="chatState" name="chat"/>
         <s:State id="roomsState" name="roomsList"/>
@@ -526,112 +526,115 @@
 
     <s:VGroup gap="0" width="100%" height="100%">
 
-    <components:HidingScroller width="100%" height="100%" verticalScrollPolicy="on" horizontalScrollPolicy="off" includeIn="chat" id="messagesScroller">
-        <s:RichEditableText height="100%" width="100%" id="messagesList" editable="false" paddingLeft="10" paddingRight="10" paddingTop="5" paddingBottom="5">
-        </s:RichEditableText>
-    </components:HidingScroller>
+        <ui:HidingScroller width="100%" height="100%" verticalScrollPolicy="on" horizontalScrollPolicy="off"
+                           includeIn="chat" id="messagesScroller">
+            <s:RichEditableText height="100%" width="100%" id="messagesList" editable="false" paddingLeft="10"
+                                paddingRight="10" paddingTop="5" paddingBottom="5">
+            </s:RichEditableText>
+        </ui:HidingScroller>
 
-    <components:ScrollList id="roomsList"
-            includeIn="roomsList"
-            itemRenderer="ru.teachbase.module.chat.components.ChatItemRenderer"
-            dataProvider="{_rooms}"
-            width="100%" height="100%"
-            contentBackgroundAlpha="1"
-            useVirtualLayout="false"
-            horizontalScrollPolicy="off"
-            verticalScrollPolicy="auto"
-            >
-        <components:layout>
-            <s:VerticalLayout gap="0"/>
-        </components:layout>
-    </components:ScrollList>
+        <ui:ScrollList id="roomsList"
+                       includeIn="roomsList"
+                       itemRenderer="ru.teachbase.module.chat.components.ChatItemRenderer"
+                       dataProvider="{_rooms}"
+                       width="100%" height="100%"
+                       contentBackgroundAlpha="1"
+                       useVirtualLayout="false"
+                       horizontalScrollPolicy="off"
+                       verticalScrollPolicy="auto"
+                >
+            <ui:layout>
+                <s:VerticalLayout gap="0"/>
+            </ui:layout>
+        </ui:ScrollList>
 
 
-    <s:Group id="bottomGroup" width="100%" height="46">
+        <s:Group id="bottomGroup" width="100%" height="46">
 
-        <s:layout>
-            <s:BasicLayout/>
-        </s:layout>
-        <s:Image id="btm_img" initialize="btm_img.source=style('modulecontainer','bottomBackground')" top="0" left="0"
-                 right="0" bottom="0" scaleMode="stretch" height="46"/>
-        <s:HGroup gap="0" width="100%" height="100%">
-        <s:Group>
-        <components:CustomSkinableButton id="roomsView" top="7" left="7"
-                                         includeInLayout="{_privateChatEnabled}"
-                                         visible="{_privateChatEnabled}"
-                                         focusSkin="{null}"
-                                         initialize="with(roomsView) {iconUp=style('chat','usersButton'); iconOver=style('chat','usersButton'); iconDown=style('chat','usersButton'); toolTip=translate('rooms_button', 'chat');}"
-                                         click="roomsListClick(event)"
-                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
-        </s:Group>
-        <s:Group includeIn="chat" width="100%">
-            <s:TextInput id="inputField"
-                         color="0xB4B4B4"
-                         left="7"
-                         right="28"
-                         height="30"
-                         top="7"
-                         width="100%"
-                         whiteSpaceCollapse="collapse"
-                         initialize="inputField.text = translate('message_field','chat')"
-                         skinClass="ru.teachbase.skins.RoundedTextAreaWithBorder"
-                         focusSkin="{null}"
-                         textInput="typeStarted(event)"
-                         enter="inputFieldEnterHandler(event)"
-                    >
-                <s:click>
+            <s:layout>
+                <s:BasicLayout/>
+            </s:layout>
+            <s:Image id="btm_img" initialize="btm_img.source=style('modulecontainer','bottomBackground')" top="0"
+                     left="0"
+                     right="0" bottom="0" scaleMode="stretch" height="46"/>
+            <s:HGroup gap="0" width="100%" height="100%">
+                <s:Group>
+                    <components:CustomSkinableButton id="roomsView" top="7" left="7"
+                                                     includeInLayout="{_privateChatEnabled}"
+                                                     visible="{_privateChatEnabled}"
+                                                     focusSkin="{null}"
+                                                     initialize="with(roomsView) {iconUp=style('chat','usersButton'); iconOver=style('chat','usersButton'); iconDown=style('chat','usersButton'); toolTip=translate('rooms_button', 'chat');}"
+                                                     click="roomsListClick(event)"
+                                                     skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+                </s:Group>
+                <s:Group includeIn="chat" width="100%">
+                    <s:TextInput id="inputField"
+                                 color="0xB4B4B4"
+                                 left="7"
+                                 right="28"
+                                 height="30"
+                                 top="7"
+                                 width="100%"
+                                 whiteSpaceCollapse="collapse"
+                                 initialize="inputField.text = translate('message_field','chat')"
+                                 skinClass="ru.teachbase.skins.RoundedTextAreaWithBorder"
+                                 focusSkin="{null}"
+                                 textInput="typeStarted(event)"
+                                 enter="inputFieldEnterHandler(event)"
+                            >
+                        <s:click>
 					<![CDATA[
-                        if (inputField.text == translate('message_field', 'chat')) {
-                            inputField.text = "";
-                            inputField.setStyle("color", 0x000000);
-                        }
-                    ]]>
+                                if (inputField.text == translate('message_field', 'chat')) {
+                                    inputField.text = "";
+                                    inputField.setStyle("color", 0x000000);
+                                }
+                            ]]>
 				</s:click>
-            </s:TextInput>
-            <components:CustomSkinableButton id="sendMessageButton" top="7" right="7"
-                                             click="inputFieldEnterHandler(event)" height="30"
-                                             initialize="with(sendMessageButton){iconUp=style('chat','sendMessageButton');iconOver=style('chat','sendMessageButton');iconDown=style('chat','sendMessageButton'); toolTip=translate('send_button','chat')}"
-                                             skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+                    </s:TextInput>
+                    <components:CustomSkinableButton id="sendMessageButton" top="7" right="7"
+                                                     click="inputFieldEnterHandler(event)" height="30"
+                                                     initialize="with(sendMessageButton){iconUp=style('chat','sendMessageButton');iconOver=style('chat','sendMessageButton');iconDown=style('chat','sendMessageButton'); toolTip=translate('send_button','chat')}"
+                                                     skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
 
-        </s:Group>
-        </s:HGroup>
-        <s:Group includeIn="roomsList" width="100%">
-            <s:TextInput id="searchField"
-                         color="0xB4B4B4"
-                         left="42"
-                         right="9"
-                         height="30"
-                         top="7"
-                         width="100%"
-                         whiteSpaceCollapse="collapse"
-                         initialize="searchField.text = translate('search_field','chat')"
-                         skinClass="ru.teachbase.skins.RoundedTextAreaWithBorder"
-                         focusSkin="{null}"
-                         change="searchInRooms()"
-                         enter="searchInRooms()"
-                    >
-                <s:click>
+                </s:Group>
+            </s:HGroup>
+            <s:Group includeIn="roomsList" width="100%">
+                <s:TextInput id="searchField"
+                             color="0xB4B4B4"
+                             left="42"
+                             right="9"
+                             height="30"
+                             top="7"
+                             width="100%"
+                             whiteSpaceCollapse="collapse"
+                             initialize="searchField.text = translate('search_field','chat')"
+                             skinClass="ru.teachbase.skins.RoundedTextAreaWithBorder"
+                             focusSkin="{null}"
+                             change="searchInRooms()"
+                             enter="searchInRooms()"
+                        >
+                    <s:click>
 					<![CDATA[
-                        if (searchField.text == translate('search_field', 'chat')) {
-                            searchField.text = "";
-                            searchField.setStyle("color", 0x000000);
-                        }
-                    ]]>
+                            if (searchField.text == translate('search_field', 'chat')) {
+                                searchField.text = "";
+                                searchField.setStyle("color", 0x000000);
+                            }
+                        ]]>
 				</s:click>
-            </s:TextInput>
-            <components:CustomSkinableButton id="findButton"
-                                             top="13" right="15"
-                                             click="searchInRooms()"
-                                             height="18" width="18"
-                                             initialize="with(findButton){iconUp=style('chat','magnifier');iconOver=style('chat','magnifier');iconDown=style('chat','magnifier');}"
-                                             skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+                </s:TextInput>
+                <components:CustomSkinableButton id="findButton"
+                                                 top="13" right="15"
+                                                 click="searchInRooms()"
+                                                 height="18" width="18"
+                                                 initialize="with(findButton){iconUp=style('chat','magnifier');iconOver=style('chat','magnifier');iconDown=style('chat','magnifier');}"
+                                                 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
 
+            </s:Group>
+            <s:Group top="3" left="27" id="unreadGroup" visible="{_unreadCount > 0 &amp;&amp; _privateChatEnabled}" includeIn="chat">
+                <s:BitmapImage id="redCircle" source="{style('chat','redCircle')}" right="0"/>
+                <s:Label id="unreadCount" text="{_unreadCount}" fontSize="11" top="2" color="0xFFFFFF" right="3"/>
+            </s:Group>
         </s:Group>
-        <s:Group top="3" left="27" id="unreadGroup" visible="{_unreadCount > 0}" includeIn="chat">
-            <s:BitmapImage id="redCircle" source="{style('chat','redCircle')}" right="0"/>
-            <s:Label id="unreadCount" text="{_unreadCount}" fontSize="11" top="2" color="0xFFFFFF" right="3"/>
-        </s:Group>
-    </s:Group>
     </s:VGroup>
 
     <chat:TypingBlock bottom="45" width="100%" height="22" id="typingGroup" visible="false">

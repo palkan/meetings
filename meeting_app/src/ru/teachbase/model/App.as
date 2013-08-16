@@ -17,6 +17,7 @@ import ru.teachbase.manage.layout.LayoutManager;
 import ru.teachbase.manage.Manager;
 import ru.teachbase.manage.modules.ModulesManager;
 import ru.teachbase.manage.publish.PublishManager;
+import ru.teachbase.manage.rtmp.RTMPMediaManager;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.manage.session.SessionManager;
@@ -24,6 +25,7 @@ import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.manage.rtmp.RTMPManager;
 import ru.teachbase.manage.session.model.CurrentUser;
 import ru.teachbase.manage.session.model.Meeting;
+import ru.teachbase.manage.settings.SettingsManager;
 import ru.teachbase.manage.streams.StreamManager;
 import ru.teachbase.tb_internal;
 
@@ -35,6 +37,8 @@ public class App {
     private static var _view:MainApplication;
 
     private static var _focusManager:FocusManager;
+
+    private static var _settingsManager:SettingsManager;
 
 
     //------------ constructor ------------//
@@ -55,6 +59,10 @@ public class App {
 
     public static function get rtmp():RTMPManager{
         return (Manager.getManagerInstance(RTMPManager,true) as RTMPManager);
+    }
+
+    public static function get rtmpMedia():RTMPMediaManager{
+        return (Manager.getManagerInstance(RTMPMediaManager,true) as RTMPMediaManager);
     }
 
     public static function get publisher():PublishManager{
@@ -82,6 +90,14 @@ public class App {
             _focusManager=new FocusManager(FlexGlobals.topLevelApplication as IFocusManagerContainer);
 
         return _focusManager;
+    }
+
+
+    public static function get settings():SettingsManager{
+        if(!_settingsManager)
+            _settingsManager = new SettingsManager();
+
+        return _settingsManager;
     }
 
 

@@ -13,6 +13,9 @@ import flash.text.Font;
 import flash.utils.setTimeout;
 
 import ru.teachbase.assets.fonts.Pragmatica;
+import ru.teachbase.components.settings.AudioSettings;
+import ru.teachbase.components.settings.GeneralSettings;
+import ru.teachbase.components.settings.VideoSettings;
 import ru.teachbase.components.web.MainApplication;
 import ru.teachbase.constants.ErrorCodes;
 import ru.teachbase.events.AppEvent;
@@ -26,6 +29,7 @@ import ru.teachbase.manage.layout.LayoutManager;
 import ru.teachbase.manage.modules.ModulesManager;
 import ru.teachbase.manage.publish.PublishManager;
 import ru.teachbase.manage.rtmp.RTMPManager;
+import ru.teachbase.manage.rtmp.RTMPMediaManager;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.manage.streams.StreamManager;
 import ru.teachbase.model.App;
@@ -132,6 +136,7 @@ public class ApplicationController extends EventDispatcher{
                 LocaleManager.instance,  // loading locales
                 SkinManager.instance,    // loading skin
                 new RTMPManager(true),    // connecting to rtmp server
+                new RTMPMediaManager(true), // connecting for rtmp server again (stream connection),
                 new SessionManager(true), // login, get user info (profile, role, permissions), get room info (id, settings, users etc) --> Session Model
                 new ModulesManager(true),  // loading modules models, initialize active modules
                 new LayoutManager(true),  // loading layout, positioning modules
@@ -148,7 +153,7 @@ public class ApplicationController extends EventDispatcher{
 
     protected function reinitialize():void{
 
-        const managers:Array = [App.rtmp,App.session,App.modules,App.layout,App.streams,App.publisher];
+        const managers:Array = [App.rtmp,App.rtmpMedia,App.session,App.modules,App.layout,App.streams,App.publisher];
 
         managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr.clear();});
 
@@ -196,13 +201,17 @@ public class ApplicationController extends EventDispatcher{
         OutStreamSup.run(30000);
         InStreamSup.run();
 
+        App.settings.addPanel(new AudioSettings());
+        App.settings.addPanel(new VideoSettings());
+        App.settings.addPanel(new GeneralSettings());
+
         _view.draw();
         dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_COMPLETE));
     }
 
     private function managersProgressHandler(e:ProgressEvent):void {
 
-        dispatchEvent(new AppEvent(AppEvent.LOADING_STATUS, false, false, "Managers initializing ... "+Math.round(e.bytesLoaded * 100 / e.bytesTotal)+"%"))
+        dispatchEvent(new AppEvent(AppEvent.LOADING_STATUS, false, false, "Managers initializing ... " + Math.round(e.bytesLoaded * 100 / e.bytesTotal)+"%"))
 
     }
 

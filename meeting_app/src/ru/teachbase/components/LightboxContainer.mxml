@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
-        click="close()">
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark">
     <fx:Script><![CDATA[
         import mx.core.IVisualElement;
         import mx.core.IVisualElementContainer;
+        import mx.events.FlexMouseEvent;
 
         /**
          *  Parent component of lightbox
@@ -13,13 +13,15 @@
 
         private var _canClose:Boolean = true;
 
+        private var _source:IVisualElement;
+
         /**
          *  Close lightbox
          */
 
         public function close():void {
 
-            _canClose && container && (container.getElementIndex(this) > -1) && container.removeElement(this) && this.removeAllElements();
+            _canClose && container && (container.getElementIndex(this) > -1) && container.removeElement(this) && (_source && this.removeElement(_source));
 
         }
 
@@ -32,6 +34,10 @@
 
             addElement(element);
 
+            _source = element;
+
+            container.addElement(this);
+
         }
 
         /**
@@ -41,5 +47,9 @@
         public function get canClose():Boolean {
             return _canClose;
         }
+
+
         ]]></fx:Script>
+
+    <s:Group id="clickArea" height="100%" width="100%" click="close()"></s:Group>
 </s:SkinnableContainer>

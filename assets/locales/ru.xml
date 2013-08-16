@@ -57,6 +57,7 @@
 				<element name="send_button"><![CDATA[Отправить]]></element>
 				<element name="public_label"><![CDATA[Общий чат]]></element>
                 <element name="admin_label"><![CDATA[Администраторы]]></element>
+                <element name="private_chat"><![CDATA[Приватный чат]]></element>
 			</elements>
 		</component>
 		<component name="actionbar">
@@ -93,8 +94,8 @@
                 <element name="request_docs"><![CDATA[Запрос на управление документами]]></element>
 				<element name="request_mic"><![CDATA[Запрос на подключение микрофона]]></element>
 				<element name="set_label">Модуль участники</element>
-				<element name="set_requests_off"><![CDATA[Отмена возможности запроса камеры
-и микрофона]]></element>
+				<element name="set_requests_off"><![CDATA[Запрос камеры и микрофона
+участниками]]></element>
 			</elements>
 		</component>
 		<component name="video">
@@ -173,16 +174,19 @@
 				<element name="no_translation"><![CDATA[В данный момент
 изображение не транслируется]]></element>
 				<element name="quality_choose"><![CDATA[Выбор качества]]></element>
-				<element name="q_low"><![CDATA[Низкое]]></element>
-				<element name="q_med"><![CDATA[Среднее]]></element>
+				<element name="1_quality_low"><![CDATA[Низкое]]></element>
+				<element name="2_quality_medium"><![CDATA[Среднее]]></element>
 				<element name="q_normal"><![CDATA[Нормальное]]></element>
-				<element name="q_high"><![CDATA[Высокое]]></element>
+				<element name="3_quality_high"><![CDATA[Высокое]]></element>
 				<element name="lang_choose"><![CDATA[Язык интерфейса]]></element>
+                <element name="loopback_mic"><![CDATA[Прослушать микрофон]]></element>
+                <element name="if_no_mic"><![CDATA[Микрофон не найден]]></element>
+                <element name="if_no_cam"><![CDATA[Камера не найдена]]></element>
 			</elements>
 		</component>
 		<component name="notifications">
 			<elements>
-				<element name="set_label"><![CDATA[Уведомления]]></element>
+				<element name="label"><![CDATA[Уведомления]]></element>
 				<element name="set_receive"><![CDATA[Получать уведомления]]></element>
 				<element name="req_doc"><![CDATA[${1} запрашивает право
 на рабочую область]]></element>
