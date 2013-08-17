@@ -122,6 +122,7 @@
             _privateChatEnabled = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
             GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, settingsUpdate);
             GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, userLeaveHandler);
+            GlobalEvent.addEventListener(GlobalEvent.USER_JOIN, userJoinHandler);
             GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
 
             rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null), 0, App.user.isAdmin() ? [Recipients.ALL, Recipients.ADMINS] : [Recipients.ALL]);
@@ -176,6 +177,21 @@
                 const room:ChatRoom = _roomsByUserId[uid] as ChatRoom;
                 deactivateRoom(room);
             }
+        }
+
+        private function userJoinHandler(e:GlobalEvent):void{
+
+            const usr:User = e.value as User;
+
+            if(!usr.old_sid || !_roomsByUserId[usr.old_sid]) return;
+
+            const room:ChatRoom = _roomsByUserId[usr.old_sid];
+            activateRoom(room,usr);
+
+            _roomsByUserId[usr.sid] = room;
+
+            delete _roomsByUserId[usr.old_sid];
+
         }
 
         private function typingStopped():void {
@@ -307,6 +323,22 @@
             if (_currentRoom.roomId == room.roomId) {
                 label = translate('label', 'chat') + ": " + _currentRoom.roomName;
                 inputField.enabled = false;
+            }
+
+            if (currentState == roomsState.name) {
+                _rooms.source.sort(compareChatRooms);
+                _rooms.refresh();
+                roomsList.validateNow();
+            }
+        }
+
+        private function activateRoom(room:ChatRoom, usr:User):void {
+            room.active = true;
+            room.roomName = usr.extName;
+
+            if (_currentRoom.roomId == room.roomId) {
+                label = translate('label', 'chat') + ": " + _currentRoom.roomName;
+                inputField.enabled = true;
             }
 
             if (currentState == roomsState.name) {

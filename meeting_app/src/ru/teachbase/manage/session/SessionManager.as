@@ -368,7 +368,7 @@ public final class SessionManager extends Manager {
         switch (data.type) {
             case "userJoin":
                 if (_model.addUser(data.value)) {
-                    GlobalEvent.dispatch(GlobalEvent.USER_ADD, _model.usersByID[(data.value as User).sid]);
+                    GlobalEvent.dispatch(GlobalEvent.USER_JOIN, _model.usersByID[(data.value as User).sid]);
                     notify(new Notification(translate('enter_room', 'notifications', [(data.value as User).fullName])));
                 }
                 break;

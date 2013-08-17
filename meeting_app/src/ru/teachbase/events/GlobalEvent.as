@@ -6,7 +6,7 @@ public class GlobalEvent extends Event {
     public static const RECONNECT:String = "tb:global_reconnect";
 
     public static const USER_LEAVE:String = "tb:global_user_leave";
-    public static const USER_ADD:String = "tb:global_user_add";
+    public static const USER_JOIN:String = "tb:global_user_add";
 
     public static const MEETING_SETTINGS_UPDATE:String = "tb:global_settings_update";
     public static const MEETING_STATE_UPDATE:String = "tb:global_state_update";

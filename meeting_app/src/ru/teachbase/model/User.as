@@ -45,7 +45,21 @@ public class User extends EventDispatcher{
 
     public var guest_id:String;
 
+    /**
+     *
+     * Erlyvideo unique session id.
+     *
+     */
+
     public var sid:Number;
+
+    /**
+     *
+     * Previous session id or 0 if doesn't exist.
+     *
+     */
+
+    public var old_sid:Number;
 
     /**
      *  User name
