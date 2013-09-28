@@ -245,7 +245,7 @@
               visible="{_camVideoContainerInstance == null &amp;&amp; _streams == 0 &amp;&amp; _p_enabled}">
         <components:CustomSkinableButton id="bigButton"
                                          initialize="with(bigButton){iconUp=style('video','bigCameraButton');iconDown=style('video','bigCameraButtonDown');iconOver=style('video','bigCameraButtonHover');}"
-                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin" focusSkin="{null}"
+                                         skinClass="ru.teachbase.skins.CustomSkinableButtonSkin" focusSkin="{null}"
                                          click="App.publisher.toggleStartCamera()">
         </components:CustomSkinableButton>
         <s:Label id="bigBlbl" initialize="bigBlbl.text=translate('turn_on_cam','settings')" textAlign="center"

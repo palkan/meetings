@@ -9,7 +9,7 @@ import ru.teachbase.manage.rtmp.RTMPListener;
 import ru.teachbase.manage.rtmp.events.RTMPEvent;
 import ru.teachbase.manage.rtmp.model.Recipients;
 import ru.teachbase.model.App;
-import ru.teachbase.module.board.BoardCanvas;
+import ru.teachbase.components.board.BoardCanvas;
 import ru.teachbase.utils.shortcuts.rtmp_send;
 
 /**

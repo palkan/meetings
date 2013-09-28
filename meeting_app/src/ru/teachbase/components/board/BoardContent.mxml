@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark"
+         xmlns:board="ru.teachbase.components.board.*"
+         minWidth="150"
+         minHeight="200"
+         creationComplete="creationCompleteHandler(event)">
+    <fx:Metadata>
+        [Style(name="buttonSkin", type="Class", format="Class")]
+        [Style(name="handleSkin", type="Class", format="Class")]
+        [Style(name="undoRedoSkin", type="Class", format="Class")]
+    </fx:Metadata>
+    <fx:Script>
+		<![CDATA[
+        import mx.binding.utils.BindingUtils;
+        import mx.events.FlexEvent;
+
+        private const figureManager:FigureManager = new FigureManager();
+
+        private var _controlbar:WBControlbar;
+
+        private var _editable:Boolean = true;
+
+        private final function creationCompleteHandler(e:FlexEvent):void {
+            figureManager.initialize(canvas);
+        }
+
+        protected function onPropertyChanged(event:WhiteBoardEvent):void {
+            figureManager.setStyle(event.propertyId, event.value);
+        }
+
+        protected function onToolChanged(event:WhiteBoardEvent):void {
+            figureManager.setInstrument(event.value);
+        }
+
+        protected function onUndoRedo(event:WhiteBoardEvent):void {
+            figureManager[event.value]();
+        }
+
+
+        public function dispose():void {
+            figureManager.dispose();
+        }
+
+        public function get editable():Boolean {
+            return _editable;
+        }
+
+        public function set editable(value:Boolean):void {
+            _editable = value;
+            _controlbar && (_controlbar.visible = value);
+            value && figureManager.enable();
+            !value && figureManager.disable();
+            canvas.editable = value;
+        }
+
+
+        public function set controlbar(value:WBControlbar):void{
+
+            if(value){
+
+                if(_controlbar != value) controlbar = null;
+
+                _controlbar = value;
+
+                _controlbar.addEventListener(WhiteBoardEvent.PROPERTY, onPropertyChanged);
+                _controlbar.addEventListener(WhiteBoardEvent.TOOL, onToolChanged);
+                _controlbar.addEventListener(WhiteBoardEvent.UNDOREDO, onUndoRedo);
+
+                BindingUtils.bindProperty(_controlbar,"undo",figureManager,["history","undoAvailable"],false,true);
+                BindingUtils.bindProperty(_controlbar,"redo",figureManager,["history","redoAvailable"],false,true);
+
+                _controlbar.visible = _editable;
+
+            }else if(_controlbar){
+
+                _controlbar.removeEventListener(WhiteBoardEvent.PROPERTY, onPropertyChanged);
+                _controlbar.removeEventListener(WhiteBoardEvent.TOOL, onToolChanged);
+                _controlbar.removeEventListener(WhiteBoardEvent.UNDOREDO, onUndoRedo);
+
+                _controlbar = null;
+
+            }
+
+        }
+
+
+        public function resize(w:Number,h:Number):void{
+            setLayoutBoundsSize(w,h);
+            canvas.width = w;
+            canvas.height = h;
+        }
+
+
+        public function gotoPage(id:int):void {
+            figureManager.goToPage(id);
+        }
+
+
+        public function get manager():FigureManager {
+            return figureManager;
+        }
+        ]]>
+	</fx:Script>
+	
+	<s:Group   width="100%"
+			  height="100%"
+			  >
+		<!--canvas-->
+		<board:BoardCanvas id="canvas"
+                           x="0"
+                           y="0"
+                           backgroundColor="0xf1f1f1"
+						   />
+
+	</s:Group>
+</s:Group>

@@ -58,7 +58,7 @@ public class RTMPManager extends Manager {
 
     override public function clear():void{
         super.clear();
-        _connection.connected && _connection.close();
+        connected && _connection.close();
         listeners.clear();
         _connection = null;
     }

@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+        creationComplete="init()">
+
+    <fx:Script><![CDATA[
+        import ru.teachbase.components.board.FigureManager;
+        import ru.teachbase.components.board.model.SimpleBoardClient;
+        import ru.teachbase.constants.NetConnectionStatusCodes;
+        import ru.teachbase.constants.NetGroupStatusCodes;
+        import ru.teachbase.manage.Initializer;
+        import ru.teachbase.manage.LocaleManager;
+        import ru.teachbase.manage.SkinManager;
+        import ru.teachbase.components.board.BoardContent;
+        import ru.teachbase.utils.Configger;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.logger.LoggerMode;
+        import ru.teachbase.utils.shortcuts.debug;
+
+
+        private var _connection:NetConnection;
+        private var _group:NetGroup;
+        private var _board_mgr:SimpleBoardClient;
+        private var _mgr:FigureManager;
+
+        private function init():void {
+
+            Configger.setDefaults({
+                "skin": "http://192.168.1.21:8082/assets/skins/skin.xml",
+                locales: [
+                    {
+                        "code": "ru",
+                        "label": "русский",
+                        "url": "http://192.168.1.21:8082/assets/locales/ru.xml"
+                    }
+                ]
+            });
+
+            Logger.MODE = LoggerMode.CONSOLE;
+
+            Initializer.instance.addEventListener(Event.COMPLETE, onComplete);
+
+            Initializer.initializeManagers(LocaleManager.instance, SkinManager.instance);
+
+        }
+
+        private function onComplete(e:Event):void {
+            var board:BoardContent = new BoardContent();
+            board.percentHeight = 100;
+            board.percentWidth = 100;
+            addElement(board);
+
+            setupConnection();
+
+           _board_mgr = new SimpleBoardClient(boardConnect,boardData);
+
+            board.manager.setExternal(_board_mgr);
+        }
+
+
+
+        public function boardConnect(mgr:FigureManager):void{
+
+            _mgr = mgr;
+
+        }
+
+        public function boardData(data:Array):void{
+
+            if(!_connection || !_connection.connected) return;
+
+            _group.post(data);
+
+        }
+
+
+        private function setupConnection():void{
+
+             _connection = new NetConnection();
+
+            _connection.addEventListener(NetStatusEvent.NET_STATUS, netStatus);
+            _connection.connect("rtmfp:");
+        }
+
+
+        private function netStatus(e:NetStatusEvent):void{
+
+            debug(e.info.code);
+
+            switch(e.info.code){
+                case NetConnectionStatusCodes.SUCCESS:
+                    setupGroup();
+                    break;
+                case NetGroupStatusCodes.POST_MESSAGE:
+                    _mgr.receiveExternalData(e.info.message);
+                    break;
+                case NetGroupStatusCodes.CONNECTED:
+                    break;
+            }
+        }
+
+        private function setupGroup():void{
+            var groupspec:GroupSpecifier = new GroupSpecifier("myGroup/groupOne");
+            groupspec.postingEnabled = true;
+            groupspec.ipMulticastMemberUpdatesEnabled = true;
+            groupspec.addIPMulticastAddress("225.225.0.1:30303");
+
+            _group = new NetGroup(_connection,groupspec.groupspecWithAuthorizations());
+            _group.addEventListener(NetStatusEvent.NET_STATUS,netStatus);
+        }
+
+        ]]></fx:Script>
+
+</s:Application>

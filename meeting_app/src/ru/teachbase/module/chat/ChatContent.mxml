@@ -597,7 +597,7 @@
                                                      focusSkin="{null}"
                                                      initialize="with(roomsView) {iconUp=style('chat','usersButton'); iconOver=style('chat','usersButton'); iconDown=style('chat','usersButton'); toolTip=translate('rooms_button', 'chat');}"
                                                      click="roomsListClick(event)"
-                                                     skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+                                                     skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"/>
                 </s:Group>
                 <s:Group includeIn="chat" width="100%">
                     <s:TextInput id="inputField"
@@ -626,7 +626,7 @@
                     <components:CustomSkinableButton id="sendMessageButton" top="7" right="7"
                                                      click="inputFieldEnterHandler(event)" height="30"
                                                      initialize="with(sendMessageButton){iconUp=style('chat','sendMessageButton');iconOver=style('chat','sendMessageButton');iconDown=style('chat','sendMessageButton'); toolTip=translate('send_button','chat')}"
-                                                     skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+                                                     skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"/>
 
                 </s:Group>
             </s:HGroup>
@@ -659,7 +659,7 @@
                                                  click="searchInRooms()"
                                                  height="18" width="18"
                                                  initialize="with(findButton){iconUp=style('chat','magnifier');iconOver=style('chat','magnifier');iconDown=style('chat','magnifier');}"
-                                                 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+                                                 skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"/>
 
             </s:Group>
             <s:Group top="3" left="27" id="unreadGroup" visible="{_unreadCount > 0 &amp;&amp; _privateChatEnabled}" includeIn="chat">

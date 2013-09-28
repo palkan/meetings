@@ -37,9 +37,9 @@ public class DelayedWriter {
 
     private var state:uint = READY;
 
-    private var _data:*;
-
     private var _buffer:*;
+
+    private var _bufferChanged:Boolean = false;
 
     private var _mode:String = REWRITE;
 
@@ -68,6 +68,8 @@ public class DelayedWriter {
 
         this[_mode](data);
 
+        _bufferChanged = true;
+
         if(!_timeHandler){
 
             commitFunction && commitFunction(_buffer);
@@ -82,13 +84,15 @@ public class DelayedWriter {
 
     private function timeout():void{
         _timeHandler = null;
-        _buffer && commitFunction && commitFunction(_buffer);
-        _buffer && clear();
+        _bufferChanged && commitFunction && commitFunction(_buffer);
+        _bufferChanged && clear();
     }
 
     private function clear():void{
-        if(_mode == COLLECT) _buffer.length = 0;
+        if(_mode == COLLECT) _buffer = [];
         else _buffer = null;
+
+        _bufferChanged = false;
     }
 
 

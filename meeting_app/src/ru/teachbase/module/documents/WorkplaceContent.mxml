@@ -9,150 +9,124 @@
                            creationComplete="creationCompleteHandler(event)"
                            clipAndEnableScrolling="true"
                            currentState="idle">
-    <fx:Declarations>
-        <!-- Place non-visual elements (e.g., services, value objects) here -->
-    </fx:Declarations>
     <fx:Script>
 		<![CDATA[
         import mx.rpc.Responder;
 
+        import ru.teachbase.components.callouts.SettingsItem;
         import ru.teachbase.constants.PacketType;
-
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
         import ru.teachbase.manage.rtmp.model.Recipients;
         import ru.teachbase.model.App;
-
-        import ru.teachbase.module.documents.events.DocEvent;
-        import ru.teachbase.manage.FileManager;
-        import ru.teachbase.module.documents.model.DocChangeData;
-        import ru.teachbase.module.documents.model.FileItem;
-        import ru.teachbase.components.callouts.SettingsItem;
         import ru.teachbase.model.User;
         import ru.teachbase.module.documents.components.SelectSourceWindow;
+        import ru.teachbase.module.documents.model.DocumentData;
+        import ru.teachbase.module.documents.model.WorkplaceData;
+        import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.module.documents.model.WorkplaceRenderers;
-        import ru.teachbase.utils.AssetLoader;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.shortcuts.*;
 
+        private var _listener:RTMPListener;
 
-        CONFIG::AIR{
-            import ru.teachbase.air.components.DropSpace;
-            import ru.teachbase.air.events.FileDropEvent;
-        }
+        private var _settings:Vector.<SettingsItem> = new Vector.<SettingsItem>();
 
-
-        private const listener:RTMPListener = new RTMPListener(PacketType.DOCUMENT);
-
-        public var setsDP:Vector.<SettingsItem> = new Vector.<SettingsItem>();
-
-        [Bindable]
-        private var _isOwner:Boolean = true;
-
-        private var _initilized:Boolean = false;
+        private var _initialized:Boolean = false;
 
 
-        private var _xmlLoader:AssetLoader = new AssetLoader()
-        private var _fm:FileManager;
-        private var _docChangeData:DocChangeData;
-        private var _panel:SelectSourceWindow;
-
-        CONFIG::AIR{
-            private var fileDropSpace:DropSpace;
-        }
+        //-------------------------- initialize -------------------------------//
 
         protected function creationCompleteHandler(event:Event = null):void {
 
-            listener.initialize();
-            listener.addEventListener(DocEvent.LOAD, handleMessage);
-            rtmp_history(PacketType.DOCUMENT + "::" + this.instanceID, new mx.rpc.Responder(historyHandler, $null));
-            setsDP.push(new SettingsItem("clear_workplace", SettingsItem.FUN, clearWorkplace));
-            setsDP.push(new SettingsItem("save_screenshot", SettingsItem.FUN, container.takeSnapshot))
+            _listener = new RTMPListener(PacketType.WORKPLACE + "::" + this.instanceID,true);
+
+            _listener.addEventListener(RTMPEvent.DATA, handleMessage);
+
+            rtmp_history(PacketType.WORKPLACE + "::" + this.instanceID, new mx.rpc.Responder(historyHandler, $null));
+
+            _settings.push(new SettingsItem("clear_workplace", SettingsItem.FUN, detachDocument));
+            _settings.push(new SettingsItem("save_screenshot", SettingsItem.FUN, container.takeSnapshot))
+
+            permissions = App.user ? App.user.permissions : 0;
+        }
+
+
+        //---------------------------- API ------------------------------------//
+
+
+        public function attachDocument(doc:DocumentData) {
+            if(!doc) return;
+
+            currentState = active.name;
+            container.init(doc);
+        }
+
+
+        public function detachDocument() {
+            container.dispose();
+            currentState = idle.name;
+        }
+
+
+        public function inProgress(id:Number) {
+            currentState = progress.name;
+            if (App.meeting.usersByID[id]) progressText.text = translate("progress", "docs", (App.meeting.usersByID[id] as User).fullName);
+        }
+
+
+        //------------------------ private -------------------------//
+
+        private function processData(data:WorkplaceData):void {
+
+
+            if (data.type == "idle" && currentState != idle.name) {
+                detachDocument();
+            }
+
+            if (data.type == "progress") {
+                inProgress(data.id);
+            }
+
+
+            if (data.type == "active") {
+                (currentState == active.name) && detachDocument();
+                attachDocument(data.data);
+            }
 
         }
 
-        override public function set permissions(value:uint):void {
 
-            //private function permissionChanged(evt:PermissionEvent):void{
-            _isOwner = Permissions.docsAvailable(value);
-            if (container)
-                container.editable = _isOwner;
+        // ----------------------- handlers -----------------------//
+
+        private function historyHandler(data:WorkplaceData):void {
+
+            data && processData(data);
+
+            _listener.readyToReceive = true;
+            _initialized = true;
         }
+
 
         private function handleMessage(e:RTMPEvent):void {
-            handleData(e.packet.data);
+            const data:WorkplaceData = e.packet.data as WorkplaceData;
+
+            if (!data) return;
+
+            processData(data);
         }
 
-        private function historyHandler(data:*):void {
-            listener.readyToReceive = true;
-            handleData(data);
+
+        private function loadDocument(evt:Event):void {
+
+            //todo: open select window
+
         }
 
-        private function handleData(data:*):void {
-            if (!(data is DocChangeData)) {
-                return;
-            }
 
-            if (_panel) _panel.closeMe();
-
-            const docData:DocChangeData = data as DocChangeData;
-
-            if (docData.type == "idle") {
-                currentState = idle.name;
-                return;
-            }
-
-            if (docData.type == "loading") {
-                currentState = loading.name;
-                if (App.meeting.usersByID[docData.id]) progressText.text = translate("loading", "docs", (App.meeting.usersByID[docData.id] as User).fullName);
-                return;
-            }
-
-
-            if (!(docData.type == "load") || !docData.dataType)
-                return;
-
-
-            (ownerModule as DocumentsModule).registerNewDoc(docData.id, docData.title);
-
-
-            switch (docData.dataType) {
-                case "wb":
-                {
-                    onWBChoose(null);
-                    return;
-                }
-                case "DOCS":
-                {
-                    _docChangeData = docData;
-                    loadConfigXML(docData.url);
-                    return;
-                }
-                case "YouTube":
-                {
-                    onYouTubeChoose(docData.url, docData.duration);
-                    return;
-                }
-                case "IMAGE":
-                {
-                    onImageChoose(docData.url);
-                    return
-                }
-                case "VIDEO":
-                {
-                    onVideoChoose(docData.url);
-                    return
-                }
-            }
-        }
-
-        private function onUploadButtonClick(evt:Event):void {
-            if (_panel == null) _panel = new SelectSourceWindow()
-            _panel.workplaceContent = this;
-            //Core.addPopupToTop(_panel);
-            //_docTrait.output({type:"loading",id:App.room.user.sid},Recipients.ALL_EXCLUDE_ME);
-            //onStartLoad();
+        protected function wbHandler(event:MouseEvent):void {
+            rtmp_call("create_document", null, "wb", this.instanceID);
         }
 
 
@@ -252,28 +226,6 @@
 
          }    */
 
-        private function loadConfigXML(url:String):void {
-            _xmlLoader.addEventListener(Event.COMPLETE, onConfLoaded)
-            _xmlLoader.addEventListener(ErrorEvent.ERROR, function (evt:Event):void {
-                rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "idle", id: App.user.sid}), Recipients.ALL_EXCLUDE_ME);
-                currentState = idle.name;
-            })
-
-            _xmlLoader.load(url);
-        }
-
-
-        private function onConfLoaded(evt:Event):void {
-            parseXML(new XML(evt.target.loadedObject));
-        }
-
-        private function parseXML(xml:XML):void {
-            if (_docChangeData)
-                container.history = _docChangeData;
-            container.renderer = WorkplaceRenderers.getClassByDocExt(xml.params.type.toString());
-            currentState = ready.name;
-            container.data = xml;
-        }
 
         //private function onFileProgress(event:FileStatusEvent):void{
         ///progressText.text = "loading " + event.value;
@@ -290,92 +242,14 @@
          currentState = idle.name;
          }
          */
-        protected function onWBChoose(event:MouseEvent):void {
-            if (event) {
-                rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "wb", title: translate("Whiteboard", "docs") + " " + this.instanceID.toString(), id: this.instanceID}), Recipients.ALL);
-                return;
-            }
-
-            container.renderer = WorkplaceRenderers.getClassById("whiteboard");
-
-            currentState = ready.name;
-
-
-        }
-
-        private function onYouTubeChoose(url:String, duration:Number):void {
-            container.renderer = WorkplaceRenderers.getClassById("youTube_video");
-            currentState = ready.name;
-            var ob:Object = new Object();
-            ob.url = url;
-            ob.duration = duration;
-            container.data = ob;
-        }
-
-        private function onVideoChoose(url:String):void {
-            container.renderer = WorkplaceRenderers.getClassById("video");
-            currentState = ready.name;
-            var ob:Object = new Object();
-            ob.url = url;
-            container.data = ob;
-        }
-
-        private function onImageChoose(url:String, title:String = ""):void {
-            container.renderer = WorkplaceRenderers.getClassById("img");
-            var xml:XML = <main>
-                <items>
-                    <item slideurl="null"/>
-                </items>
-            </main>;
-            xml.items.item[0].@slideurl = url;
-            currentState = ready.name;
-            container.data = xml;
-        }
-
-        public function onSourceChoose(obj:FileItem):void {
-
-            switch (obj.type) {
-                case 'YouTube':
-                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "YouTube", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}), Recipients.ALL);
-                    break;
-                case 'IMAGE':
-                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "IMAGE", title: obj.title, id: this.instanceID, url: obj.url}), Recipients.ALL);
-                    break;
-                case 'DOCS':
-                case 'PRES':
-                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "loading", id: App.user.sid}), Recipients.ALL_EXCLUDE_ME);
-                    //convertFromLibrary(obj);
-                    break;
-                case 'VIDEO':
-                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "load", dataType: "VIDEO", title: obj.title, id: this.instanceID, url: obj.url, duration: obj.getParam('duration')}), Recipients.ALL);
-                    break;
-                case "GOOGLE_IMAGE":
-                    rtmp_send(PacketType.DOCUMENT, new DocChangeData({type: "loading", id: App.user.sid}), Recipients.ALL_EXCLUDE_ME);
-                    // convertFromGoogle(obj);
-                    break;
-
-            }
-
-        }
 
         override public function hide():void {
+            detachDocument();
             super.hide();
-            container && container.dispose();
         }
 
 
-        public function clearWorkplace():void {
-
-            //(m(LayoutModelManager) as LayoutModelManager).restartPanelContent(this.panelID);
-
-        }
-
-
-        override public function get settings():Vector.<SettingsItem> {
-
-            return setsDP;
-
-        }
+        // ---------------- implement ------------------------//
 
 
         public function localize():void {
@@ -385,63 +259,60 @@
             doc && (doc.label = translate('Load_files', 'docs'));
             white && (white.label = translate('Whiteboard', 'docs'));
         }
+
+
+        //------------------- get/set ----------------------------//
+
+        override public function set permissions(value:uint):void {
+
+            const flag:Boolean = Permissions.docsAvailable(value);
+
+            idleGroup && (idleGroup.visible = flag);
+            container && (container.editable = flag);
+        }
+
+
+        override public function get settings():Vector.<SettingsItem> {
+
+            return _settings;
+
+        }
         ]]>
 	</fx:Script>
     <module:states>
-        <s:State id="ready" name="ready"/>
+        <s:State id="active" name="active"/>
         <s:State id="idle" name="idle"/>
-        <s:State id="loading" name="loading"/>
+        <s:State id="progress" name="progress"/>
     </module:states>
 
     <com:WorkplaceContainer id="container"
                             width="{this.width}" height="{this.height}"
-                            instanceId="{this.instanceID}" editable="{_isOwner}"
-                            listener="{listener}"
                             />
 
     <s:Label id="progressText" initialize="progressText.text=translate('Loading')" horizontalCenter="0"
-             includeIn="loading" verticalCenter="-60"/>
+             includeIn="progress" verticalCenter="-60"/>
 
-    <s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="loading">
+    <s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="progress">
         <s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
     </s:VGroup>
 
     <s:Group id="idleGroup" width="400" height="260" horizontalCenter="0" verticalCenter="0" includeIn="idle"
-             visible="{_isOwner}">
+             visible="false">
         <s:VGroup horizontalCenter="0" top="50">
             <s:VGroup horizontalCenter="0" width="176">
 
-                <components:CustomSkinableButton id="doc" width="176" click="onUploadButtonClick(event)"
+                <components:CustomSkinableButton id="doc" width="176" click="loadDocument(event)"
                                                  focusSkin="{null}"
                                                  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
                                                  initialize="with(doc){label=translate('Load_files','docs');iconUp=style('docs','uploadFile'); iconDown=style('docs','uploadFileDown'); iconOver=style('docs','uploadFileHover')}"
                         />
-                <components:CustomSkinableButton id="white" width="176" click="onWBChoose(event)" focusSkin="{null}"
+                <components:CustomSkinableButton id="white" width="176" click="wbHandler(event)" focusSkin="{null}"
                                                  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
                                                  initialize="with(white){label=translate('Whiteboard','docs');iconUp=style('docs','whitebordButton');iconDown=style('docs','whitebordButtonDown');iconOver=style('docs','whitebordButtonHover')}"
                         />
             </s:VGroup>
 
         </s:VGroup>
-        <s:initialize>
-			<![CDATA[
-                CONFIG::AIR{
-
-
-                    fileDropSpace = new DropSpace();
-
-                    fileDropSpace.horizontalCenter = 0;
-                    fileDropSpace.verticalCenter = 0;
-                    fileDropSpace.width = 380;
-                    fileDropSpace.height = 240;
-
-                    idleGroup.addElementAt(fileDropSpace, 0);
-
-                    fileDropSpace.addEventListener(FileDropEvent.DROPPED, onFileDropped);
-
-                }
-            ]]>
-		</s:initialize>
     </s:Group>
 
 

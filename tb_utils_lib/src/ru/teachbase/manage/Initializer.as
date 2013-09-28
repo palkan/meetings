@@ -73,6 +73,11 @@ public final class Initializer extends EventDispatcher {
             var manager:Manager = managersToDo[0] as Manager;
             dispatchEvent(new ProgressEvent(ProgressEvent.PROGRESS, false, false, _total - managersToDo.length, _total));
             managersToDo[0].preinitialize(_reinitializeMode);
+        }else{
+            _complete = true;
+            Shared.DISPATCHER.removeEventListener(ManagerEvent.INITIALIZED, managerInited);
+            Shared.DISPATCHER.removeEventListener(ManagerEvent.ERROR, managerFailed);
+            dispatchEvent(new Event(Event.COMPLETE));
         }
     }
 

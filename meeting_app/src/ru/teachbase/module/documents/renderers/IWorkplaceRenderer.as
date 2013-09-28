@@ -24,6 +24,8 @@ public interface IWorkplaceRenderer extends IDisposable,IVisualElement
 		function set editable(value:Boolean):void;
 		
 		function set data(value:Object):void;
+
+        function get data():Object;
 		
 		function resize(w:Number,h:Number):void;
 		

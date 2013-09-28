@@ -9,6 +9,7 @@
 
         import ru.teachbase.module.documents.events.ControlEvent;
         import ru.teachbase.module.documents.model.WorkplaceMethod;
+        import ru.teachbase.utils.shortcuts.debug;
         import ru.teachbase.utils.workplace.ControlHost;
 
         import spark.components.Button;
@@ -45,6 +46,7 @@
                 rect.y = (h - rect.height) / 2;
             }
 
+            debug("Renderer:",rect.x, rect.y, rect.width,rect.height);
 
         }
 

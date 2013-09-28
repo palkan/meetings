@@ -1,38 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark"
-         xmlns:board="ru.teachbase.module.board.*"
-         xmlns:components="ru.teachbase.module.board.components.*"
-         clipAndEnableScrolling="true" initialize="init(event)" resize="resizeHandler(event)"
+         clipAndEnableScrolling="true" resize="resizeHandler(event)"
         >
-    <fx:Declarations>
-		<!-- Place non-visual elements (e.g., services, value objects) here -->
-	</fx:Declarations>
-	<s:states>
-		<s:State id="normal" name="normal"/>
-		<s:State id="wbOn" name="wbOn"/>
-	</s:states>
 	<fx:Script>
 		<![CDATA[
         import caurina.transitions.Tweener;
 
-        import mx.events.FlexEvent;
         import mx.events.ResizeEvent;
         import mx.graphics.ImageSnapshot;
 
+        import ru.teachbase.components.board.BoardContent;
+        import ru.teachbase.components.board.BoardExternalManager;
+        import ru.teachbase.components.board.WBControlbar;
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
         import ru.teachbase.manage.rtmp.model.Recipients;
-        import ru.teachbase.module.board.events.WhiteBoardEvent;
-        import ru.teachbase.module.board.figures.FigureManager;
-        import ru.teachbase.module.board.instruments.Instrument;
         import ru.teachbase.module.documents.events.ControlEvent;
         import ru.teachbase.module.documents.events.DocEvent;
         import ru.teachbase.module.documents.events.RendererEvent;
-        import ru.teachbase.module.documents.model.DocChangeData;
+        import ru.teachbase.module.documents.model.DocumentData;
+        import ru.teachbase.module.documents.model.WorkplaceData;
         import ru.teachbase.module.documents.model.WorkplaceMethod;
+        import ru.teachbase.module.documents.model.WorkplaceRenderers;
         import ru.teachbase.module.documents.renderers.IWorkplaceRenderer;
+        import ru.teachbase.utils.LocalFile;
         import ru.teachbase.utils.shortcuts.rtmp_send;
         import ru.teachbase.utils.workplace.ControlHost;
 
@@ -40,16 +33,9 @@
 
         private var _listener:RTMPListener;
 
-        private var _history:DocChangeData;
-
-        /* Board elements */
-        [Bindable]
-        private var figure_mgr:FigureManager;
-
-        [Bindable]
         private var _editable:Boolean;
 
-        private var _instanceId:int;
+        private var _documentId:int;
 
 
         /* transformation const */
@@ -59,54 +45,62 @@
         private const maxScale:int = 4;
         private const minScale:Number = 1 / maxScale;
 
+        private var _board:BoardContent;
 
-        private var currentInstrumentType:String;
-        private var currentInstrument:Instrument;
+        private var _board_mgr:BoardExternalManager;
 
-        protected function init(event:FlexEvent):void {
+        //------------------ API -----------------------//
 
-            currentState = normal.name;
 
+        /**
+         *
+         * Initialize new document
+         *
+         * @param data
+         */
+
+        public function init(data:DocumentData):void {
+
+            var clazz:Class = WorkplaceRenderers.getClassById(data.type);
+
+            if (!clazz) return;
+
+            _renderer = new clazz();
+
+            _documentId = data.id;
+
+            _renderer.data = data.data;
+
+            _renderer.editable = _editable;
+            _renderer.setLayoutBoundsPosition(20, 20);
+            _renderer.addEventListener(RendererEvent.INITIALIZED, rendererInitializedHandler);
+            content.addElementAt(_renderer,0);
         }
 
+        /**
+         * Clear container
+         */
 
         public function dispose():void {
 
             _renderer && _renderer.dispose();
-            board && board.dispose();
-            figure_mgr && figure_mgr.dispose();
+            _board && _board.dispose();
+            _board_mgr && _board_mgr.dispose();
 
             _renderer = null;
+            _board = null;
+            _board_mgr = null;
 
-            currentState = normal.name;
-
-            removeAllElements();
+            content.removeAllElements();
+            controls.removeAllElements();
 
             this.removeEventListener(ControlEvent.CHANGE, changeHandler);
             _listener && _listener.removeEventListener(RTMPEvent.DATA, handleMessage);
-        }
-
-
-        private function addWB():void {
-
-            figure_mgr = new FigureManager();
-
-            currentState = wbOn.name;
-
-            figure_mgr.initialize(board, this.instanceId);
-
-            board.ratio = _renderer.ratio;
-            board.maxCanvasWidth = _renderer.initialWidth;
-            if (_history && _history.slide)
-                board.gotoPage(_history.slide);
 
         }
-
 
         private function addControlsListener():void {
-
             this.addEventListener(ControlEvent.CHANGE, changeHandler);
-
         }
 
 
@@ -116,6 +110,7 @@
             _m.translate((content.width / 2) * (1 - scaleIn), (content.height / 2) * (1 - scaleIn));
 
             content.transform.matrix = _m;
+            _board && (_board.transform.matrix = _m);
         }
 
 
@@ -129,6 +124,7 @@
                 _m.tx = _m.ty = 0;
 
             content.transform.matrix = _m;
+            _board && (_board.transform.matrix = _m);
         }
 
 
@@ -138,32 +134,27 @@
             _m.rotate(Math.PI / 2);
             _m.translate((content.height + content.width) / 2, (content.height - content.width) / 2);
             content.transform.matrix = _m;
-
+            _board && (_board.transform.matrix = _m);
         }
 
         protected function rotateCCW(event:MouseEvent = null):void {
-
             var _m:Matrix = content.transform.matrix.clone();
             _m.rotate(-Math.PI / 2);
             _m.translate((content.width - content.height) / 2, (content.height + content.width) / 2);
             content.transform.matrix = _m;
-
+            _board && (_board.transform.matrix = _m);
         }
 
 
         private function dispatchToServer(event:ControlEvent):void {
-
-            rtmp_send(PacketType.WHITEBOARD, {type: "change", method: event.method, data: event.args, host: event.handler}, Recipients.ALL_EXCLUDE_ME);
-
+            rtmp_send(PacketType.DOCUMENT + "::" + _documentId, {type: "change", method: event.method, data: event.args, host: event.handler}, Recipients.ALL_EXCLUDE_ME);
         }
 
 
         public function takeSnapshot():void {
-//				var _jpegEncoder:JPEGEncoder = new JPEGEncoder(100);
             controls.visible = false;
-            var _imgSnap:ImageSnapshot = ImageSnapshot.captureImage(this, 0);//,_jpegEncoder);
-            var fileReference:FileReference = new FileReference();
-            fileReference.save(_imgSnap.data, "snapshot.png");
+            var _imgSnap:ImageSnapshot = ImageSnapshot.captureImage(this, 0);
+            LocalFile.save(_imgSnap.data, "snapshot.png");
             controls.visible = true;
         }
 
@@ -185,9 +176,7 @@
         }
 
         public function goToSlide(id:int):void {
-
-            board.gotoPage(id);
-
+            _board && _board.gotoPage(id);
         }
 
 
@@ -195,6 +184,33 @@
             var p:Point = new Point(posX * _renderer.width, posY * _renderer.height);
             var newP:Point = content.transform.matrix.deltaTransformPoint(p);
             Tweener.addTween(content, {x: newP.x, y: newP.y, time: .15, transition: "linear"});
+        }
+
+
+        private function attachWhiteboard():void {
+
+            _board = new BoardContent();
+            _board.resize(content.width-40,content.height-40);
+            _board.x = 20;
+            _board.y = 20;
+
+            _board.canvas.backgroundAlpha = 0;
+
+            var controlbar:WBControlbar = new WBControlbar();
+            _board.controlbar = controlbar;
+            controls.addElement(controlbar);
+
+            _board_mgr = new BoardExternalManager(_documentId);
+
+            _board.manager.setExternal(_board_mgr);
+
+            _board.canvas.ratio = _renderer.ratio;
+            _board.canvas.maxCanvasWidth = _renderer.initialWidth;
+
+            if (_renderer.data.slide)
+                _board.gotoPage(_renderer.data.slide);
+
+            content.addElement(_board);
         }
 
 
@@ -216,8 +232,8 @@
 
 
         protected function resizeHandler(event:ResizeEvent = null):void {
-            content.width = this.width;
-            content.height = this.height;
+            content.width = controls.width = this.width;
+            content.height = controls.height = this.height;
 
             if (event) {
                 var realDeltaScaled:Point = new Point();
@@ -229,6 +245,7 @@
             }
 
             _renderer && _renderer.resize(content.width - 40, content.height - 40);
+            _board && _board.resize(content.width-40,content.height-40);
         }
 
 
@@ -242,51 +259,32 @@
 
         }
 
-        protected function handleMessage(event:DocEvent):void {
-            changeHandler(new ControlEvent(ControlEvent.CHANGE, event.data.method, event.data.data as Array, false, event.data.host));
+        protected function handleMessage(event:RTMPEvent):void {
+            const data:WorkplaceData = event.packet.data as WorkplaceData;
+            changeHandler(new ControlEvent(ControlEvent.CHANGE, data.method, data.data as Array, false, data.host));
         }
 
+        private function rendererInitializedHandler(e:RendererEvent):void {
 
-        /* get/set */
+            _renderer.data.rotation && callHostFunction(this, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));
+            _renderer.data.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));
+            _renderer.data.slide && callHostFunction(_renderer, WorkplaceMethod.CHANGE_SLIDE, [_renderer.data.slide]);
 
-        public function set data(value:Object):void {
-            if (_renderer)
-                _renderer.data = value;
-        }
-
-        public function set renderer(value:Class):void {
-
-            if (_renderer && value)
-                throw new IllegalOperationError("Renderer reinitialization denied");
-
-            _renderer && !value && dispose();
-
-            if (!value)
-                return;
-
-            _renderer = new value();
-
-            _renderer.editable = this.editable;
-            _renderer.setLayoutBoundsPosition(20, 20);
-            _renderer.addEventListener(RendererEvent.INITIALIZED, rendererInited);
-            content.addElementAt(_renderer, 0);
-
-        }
-
-        public function get renderer():Class {
-            return _renderer as Class;
-        }
-
-        private function rendererInited(e:RendererEvent):void {
-            _history && _history.rotation && callHostFunction(this, WorkplaceMethod.ROTATE, [_history.rotation > 0], Math.abs(_history.rotation));
-            _history && _history.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_history.rotation > 0], Math.abs(_history.rotation));
-            _history && _history.slide && callHostFunction(_renderer, WorkplaceMethod.CHANGE_SLIDE, [_history.slide]);
             _renderer.initParent(content);
-            _renderer.useWB && addWB();
+            _renderer.useWB && attachWhiteboard();
             _renderer.hasControls && _renderer.initControls(controls) && addControlsListener();
-            _renderer.removeEventListener(RendererEvent.INITIALIZED, rendererInited);
+            _renderer.removeEventListener(RendererEvent.INITIALIZED, rendererInitializedHandler);
+
+            _listener = new RTMPListener(PacketType.DOCUMENT + "::" + _documentId, true);
+            _listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
             resizeHandler();
+        }
+
+        //-------------- get/set ----------------------//
+
+        public function get renderer():IWorkplaceRenderer {
+            return _renderer;
         }
 
         public function get editable():Boolean {
@@ -295,96 +293,20 @@
 
         public function set editable(value:Boolean):void {
             _editable = value;
+            _renderer && (_renderer.editable = value);
 
-            if (_renderer)
-                _renderer.editable = value;
-
+            _board && (_board.editable = value);
         }
 
-        public function get instanceId():int {
-            return _instanceId;
-        }
-
-        public function set instanceId(value:int):void {
-            _instanceId = value;
-        }
-
-
-        public function set listener(value:RTMPListener):void {
-            _listener = value;
-            _listener && _listener.addEventListener(RTMPEvent.DATA, handleMessage);
-        }
-
-        public function set history(value:DocChangeData):void {
-            if (value.slide || value.rotation)
-                _history = value;
-        }
-
-        public function get listener():RTMPListener {
-            return _listener;
-        }
-
-        protected function onPropertyChanged(event:WhiteBoardEvent):void {
-            if (event.propertyId == "stroke")
-                board.stroke.thickness = event.value;
-            else if (event.propertyId == "color")
-                board.stroke.color = event.value;
-        }
-
-        protected function onToolChanged(event:WhiteBoardEvent):void {
-
-            currentInstrument = figure_mgr.currentInstrument;
-
-            if (!event.value) {
-                currentInstrumentType = null;
-                currentInstrument && currentInstrument.dispose();
-                return;
-            }
-
-
-            if (currentInstrumentType == event.value)
-                return;
-
-            currentInstrumentType = event.value;
-
-            const newInstrument:Instrument = Instrument.get(currentInstrumentType, board);
-            if (currentInstrument && newInstrument === currentInstrument)
-                return;
-
-            if (currentInstrument) {
-                currentInstrument.dispose();
-                currentInstrument = null;
-                if (!currentInstrumentType)
-                    return;
-            }
-
-            currentInstrument = newInstrument;
-            currentInstrument && currentInstrument.initialize(figure_mgr);
-
-        }
-
-        protected function onUndoRedo(event:WhiteBoardEvent):void {
-            figure_mgr[event.value](figure_mgr.history[event.value]());
+        public function get documentId():int {
+            return _documentId;
         }
         ]]>
+
 	</fx:Script>
 	
 	<!-- content -->
-	<s:Group id="content" mouseEnabled="false">
-		
-	<!--canvas-->
-	<board:BoardCanvas id="board" includeIn="wbOn" x="20" y="20" width="{content.width-40}"
-					   height="{content.height-40}" depth="1" editable="{_editable}"/>
-		
-	</s:Group>
-	
+	<s:Group id="content" mouseEnabled="false"/>
 	<!-- controls -->
-	
-	<s:Group id="controls" width="{this.width}" height="{this.height}">
-		<components:WBControlbar id="wbToolbar" includeIn="wbOn" visible="{_editable}"
-								 property="onPropertyChanged(event)" tool="onToolChanged(event)"
-								 undo_redo="onUndoRedo(event)"
-								 undo="{figure_mgr.history.undoAvailable}"
-								 redo="{figure_mgr.history.redoAvailable}"/>
-	</s:Group>
+	<s:Group id="controls"/>
 </s:Group>

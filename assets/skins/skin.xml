@@ -32,6 +32,7 @@
 				<element name="pencilCursor" src="pencilCursor.png"/>
 				<element name="markerCursor" src="markerCursor.png"/>
 				<element name="eraserCursor" src="eraserCursor.png"/>
+                <element name="pointerCursor" src="pointerCursor.png"/>
 				<element name="text" src="text.png"/>
 				<element name="stroke_1" src="stroke_1.png"/>
 				<element name="stroke_2" src="stroke_2.png"/>
@@ -44,7 +45,9 @@
 				<element name="color_5" src="color_5.png"/>
 				<element name="color_6" src="color_6.png"/>
 				<element name="color_7" src="color_7.png"/>
-				<element name="color_8" src="color_8.png"/>	
+				<element name="color_8" src="color_8.png"/>
+                <element name="background_1" src="bg_1.png"/>
+                <element name="background_2" src="bg_2.png"/>
 				<element name="handle" src="handle_up.png"/>
 				<element name="handleOver" src="handle_over.png"/>	
 				<element name="handleIcon" src="handle_icon.png"/>						

@@ -82,19 +82,19 @@
     </s:titleContent>
     <s:actionContent>
         <components:CustomSkinableButton id="hide_btn" width="26" height="26" click="target &amp;&amp; target.dispatchEvent(new ModuleEvent(ModuleEvent.REMOVE))"
-                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+                                         skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
                                          initialize="with(hide_btn){
                                                        iconUp=style('modulecontainer','removeIcon');
                                                        iconDown=style('modulecontainer','removeIconOver');
                                                        iconOver=style('modulecontainer','removeIconOver');}"
                 />
         <components:CustomSkinableButton id="minmax_btn" width="24" height="26" click="target &amp;&amp; target.dispatchEvent(new ModuleEvent(ModuleEvent.MINMAX,!_expanded)) &amp;&amp; (expanded = !_expanded)"
-                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+                                         skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
                                          initialize="expanded = _expanded"
 
                 />
         <components:CustomSkinableButton id="settings_btn" width="20" height="26" click="target &amp;&amp; target.dispatchEvent(new ModuleEvent(ModuleEvent.SETTINGS))"
-                                         skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+                                         skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
                                          initialize="with(settings_btn){
                                                         iconUp=style('modulecontainer','preferenceIcon');
                                                         iconDown = style('modulecontainer','preferenceIconOver');

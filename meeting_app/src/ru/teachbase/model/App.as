@@ -36,8 +36,6 @@ public class App {
 
     private static var _view:MainApplication;
 
-    private static var _focusManager:FocusManager;
-
     private static var _settingsManager:SettingsManager;
 
 
@@ -83,13 +81,6 @@ public class App {
 
     public static function get streams():StreamManager{
         return (Manager.getManagerInstance(StreamManager,true) as StreamManager);
-    }
-
-    public static function get focusManager():FocusManager{
-        if(!_focusManager)
-            _focusManager=new FocusManager(FlexGlobals.topLevelApplication as IFocusManagerContainer);
-
-        return _focusManager;
     }
 
 

@@ -68,12 +68,12 @@
 					  click="_isPlaying = !_isPlaying; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.STOP_VIDEO,[],true,ControlHost.RENDERER, true))" 
 					  initialize="with(pauseBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','pauseButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','pauseButtonOver');}"
 					  id="pauseBtn"
-					  skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+					  skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"/>
 			<gcomp:CustomSkinableButton  includeInLayout="{!_isPlaying}" visible="{!_isPlaying}"
 					  click="_isPlaying = !_isPlaying; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.PLAY_VIDEO,[],true,ControlHost.RENDERER, true))" 
 					  id="playBtn"
 					  initialize="with(playBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','playButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','playButtonOver');}"
-					  skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+					  skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"/>
 		</s:Group>
 		<s:HGroup width="100%">
 			<s:Label id="currentTime" text="0.00" color="0xFFFFFF"/>
@@ -91,12 +91,12 @@
 										click="_isMute = !_isMute; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.MUTE_VIDEO,[],true,ControlHost.RENDERER, true))" 
 										id="muteBtn"
 										initialize="with(muteBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','muteButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','muteButtonOver');}"
-										skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+										skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"/>
 			<gcomp:CustomSkinableButton  includeInLayout="{_isMute}" visible="{_isMute}"
 										 click="_isMute = !_isMute; dispatchEvent(new ControlEvent(ControlEvent.CHANGE,WorkplaceMethod.UNMUTE_VIDEO,[],true,ControlHost.RENDERER, true))" 
 										 id="unmuteBtn"
 										 initialize="with(unmuteBtn){iconUp=ru.teachbase.utils.helpers.style('videoplayer','unmuteButton');iconOver=ru.teachbase.utils.helpers.style('videoplayer','unmuteButtonOver');}"
-										 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"/>
+										 skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"/>
 		</s:Group>
 	</s:HGroup>
 </s:Group>

@@ -7,13 +7,14 @@ import ru.teachbase.module.documents.renderers.*;
 public class WorkplaceRenderers
 	{
 		
-		public const whiteboard:Class = BoardRenderer;
-		public const docs:Class = DocumentsRenderer;
-		public const pres:Class = PresentationRenderer;
-		public const img:Class = ImageRenderer;
-		public const youTube_video:Class = YouTubeVideoRenderer;
+		public const wb:Class = BoardRenderer;
+		public const document:Class = DocumentsRenderer;
+		public const presentation:Class = PresentationRenderer;
+		public const image:Class = ImageRenderer;
 		public const video:Class = VideoRenderer;
-		private static var instance:WorkplaceRenderers = new WorkplaceRenderers();
+        public const audio:Class = VideoRenderer; //todo:
+
+        private static var instance:WorkplaceRenderers = new WorkplaceRenderers();
 		
 		public function WorkplaceRenderers()
 		{
@@ -39,53 +40,6 @@ public class WorkplaceRenderers
 				return null;
 			
 		}
-		
-		/**
-		 * Get class by document extension
-		 *  
-		 * @param ext
-		 * @return 
-		 * 
-		 */		
-		public static function getClassByDocExt(ext:String):Class{
-			
-			var id:String;
-			
-			switch(ext){
-				case "ppt":
-				case "pptx":
-				case "odp":
-					id = "pres";
-				break;
-				case "doc":
-				case "docx":
-				case "odt":
-				case "ods":
-				case "xls":
-				case "xlsx":
-				case "pdf":
-					id = "docs";
-				break;
-				case "jpg":
-				case "jpeg":
-				case "gif":
-				case "png":
-				case "bmp":
-					id="img";
-				break;
-				case "mp4":
-				case "flv":
-				case "mp3":
-				default:
-					id="undefined";
-				break;
-			}
-			
-			if(instance.hasOwnProperty(id))
-				return instance[id];
-			else
-				return null;
-			
-		}
+
 	}
 }

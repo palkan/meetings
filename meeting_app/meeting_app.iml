@@ -29,6 +29,12 @@
             <entry library-name="FlashComponents" library-level="application">
               <dependency linkage="Merged" />
             </entry>
+            <entry module-name="tb_board" build-configuration-name="tb_board">
+              <dependency linkage="Merged" />
+            </entry>
+            <entry module-name="tb_components" build-configuration-name="tb_components">
+              <dependency linkage="Merged" />
+            </entry>
           </entries>
           <sdk name="flex_sdk_4.6" />
         </dependencies>
@@ -58,6 +64,8 @@
     <orderEntry type="library" exported="" name="Tweener" level="application" />
     <orderEntry type="library" exported="" name="flexunit" level="application" />
     <orderEntry type="library" exported="" name="FlashComponents" level="application" />
+    <orderEntry type="module" module-name="tb_board" exported="" />
+    <orderEntry type="module" module-name="tb_components" exported="" />
   </component>
 </module>
 

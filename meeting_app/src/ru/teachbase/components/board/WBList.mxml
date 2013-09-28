@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark" xmlns:board="ru.teachbase.components.board.*"
+         initialize="init(event)"
+         implements="ru.teachbase.components.board.IWBComponent"
+         visible="false"
+         x="{ANIMATION_X}"
+        >
+
+    <s:states>
+        <s:State id="over" name="over"/>
+        <s:State id="out" name="out"/>
+    </s:states>
+
+
+    <fx:Script>
+		<![CDATA[
+        import caurina.transitions.Tweener;
+
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.components.board.components.*;
+
+        import ru.teachbase.components.board.WhiteBoardEvent;
+        import ru.teachbase.utils.shortcuts.style;
+
+        private const ANIMATION_X:int = -400;
+
+
+        private var _active:Boolean;
+        private var _dataProvider:Array;
+        private var _propertyId:String = "";
+
+        private var _current:uint = 0;
+        private var _isMoving:Boolean = true;
+
+        private var timerID:uint;
+        private var hostTimeId:uint;
+
+        public var host:WBButton;
+
+
+        protected function init(event:FlexEvent):void {
+
+            if (!host)
+                return;
+
+            this.addEventListener(WhiteBoardEvent.PROPERTY, onPropertyChanged, true);
+            host.addEventListener(MouseEvent.CLICK, onHostMouseEvent);
+            host.addEventListener(MouseEvent.ROLL_OVER, onHostRollEvent);
+            host.addEventListener(MouseEvent.ROLL_OUT, onHostRollEvent);
+            this.addEventListener(MouseEvent.ROLL_OVER, onMouseEvent);
+
+
+        }
+
+        public function get active():Boolean {
+            return _active;
+        }
+
+        public function set active(value:Boolean):void {
+            _active = value;
+        }
+
+
+        protected function onPropertyChanged(event:WhiteBoardEvent):void {
+            host.icon = (event.target as WBButton).icon;
+            clearInterval(timerID);
+            onHostMouseEvent(null);
+        }
+
+        protected function onMouseEvent(event:MouseEvent):void {
+
+            if (_isMoving)
+                return;
+
+            clearInterval(timerID);
+            if (event.type === MouseEvent.ROLL_OVER) {
+                this.visible = true;
+                this.addEventListener(MouseEvent.ROLL_OUT, onMouseEvent);
+            } else
+                timerID = setTimeout(onTimeout, 800);
+
+        }
+
+
+        private function onTimeout():void {
+            onHostMouseEvent(null);
+        }
+
+        public function set dataProvider(value:Array):void {
+            if (_dataProvider)
+                return;
+
+            _dataProvider = value;
+            var count:int = 0;
+            for each (var item:Object in _dataProvider) {
+                count++;
+                var _but:WBButton = new WBButton();
+                _but.type = "property";
+                _but.value = item["value"];
+                _but.icon = style("wb", this.propertyId + "_" + count.toString());
+                _but.active = true;
+                _but.propertyId = this.propertyId;
+                _but.height = 32;
+                _but.width = 29;
+                this.addElement(_but);
+            }
+
+
+            this.width = _but.width * value.length;
+
+
+        }
+
+        public function get current():uint {
+            return _current;
+        }
+
+        public function set current(value:uint):void {
+
+            _current = value;
+
+            var el:WBButton;
+
+            for (var i:int = 0; i < this.numElements; i++) {
+
+                el = this.getElementAt(i) as WBButton;
+
+                if (el.value == value)
+                    break;
+                el = this.getElementAt(0) as WBButton;
+            }
+
+            host.icon = el.icon;
+
+
+        }
+
+        public function get propertyId():String {
+            return _propertyId;
+        }
+
+        public function set propertyId(value:String):void {
+            _propertyId = value;
+        }
+
+
+        protected function onHostMouseEvent(event:MouseEvent):void {
+            this.y = host.y;
+            if (!this.visible) {
+                this.visible = !this.visible;
+                this.host.enabled = false;
+                Tweener.addTween(this, {x: host.x + host.width, time: 0.5, transition: "linear", onComplete: function ():void {
+                    this._isMoving = false;
+                }});
+                this.addEventListener(MouseEvent.ROLL_OVER, onMouseEvent);
+            } else {
+                _isMoving = true;
+                this.removeEventListener(MouseEvent.ROLL_OUT, onMouseEvent);
+                this.removeEventListener(MouseEvent.ROLL_OVER, onMouseEvent);
+                this.host.enabled = true;
+                Tweener.addTween(this, {x: ANIMATION_X, time: 0.5, transition: "linear", onComplete: function ():void {
+                    this.visible = false;
+                }});
+            }
+
+
+        }
+
+        protected function onHostRollEvent(event:MouseEvent):void {
+
+            if (event.type === MouseEvent.ROLL_OVER)
+                timerID = setTimeout(onTimeout, 700);
+            else
+                clearTimeout(timerID);
+        }
+        ]]>
+	</fx:Script>
+    <s:layout>
+        <board:WBListLayout id="lt" orientation="{WBListLayout.HORIZONTAL}" gap="1"/>
+    </s:layout>
+
+</s:Group>

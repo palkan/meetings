@@ -2,7 +2,6 @@ package ru.teachbase.manage.modules.model
 {
 import flash.errors.IllegalOperationError;
 
-import ru.teachbase.module.board.BoardModule;
 import ru.teachbase.module.chat.ChatModule;
 import ru.teachbase.module.documents.DocumentsModule;
 import ru.teachbase.module.screenshare.ScreenShareModule;
@@ -19,8 +18,6 @@ public final class ModuleClass
 		public const chat:Class = ChatModule;
 		
 		public const users:Class = UsersModule;
-		
-		public const board:Class = BoardModule;
 		
 		public const docs:Class = DocumentsModule;
 		

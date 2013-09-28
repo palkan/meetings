@@ -11,6 +11,7 @@ package ru.teachbase.constants
 		public static const CURSOR:String = "live_cursor";
 		public static const LAYOUT:String = "layout";
 		public static const DOCUMENT:String = "document";
+        public static const WORKPLACE:String = "workplace";
 		public static const CHAT:String = 'chat';
 		public static const WHITEBOARD:String = 'whiteboard';
 		public static const USERS:String = "users";

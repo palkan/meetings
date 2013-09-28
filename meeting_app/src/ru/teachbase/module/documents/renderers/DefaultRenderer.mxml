@@ -30,6 +30,8 @@
         protected var _initialWidth:Number = NaN;
 
 
+        protected var _data:Object;
+
         protected var controlsContainer:IVisualElementContainer;
 
 
@@ -65,7 +67,11 @@
         }
 
         public function set data(value:Object):void {
+            _data =value;
+        }
 
+        public function get data():Object{
+            return _data;
         }
 
         public function get disposed():Boolean {

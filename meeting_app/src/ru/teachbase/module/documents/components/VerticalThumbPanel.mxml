@@ -120,7 +120,7 @@
 	</fx:Script>
 	<s:Group id="mainGroup" width="100%" height="100%">
 		<components:CustomSkinableButton id="hideButton" left="-19" width="19" height="35" top="19" label="hide"  click="onHideButtonClick(event)"
-										 skinClass="ru.teachbase.skins.CustomSkiningButtonSkin" focusSkin="{null}"
+										 skinClass="ru.teachbase.skins.CustomSkinableButtonSkin" focusSkin="{null}"
 										 initialize="with(hideButton){toolTip=translate('hide');iconOver=ru.teachbase.utils.helpers.style('docs','leftHideButtonOver'); iconDown=ru.teachbase.utils.helpers.style('docs','leftHideButtonOver'); iconUp=ru.teachbase.utils.helpers.style('docs','leftHideButtonUp');}"
 										 />
 		

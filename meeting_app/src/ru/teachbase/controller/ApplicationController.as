@@ -38,6 +38,7 @@ import ru.teachbase.supervisors.OutStreamSup;
 import ru.teachbase.tb_internal;
 import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.GlobalError;
+import ru.teachbase.utils.interfaces.IDisposable;
 import ru.teachbase.utils.shortcuts.translate;
 
 use namespace tb_internal;
@@ -47,6 +48,8 @@ use namespace tb_internal;
 public class ApplicationController extends EventDispatcher{
 
     private static const REINITIALIZE_INTERVAL:int = 5000;
+
+    private var _initializing:Boolean = false;
 
     private var _view:MainApplication;
 
@@ -72,6 +75,8 @@ public class ApplicationController extends EventDispatcher{
     private final function onGlobalError(e:ErrorCodeEvent):void {
         var errorMessage:String;
 
+        dispose();
+
         switch (e.code) {
             case ErrorCodes.KICKEDOFF:
                 errorMessage = translate("kickedoff", "error");
@@ -93,7 +98,8 @@ public class ApplicationController extends EventDispatcher{
                 errorMessage = translate("main_server", "error");
                 break;
             case ErrorCodes.CONNECTION_DROPPED:
-                reinitialize();
+                !_initializing && reinitialize();
+                errorMessage = translate("main_server", "error");
                 break;
             default:
                 errorMessage = "Error: " + e.text;
@@ -105,6 +111,7 @@ public class ApplicationController extends EventDispatcher{
 
         //TODO: show error state in MainApplication
     }
+
 
 
     public function setView(view:MainApplication):void{
@@ -122,6 +129,15 @@ public class ApplicationController extends EventDispatcher{
     }
 
 
+    public function dispose(){
+        const managers:Array = [App.rtmp,App.rtmpMedia,App.session,App.modules,App.layout,App.streams,App.publisher];
+
+        managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr && mgr.clear();});
+
+        OutStreamSup.stop();
+        InStreamSup.stop();
+    }
+
 
     protected function configLoaded(e:Event):void{
         initializeManagers();
@@ -129,6 +145,8 @@ public class ApplicationController extends EventDispatcher{
 
 
     public function initializeManagers(){
+
+        _initializing = true;
 
         addInitializerListeners(managersInitializedHandler, managersErrorHandler, managersProgressHandler);
 
@@ -153,12 +171,9 @@ public class ApplicationController extends EventDispatcher{
 
     protected function reinitialize():void{
 
+        _initializing = true;
+
         const managers:Array = [App.rtmp,App.rtmpMedia,App.session,App.modules,App.layout,App.streams,App.publisher];
-
-        managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr.clear();});
-
-        OutStreamSup.stop();
-        InStreamSup.stop();
 
         addInitializerListeners(reinirializationComplete, reinitializationFailed);
 
@@ -170,6 +185,8 @@ public class ApplicationController extends EventDispatcher{
 
     private function reinitializationFailed(e:Event):void{
 
+        _initializing = false;
+
         removeInitializerListeners(reinirializationComplete,reinitializationFailed);
 
         //todo: show message
@@ -180,6 +197,8 @@ public class ApplicationController extends EventDispatcher{
 
 
     private function reinirializationComplete(e:Event):void{
+
+        _initializing = false;
 
         removeInitializerListeners(reinirializationComplete,reinitializationFailed);
 
@@ -195,6 +214,8 @@ public class ApplicationController extends EventDispatcher{
 
 
     private function managersInitializedHandler(e:Event):void{
+
+        _initializing = false;
 
         removeInitializerListeners(managersInitializedHandler, managersErrorHandler, managersProgressHandler);
 
@@ -217,7 +238,10 @@ public class ApplicationController extends EventDispatcher{
 
     private function managersErrorHandler(e:ErrorEvent):void {
 
+        _initializing = false;
+
         removeInitializerListeners(managersInitializedHandler,managersErrorHandler,managersProgressHandler);
+        dispose();
         dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, e.text, true));
     }
 

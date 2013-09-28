@@ -1,6 +1,8 @@
 package ru.teachbase.utils.shortcuts
 {
-import ru.teachbase.utils.helpers.*;
+import flash.display.Bitmap;
+import flash.display.Sprite;
+
 import ru.teachbase.manage.SkinManager;
 
 /**
@@ -19,6 +21,12 @@ import ru.teachbase.manage.SkinManager;
 				return SkinManager.instance.getSkinPropertyString(component,element);
 			case "number":
 				return SkinManager.instance.getSkinPropertyNumber(component,element);
+            case "bitmap":
+                const spr:Sprite = SkinManager.instance.getSkinElement(component,element) as Sprite;
+                return (spr && spr.getChildByName('bitmap')) ? (spr.getChildByName('bitmap') as Bitmap).bitmapData : null;
+
+
+
 		}
 		
 		return null;

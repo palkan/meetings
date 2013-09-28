@@ -5,7 +5,8 @@ import mx.rpc.Responder;
 
 import ru.teachbase.manage.modules.model.IModuleContent;
 import ru.teachbase.manage.modules.model.Module;
-import ru.teachbase.module.documents.model.DocChangeData;
+import ru.teachbase.module.documents.model.DocumentData;
+import ru.teachbase.module.documents.model.WorkplaceData;
 import ru.teachbase.utils.shortcuts.$null;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.style;
@@ -29,16 +30,17 @@ public class DocumentsModule extends Module
 			_icon = style('docs',"icon");
 			_iconHover = style('docs',"iconHover");
 
-            new DocChangeData();
+            new WorkplaceData();
+            new DocumentData();
 
-			rtmp_history("docs",new Responder(onHistory,$null));
+			rtmp_history("documents",new Responder(onHistory,$null));
 			
 		}
 		
 		private function onHistory(v:Array):void
 		{
 			
-			for each(var _d:DocChangeData in v){
+			for each(var _d:WorkplaceData in v){
 				if(_d.type === "history"){
 					docsCollection.addItem({id:_d.id,label:_d.title});
 					_docs[_d.id] = {title:_d.title};

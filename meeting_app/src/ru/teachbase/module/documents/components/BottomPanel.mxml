@@ -120,7 +120,7 @@
 		</s:Rect-->
 		<s:HGroup gap="0" bottom="3" horizontalCenter="0" includeIn="fullView">
 			<components:CustomSkinableButton id="previousSlide" click="gotoSlide(event)"
-					  width="24" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  width="24" height="26" skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
 					  initialize="with(previousSlide){iconDown=style('docs','bottomPrevDown');iconOver=style('docs','bottomPrevOver');iconUp=style('docs','bottomPrevUp');}"
 					  />
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
@@ -134,28 +134,28 @@
 			
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="nextSlide" click="gotoSlide(event)"
-					  width="26" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  width="26" height="26" skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
 					  initialize="with(nextSlide){iconDown=style('docs','bottomNextDown');iconOver=style('docs','bottomNextOver');iconUp=style('docs','bottomNextUp');}"
 					  />
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="zoomIn" click="buttonClick(event)"
-					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
 					  initialize="with(zoomIn){iconDown=style('docs','bottomZoomInDown');iconOver=style('docs','bottomZoomInOver');iconUp=style('docs','bottomZoomInUp');}"
 					  />
 			<components:CustomSkinableButton id="zoomOut" click="buttonClick(event)"
-					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  width="20" height="26" skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
 					  initialize="with(zoomOut){iconDown=style('docs','bottomZoomOutDown');iconOver=style('docs','bottomZoomOutOver');iconUp=style('docs','bottomZoomOutUp');}"
 					  />
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="rotateRight" click="buttonClick(event)"
-					  width="29" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+					  width="29" height="26" skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
 					  initialize="with(rotateRight){ iconDown=style('docs','bottomRotateDown');iconOver=style('docs','bottomRotateOver');iconUp=style('docs','bottomRotateUp');}"
 					  />
 			
 		</s:HGroup>
 		<s:HGroup includeIn="lightView" gap="0" horizontalCenter="0">
 			<components:CustomSkinableButton id="zoomOutS" click="buttonClick(event)"
-											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
 											 initialize="with(zoomOutS){iconDown=style('docs','bottomSmallZoomOutDown'); iconOver=style('docs','bottomSmallZoomOutOver'); iconUp=style('docs','bottomSmallZoomOutUp');}"
 											 />
 
@@ -166,7 +166,7 @@
 			</s:Group>
 			<s:BitmapImage source="{style('docs','bottomSeparator')}" width="2" height="26"/>
 			<components:CustomSkinableButton id="zoomInS" click="buttonClick(event)"
-											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkiningButtonSkin"
+											 width="22" height="26" skinClass="ru.teachbase.skins.CustomSkinableButtonSkin"
 											 initialize="with(zoomInS){iconDown=style('docs','bottomSmallZoomInDown'); iconOver=style('docs','ottomSmallZoomInOver'); iconUp=style('docs','bottomSmallZoomInUp');}"
 											 />
 		</s:HGroup>
