@@ -4,6 +4,7 @@
          xmlns:board="ru.teachbase.components.board.*"
          minWidth="150"
          minHeight="200"
+         initialize="init()"
          creationComplete="creationCompleteHandler(event)">
     <fx:Metadata>
         [Style(name="buttonSkin", type="Class", format="Class")]
@@ -21,8 +22,11 @@
 
         private var _editable:Boolean = true;
 
-        private final function creationCompleteHandler(e:FlexEvent):void {
+        private final function init():void{
             figureManager.initialize(canvas);
+        }
+
+        private final function creationCompleteHandler(e:FlexEvent):void {
         }
 
         protected function onPropertyChanged(event:WhiteBoardEvent):void {

@@ -1,6 +1,7 @@
 package ru.teachbase.components.board {
 import flash.display.DisplayObjectContainer;
 import flash.display.Sprite;
+import flash.events.Event;
 import flash.events.MouseEvent;
 import flash.geom.Point;
 
@@ -16,6 +17,7 @@ import ru.teachbase.components.board.model.*;
 import ru.teachbase.components.board.style.FillStyle;
 import ru.teachbase.components.board.style.StrokeStyle;
 import ru.teachbase.utils.DelayedWriter;
+import ru.teachbase.utils.Strings;
 
 use namespace _figures;
 
@@ -260,11 +262,11 @@ public class FigureManager {
 
         if (_f) {
 
-            inHistory && _history.push({type:"move",id:id, data:_f.initialPosition.clone()});
-
              _f.moved(delta.x,delta.y);
 
-            local && localChanges("move", _f.external, _f.initialPosition);
+            local && localChanges("move", _f.external, {position:_f.initialPosition,delta:delta});
+
+            inHistory && _history.push({type:"move",id:id, data:{position:_f.initialPosition.clone(),delta:delta}});
 
             if(!local){
                 bringToFront(_f);
@@ -360,7 +362,7 @@ public class FigureManager {
         else if (obj.type === "remove")
             addFigure(obj.id);
         else if(obj.type === "move")
-            moveFigure(obj.id,(obj.data as Point).subtract(_f.initialPosition),false,false);
+            moveFigure(obj.id,(new Point()).subtract((obj.data.delta as Point)),false,false);
 
 
         local && localChanges("history",_f.external,"undo");
@@ -389,7 +391,7 @@ public class FigureManager {
         else if (obj.type === "add")
             addFigure(obj.id);
         else if(obj.type === "move")
-            moveFigure(obj.id,(obj.data as Point).subtract(_f.initialPosition),false,false);
+            moveFigure(obj.id,(obj.data.position as Point).subtract(_f.initialPosition),false,false);
 
         local && localChanges("history",_f.external,"redo");
 
@@ -434,7 +436,6 @@ public class FigureManager {
         _currentInstrumentType = null;
 
         if (_currentInstrument){
-            currentInstrument.dispose();
             currentInstrument = null;
         }
 
@@ -564,7 +565,7 @@ public class FigureManager {
 
 
     private function ext_history(fid:String, type:String):void{
-        this[type](_history[type](), false);
+        this['handle'+Strings.capitalize(type)](_history[type](),false);
     }
 
     private function ext_remove(fid:String, data:* = null):void{
@@ -581,7 +582,7 @@ public class FigureManager {
 
         if(!fig) return;
 
-        moveFigure(fid,(data as Point).subtract(fig.initialPosition),false);
+        moveFigure(fid,(data.delta as Point),false);
 
     }
 
@@ -648,6 +649,11 @@ public class FigureManager {
     }
 
 
+    private function removeCursors(e:Event = null):void{
+        CursorManager.removeAllCursors();
+    }
+
+
     //------------ get / set -------------//
 
     public function get canvas():BoardCanvas {
@@ -676,16 +682,12 @@ public class FigureManager {
     public function set currentInstrument(value:Instrument):void {
         if (!value) {
             _currentInstrument && _currentInstrument.dispose();
-            CursorManager.removeAllCursors();
+            removeCursors();
             _canvas.removeEventListener(MouseEvent.ROLL_OVER, setCursor);
-            _canvas.removeEventListener(MouseEvent.ROLL_OUT, function (e:MouseEvent):void {
-                CursorManager.removeAllCursors();
-            });
+            _canvas.removeEventListener(MouseEvent.ROLL_OUT, removeCursors);
         } else {
             _canvas.addEventListener(MouseEvent.ROLL_OVER, setCursor);
-            _canvas.addEventListener(MouseEvent.ROLL_OUT, function (e:MouseEvent):void {
-                CursorManager.removeAllCursors();
-            });
+            _canvas.addEventListener(MouseEvent.ROLL_OUT, removeCursors);
         }
 
         _currentInstrument = value;

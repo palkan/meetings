@@ -7,6 +7,8 @@
 		<![CDATA[
         import caurina.transitions.Tweener;
 
+        import mx.events.FlexEvent;
+
         import mx.events.ResizeEvent;
         import mx.graphics.ImageSnapshot;
 
@@ -190,7 +192,6 @@
         private function attachWhiteboard():void {
 
             _board = new BoardContent();
-            _board.resize(content.width-40,content.height-40);
             _board.x = 20;
             _board.y = 20;
 
@@ -209,6 +210,11 @@
 
             if (_renderer.data.slide)
                 _board.gotoPage(_renderer.data.slide);
+
+            _board.addEventListener(FlexEvent.CREATION_COMPLETE, function(){
+                _board.removeEventListener(FlexEvent.CREATION_COMPLETE, arguments.callee);
+                _board.resize(content.width-40,content.height-40);
+            });
 
             content.addElement(_board);
         }
