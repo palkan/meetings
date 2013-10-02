@@ -3,8 +3,8 @@
         xmlns:s="library://ns.adobe.com/flex/spark">
     <!-- host component -->
 	<fx:Metadata>
-		[HostComponent("ru.teachbase.module.documents.components.DashedBorderContainer")]
-	</fx:Metadata>
+        [HostComponent("ru.teachbase.components.DashedBorderContainer")]
+    </fx:Metadata>
 	
 	<!-- states -->
 	<s:states>
@@ -42,7 +42,7 @@
 					this.gaplen = getStyle("gapLength");
 				}
 				
-				drawBorder(this.x, this.y, unscaledWidth, unscaledHeight,this.dashlen, this.gaplen); 
+				drawBorder(this.x, this.y, unscaledWidth-borderThickness, unscaledHeight-borderThickness,this.dashlen, this.gaplen);
 			}
 			
 			public function drawLine(x1:Number, y1:Number, x2:Number, y2:Number,
@@ -80,21 +80,14 @@
 					
 					nextX = x1 + gapstepx + dashstepx/2;
 					nextY = y1 + gapstepy + dashstepy/2;
-					
-					
-					
-					makeStep(dashlen/2,gaplen);
-					
-					
-					while ((stepcount++)< steps-1) {        
+
+
+					while ((stepcount++)< steps+1) {
 						
 						makeStep(dashlen,gaplen);
 						
 					}
-					
-					makeStep(dashlen/2,gaplen);
 
-					
 					
 					function makeStep(_d:int,_g:int):void{
 						

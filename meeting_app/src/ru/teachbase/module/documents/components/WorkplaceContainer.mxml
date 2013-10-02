@@ -63,7 +63,7 @@
 
         public function init(data:DocumentData):void {
 
-            var clazz:Class = WorkplaceRenderers.getClassById(data.type);
+            var clazz:Class = WorkplaceRenderers.getClassById(data.file.type);
 
             if (!clazz) return;
 
@@ -71,7 +71,8 @@
 
             _documentId = data.id;
 
-            _renderer.data = data.data;
+            _renderer.file = data.file;
+            _renderer.data = data.state || {};
 
             _renderer.editable = _editable;
             _renderer.setLayoutBoundsPosition(20, 20);

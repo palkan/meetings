@@ -3,9 +3,7 @@
                 xmlns:s="library://ns.adobe.com/flex/spark"
                 width="116" height="130"
                 autoDrawBackground="false" click="onItemClick(event)">
-    <fx:Declarations>
-		<!-- Place non-visual elements (e.g., services, value objects) here -->
-	</fx:Declarations>
+
 	<fx:Script>
 		<![CDATA[
         import ru.teachbase.module.documents.events.FileEvent;
@@ -25,12 +23,17 @@
 
         override public function set data(obj:Object):void {
             super.data = obj;
-            if (obj == null)
+
+            if (!obj){
+                _previewPath = null;
                 return;
-            _data = FileItem(obj);
-            _label = _data.title;
-            _previewPath = _data.thumbUrl;
-            setShield(_data.type);
+            }
+
+            _data = obj.file as FileItem;
+
+            _label = _data.name;
+            _previewPath = _data.thumb;
+            setShield(_data.extension);
         }
 
         private function setShield(type:String):void {
@@ -53,7 +56,7 @@
 			<s:SolidColor color="0xEEEEEE" alpha="1"/>
 		</s:fill>
 	</s:Rect>
-	<s:BitmapImage id="photo" source="{_previewPath}" 
+	<s:BitmapImage scaleMode="letterbox" id="photo" source="{_previewPath}"
 				   horizontalCenter="0" verticalCenter="-5" 
 				   width="76" height="76" smooth="true"/>
 

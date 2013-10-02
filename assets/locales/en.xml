@@ -9,6 +9,7 @@
 				<element name="open"><![CDATA[open]]></element>
 				<element name="cancel"><![CDATA[cancel]]></element>
 				<element name="close"><![CDATA[close]]></element>
+                <element name="choose"><![CDATA[choose]]></element>
 				<element name="delete"><![CDATA[remove]]></element>
 				<element name="confirm"><![CDATA[confirm]]></element>
 				<element name="decline"><![CDATA[decline]]></element>
@@ -137,6 +138,7 @@ requests]]></element>
 				<element name="whiteboard"><![CDATA[Whiteboard]]></element>
 				<element name="recent_docs"><![CDATA[Recent Documents]]></element>
 				<element name="load_files"><![CDATA[Upload File]]></element>
+                <element name="load_error"><![CDATA[Loading failed]]></element>
 				<element name="choose_files"><![CDATA[Choose File]]></element>
 				<element name="from_pc"><![CDATA[From Desktop]]></element>
 				<element name="from_lib"><![CDATA[From Library]]></element>
@@ -146,6 +148,20 @@ requests]]></element>
 				<element name="drop"><![CDATA[You can drop files here]]></element>
 			</elements>
 		</component>
+        <component name="file_upload">
+            <elements>
+                <element name="title"><![CDATA[Share Files]]></element>
+                <element name="upload_files"><![CDATA[Upload Files]]></element>
+                <element name="recent_empty"><![CDATA[No recent files]]></element>
+                <element name="menu_from_pc"><![CDATA[Local File]]></element>
+                <element name="menu_google"><![CDATA[Search Google Images]]></element>
+                <element name="menu_youtube"><![CDATA[Search Youtube]]></element>
+                <element name="menu_recent"><![CDATA[Recent documents]]></element>
+                <element name="upload_progress"><![CDATA[File upload progress... ${1}%]]></element>
+                <element name="upload_complete"><![CDATA[File is ready to share: ${1}]]></element>
+                <element name="upload_processing"><![CDATA[File is being prepared to share]]></element>
+            </elements>
+        </component>
 		<component name="settings">
 			<elements>
 				<element name="common_set"><![CDATA[Preferences]]></element>

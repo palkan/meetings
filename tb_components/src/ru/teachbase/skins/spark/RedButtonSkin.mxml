@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<!--- The default skin class for the Spark Button component.
+
+       @see spark.components.Button
+        
+      @langversion 3.0
+      @playerversion Flash 10
+      @playerversion AIR 1.5
+      @productversion Flex 4
+-->
+<s:SparkButtonSkin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+             xmlns:s="library://ns.adobe.com/flex/spark" 
+             xmlns:fb="http://ns.adobe.com/flashbuilder/2009"
+             minWidth="21" minHeight="21" 
+             alpha.disabled="0.5">
+     
+    <fx:Metadata>
+        <![CDATA[ 
+        /** 
+         * @copy spark.skins.spark.ApplicationSkin#hostComponent
+         */
+        [HostComponent("spark.components.Button")]
+        ]]>
+    </fx:Metadata>
+    
+    <fx:Script fb:purpose="styling">
+        <![CDATA[
+        import spark.filters.DropShadowFilter;
+
+        [Embed(source="../../../../../assets/skin/redbutton/leftCap.png")]
+        private const LeftCap:Class;
+
+        [Embed(source="../../../../../assets/skin/redbutton/rightCap.png")]
+        private const RightCap:Class;
+
+        [Embed(source="../../../../../assets/skin/redbutton/back.png")]
+        private const Back:Class;
+
+        [Embed(source="../../../../../assets/skin/redbutton/leftCapHover.png")]
+        private const LeftCapHover:Class;
+
+        [Embed(source="../../../../../assets/skin/redbutton/rightCapHover.png")]
+        private const RightCapHover:Class;
+
+        [Embed(source="../../../../../assets/skin/redbutton/backHover.png")]
+        private const BackHover:Class;
+
+
+        static private const exclusions:Array = ["labelDisplay"];
+
+        /**
+         * @private
+         */
+        override public function get colorizeExclusions():Array {
+            return exclusions;
+        }
+
+        /**
+         * @private
+         */
+        override protected function initializationComplete():void {
+            super.initializationComplete();
+        }
+        ]]>        
+    </fx:Script>
+        
+    <!-- states -->
+    <s:states>
+        <s:State name="up" />
+        <s:State name="over" />
+        <s:State name="down" />
+        <s:State name="disabled" />
+    </s:states>
+    
+      
+    
+    <!-- layer 1: fill -->
+    <!--- @private -->
+	<s:HGroup width="100%" top="0" left="0" right="0" height="37" gap="0" includeIn="up">
+		<s:BitmapImage source="{LeftCap}" height="37" width="5"/>
+		<s:Image id="upImg" initialize="upImg.source=Back"  scaleMode="stretch" height="37" width="100%"/>
+		<s:BitmapImage source="{RightCap}" height="37" width="5"/>
+	</s:HGroup>
+
+    
+    <!-- layer 2: fill highlight -->
+    <!--- @private -->
+	<s:HGroup width="100%" top="0" left="0" right="0" height="37" gap="0" excludeFrom="up">
+		<s:BitmapImage source="{LeftCapHover}" height="37" width="5"/>
+		<s:Image id="hoverImg" initialize="hoverImg.source=BackHover"  scaleMode="stretch" height="37" width="100%"/>
+		<s:BitmapImage source="{RightCapHover}" height="37" width="5"/>
+	</s:HGroup>
+    
+   
+    
+    <!-- layer 3: text -->
+    <!--- @copy spark.components.supportClasses.ButtonBase#labelDisplay  -->
+    <s:Label id="labelDisplay"
+             textAlign="center"
+             maxDisplayedLines="1"
+			 color="0xFFFFFF"
+             horizontalCenter="0" verticalCenter="-1" verticalAlign="middle"
+			 filters="{[new DropShadowFilter(2,90,0x000000,.3,3,3,1,1,false,false)]}"
+             left="10" right="10" top="2" bottom="2">
+    </s:Label>
+    
+</s:SparkButtonSkin>

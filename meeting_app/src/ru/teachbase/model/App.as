@@ -11,6 +11,7 @@ import mx.managers.FocusManager;
 import mx.managers.IFocusManagerContainer;
 
 import ru.teachbase.components.web.MainApplication;
+import ru.teachbase.manage.file.FileManager;
 
 import ru.teachbase.manage.layout.LayoutManager;
 
@@ -37,6 +38,8 @@ public class App {
     private static var _view:MainApplication;
 
     private static var _settingsManager:SettingsManager;
+
+    private static var _fileManager:FileManager;
 
 
     //------------ constructor ------------//
@@ -91,6 +94,13 @@ public class App {
         return _settingsManager;
     }
 
+
+    public static function get file():FileManager{
+        if(!_fileManager)
+            _fileManager = new FileManager();
+
+        return _fileManager;
+    }
 
     public static function get stage():Stage{
         if (FlexGlobals.topLevelApplication)

@@ -89,6 +89,18 @@ public class Meeting{
     public const modulesCollection:ArrayCollection = new ArrayCollection();
 
     /**
+     *
+     */
+
+    public const docsById:Object = {};
+
+    /**
+     *
+     */
+
+    public const docsCollection:ArrayCollection = new ArrayCollection();
+
+    /**
      * Module instances collection
      */
 

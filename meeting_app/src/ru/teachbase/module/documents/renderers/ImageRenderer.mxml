@@ -2,7 +2,8 @@
 <renderers:DefaultRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
                            xmlns:s="library://ns.adobe.com/flex/spark"
                            xmlns:renderers="ru.teachbase.module.documents.renderers.*"
-                           width="100%" height="100%" clipAndEnableScrolling="true">
+                           width="100%" height="100%" clipAndEnableScrolling="true"
+                           currentState="normal">
     <fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
@@ -11,6 +12,9 @@
         import mx.events.FlexEvent;
 
         import ru.teachbase.components.board.BoardCanvas;
+        import ru.teachbase.module.documents.model.FileItem;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.shortcuts.warning;
 
         private var imgLoader:Loader;
         [Bindable]
@@ -32,12 +36,9 @@
             if (isNaN(_ratio)) {
                 return;
             }
-            /*	if (width > _initialWidth)
-             width = _initialWidth;
-             if (height > _initialHeight)
-             height = _initialHeight;
-             */
+
             var thisRatio:Number = width / height;
+
             if (thisRatio > _ratio) {
                 if (height <= _initialHeight)
                     imageContainer.height = height - padding * 2;
@@ -55,45 +56,45 @@
             imageContainer.y = (height - imageContainer.height) / 2;
         }
 
-        override public function set data(value:Object):void {
-            const xml:XML = value as XML;
-            this.imageUrl = xml.items.item[0].@slideurl.toString();
-        }
+        override  public function set file(file:FileItem):void {
 
-        public function set imageUrl(value:String):void {
-            if (busyIndicator)
-                busyIndicator.visible = false;
+            super.file = file;
+
+            if(busyIndicator) busyIndicator.visible = false;
 
             imgLoader = new Loader();
+
             var context:LoaderContext = new LoaderContext(true, ApplicationDomain.currentDomain);
             if (Security.sandboxType != Security.LOCAL_TRUSTED && Security.sandboxType != Security.APPLICATION) context.securityDomain = SecurityDomain.currentDomain;
 
-            var req:URLRequest = new URLRequest(value);
-            imgLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImgLoaded);
-            imgLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function (e:*):void {
-                //         Logger.log("IO_ERROR error caught  ", "img");
+            var req:URLRequest = new URLRequest(file.url);
 
+            imgLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, imageHandler);
+            imgLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, function (e:*):void {
+
+                warning("Can't load image: "+file.url+"; IO error");
+                imgLoader = null;
+                currentState = error.name;
             });
             imgLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function (e:*):void {
-                //              Logger.log("SECURITY_ERROR error caught ", "img");
 
-            });
+                warning("Can't load image: "+file.url+"; Security error");
+                imgLoader = null;
+                currentState = error.name;
 
-
-            imgLoader.contentLoaderInfo.addEventListener(HTTPStatusEvent.HTTP_STATUS, function (e:HTTPStatusEvent):void {
-                //            Logger.log("HTTP_STATUS: " + e.status.toString(), 'img');
             });
 
             try {
                 imgLoader.load(req, context);
             } catch (evt:*) {
-//                Logger.log("can't loading img", "img");
+                warning("Unknow error loading image "+file.url+"");
+                imgLoader = null;
+                currentState = error.name;
             }
         }
 
-        //container
 
-        private function onImgLoaded(evt:Event):void {
+        private function imageHandler(e:Event):void {
             busyIndicator.visible = false;
             var btm:Bitmap = imgLoader.content as Bitmap;
             if (!btm) {
@@ -112,8 +113,16 @@
         }
         ]]>
 	</fx:Script>
-	<s:BitmapImage source="{_bitmap}" id="imageContainer" smooth="true"/>
-	<s:Group verticalCenter="0" horizontalCenter="0" id="busyIndicator">
+    <renderers:states>
+        <s:State id="normal" name="normal"/>
+        <s:State id="error" name="error"/>
+    </renderers:states>
+	<s:BitmapImage source="{_bitmap}" id="imageContainer" smooth="true" includeIn="normal"/>
+	<s:Group verticalCenter="0" horizontalCenter="0" id="busyIndicator" includeIn="normal">
 		<s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
 	</s:Group>
+    <s:Group verticalCenter="0" horizontalCenter="0" id="errorCont" includeIn="error">
+        <s:Label id="errorText" color="#990000" fontSize="12" height="25" initialize="errorText.text=translate('load_error');"/>
+    </s:Group>
+
 </renderers:DefaultRenderer>

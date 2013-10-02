@@ -17,14 +17,11 @@
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
-        import ru.teachbase.manage.rtmp.model.Recipients;
         import ru.teachbase.model.App;
         import ru.teachbase.model.User;
-        import ru.teachbase.module.documents.components.SelectSourceWindow;
         import ru.teachbase.module.documents.model.DocumentData;
-        import ru.teachbase.module.documents.model.WorkplaceData;
         import ru.teachbase.module.documents.model.FileItem;
-        import ru.teachbase.module.documents.model.WorkplaceRenderers;
+        import ru.teachbase.module.documents.model.WorkplaceData;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.Permissions;
         import ru.teachbase.utils.shortcuts.*;
@@ -35,21 +32,27 @@
 
         private var _initialized:Boolean = false;
 
+        private var _module:DocumentsModule;
+
+        private var _currentDoc:DocumentData;
+
 
         //-------------------------- initialize -------------------------------//
 
         protected function creationCompleteHandler(event:Event = null):void {
 
-            _listener = new RTMPListener(PacketType.WORKPLACE + "::" + this.instanceID,true);
+            _listener = new RTMPListener(PacketType.WORKPLACE + "::" + this.instanceID, true);
 
             _listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
             rtmp_history(PacketType.WORKPLACE + "::" + this.instanceID, new mx.rpc.Responder(historyHandler, $null));
 
-            _settings.push(new SettingsItem("clear_workplace", SettingsItem.FUN, detachDocument));
+            _settings.push(new SettingsItem("clear_workplace", SettingsItem.FUN, clearWorkspace));
             _settings.push(new SettingsItem("save_screenshot", SettingsItem.FUN, container.takeSnapshot))
 
             permissions = App.user ? App.user.permissions : 0;
+
+            _module = (ownerModule as DocumentsModule);
         }
 
 
@@ -57,7 +60,11 @@
 
 
         public function attachDocument(doc:DocumentData) {
-            if(!doc) return;
+            if (!doc) return;
+
+            _module.addDocument(doc, this.instanceID);
+
+            _currentDoc = doc;
 
             currentState = active.name;
             container.init(doc);
@@ -65,7 +72,13 @@
 
 
         public function detachDocument() {
+
+            _module.detachDocument(_currentDoc);
+
             container.dispose();
+
+            _currentDoc = null;
+
             currentState = idle.name;
         }
 
@@ -75,6 +88,10 @@
             if (App.meeting.usersByID[id]) progressText.text = translate("progress", "docs", (App.meeting.usersByID[id] as User).fullName);
         }
 
+
+        public function clearWorkspace():void {
+            rtmp_send(PacketType.WORKPLACE + "::" + this.instanceID, new WorkplaceData({type: "idle"}));
+        }
 
         //------------------------ private -------------------------//
 
@@ -118,134 +135,32 @@
         }
 
 
-        private function loadDocument(evt:Event):void {
+        private function loadDocument(e:Event):void {
+            _module.uploader.callback = uploaderHandler;
+            App.view.lightbox.show(_module.uploader);
+        }
 
-            //todo: open select window
+
+        private function uploaderHandler(data:DocumentData = null):void {
+
+            App.view.lightbox.close();
+
+            if (!data) return;
+
+            if (!data.id) create_document(data.file);
+            else
+                rtmp_send(PacketType.WORKPLACE + "::" + this.instanceID, new WorkplaceData({type: "active", data: data}));
 
         }
 
 
-        protected function wbHandler(event:MouseEvent):void {
-            rtmp_call("create_document", null, "wb", this.instanceID);
+        protected function wbHandler(e:MouseEvent):void {
+            create_document(new FileItem(translate("whiteboard", "docs"), "", "", "wb"));
         }
 
 
-        /*private function convertFromLibrary(item:FileItem):void {
-         _fm = m(FileManager) as FileManager;
-
-         setFileListeners(_fm);
-
-         currentState = loading.name;
-
-         _fm.convert(item);
-
-
-         }
-
-
-         private function convertFromGoogle(item:FileItem):void {
-         _fm = m(FileManager) as FileManager;
-
-         setFileListeners(_fm);
-
-         currentState = loading.name;
-
-         //	_docTrait.output({type:"loading",id:App.room.user.sid},Recipients.ALL_EXCLUDE_ME);
-
-         _fm.grabImage(item);
-
-
-         }
-
-
-         public function onStartLoad(event:Event = null):void {
-
-         _fm = m(FileManager) as FileManager;
-
-         setFileListeners(_fm);
-
-         currentState = loading.name;
-
-         _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-
-         _fm.upload_convert();
-         }
-         */
-
-        /* private function onFileDropped(event:FileDropEvent):void {
-
-         _fm = m(FileManager) as FileManager;
-
-         setFileListeners(_fm);
-
-         currentState = loading.name;
-
-         _docTrait.output({type: "loading", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-
-         _fm.upload_file(event.file);
-         } */
-        /*
-         private function setFileListeners(fm:FileManager):void {
-         fm.addEventListener(FileStatusEvent.COMPLETE, onFileReady);
-         //fm.addEventListener(FileStatusEvent.PROGRESS, onFileProgress);
-         fm.addEventListener(ErrorEvent.ERROR, onFileError);
-         fm.addEventListener(FileStatusEvent.CANCEL, onFileCancel);
-         fm.addEventListener(FileStatusEvent.SELECTED, fileSelected)
-         }
-
-
-         private function removeFileListeners(fm:FileManager):void {
-         fm.removeEventListener(FileStatusEvent.COMPLETE, onFileReady);
-         //fm.removeEventListener(FileStatusEvent.PROGRESS, onFileProgress);
-         fm.removeEventListener(ErrorEvent.ERROR, onFileError);
-         fm.removeEventListener(FileStatusEvent.CANCEL, onFileCancel);
-         fm.removeEventListener(FileStatusEvent.SELECTED, fileSelected)
-         }
-
-         private function fileSelected(evt:Event):void {
-         if (_panel) Core.removePopupFromTop(_panel);
-         }
-
-         private function onFileCancel(event:FileStatusEvent):void {
-         removeFileListeners(_fm);
-         currentState = idle.name;
-         _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-         }
-
-         private function onFileReady(event:FileStatusEvent):void {
-
-
-         _docTrait.output({url: event.value.url, type: "load", dataType: event.value.type, title: _fm.filename, id: this.instanceID}, Recipients.ALL);//_EXCLUDE_ME);
-
-         //(ownerModule as DocumentsModule).registerNewDoc(this.instanceID,_fm.filename);
-
-         currentState = loading.name;
-
-         removeFileListeners(_fm);
-         //		loadConfigXML(event.value);
-
-         }    */
-
-
-        //private function onFileProgress(event:FileStatusEvent):void{
-        ///progressText.text = "loading " + event.value;
-        //progressBar.progress = Number(event.value/100);
-        //}
-
-        /*
-         private function onFileError(event:ErrorEvent):void {
-
-         Logger.log(event.text, "file");
-
-         removeFileListeners(_fm);
-         _docTrait.output({type: "idle", id: App.room.user.sid}, Recipients.ALL_EXCLUDE_ME);
-         currentState = idle.name;
-         }
-         */
-
-        override public function hide():void {
-            detachDocument();
-            super.hide();
+        private function create_document(file:FileItem):void {
+            rtmp_call("create_document", null, file, this.instanceID);
         }
 
 
@@ -258,6 +173,12 @@
             progressText && (progressText.text = translate('Loading'));
             doc && (doc.label = translate('Load_files', 'docs'));
             white && (white.label = translate('Whiteboard', 'docs'));
+        }
+
+
+        override public function hide():void {
+            detachDocument();
+            super.hide();
         }
 
 

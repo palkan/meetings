@@ -20,6 +20,7 @@ package ru.teachbase.constants
         public static const MODULE:String = "modules";
         public static const STREAM:String = "stream";
         public static const PUBLISH:String = "publish";
+        public static const FILE_STATUS:String = "file_status";
 
 	}
 }

@@ -16,6 +16,7 @@
         import mx.events.FlexEvent;
 
         import ru.teachbase.module.documents.events.RendererEvent;
+        import ru.teachbase.module.documents.model.FileItem;
 
         protected var _editable:Boolean;
         protected var _disposed:Boolean;
@@ -31,6 +32,8 @@
 
 
         protected var _data:Object;
+
+        protected var _file:FileItem;
 
         protected var controlsContainer:IVisualElementContainer;
 
@@ -67,10 +70,10 @@
         }
 
         public function set data(value:Object):void {
-            _data =value;
+            _data = value;
         }
 
-        public function get data():Object{
+        public function get data():Object {
             return _data;
         }
 
@@ -124,6 +127,14 @@
 
         public function rotate(flag:Boolean):void {
 
+        }
+
+        public function get file():FileItem {
+            return _file;
+        }
+
+        public function set file(value:FileItem):void {
+            _file = value;
         }
         ]]>
 	</fx:Script>

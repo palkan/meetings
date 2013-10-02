@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<uploader:UploadDialog xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:uploader="ru.teachbase.components.uploader.*"
+                       xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:tbui="ru.teachbase.components.ui.*"
+                       implements="ru.teachbase.utils.interfaces.ILocalable"
+                       width="100%" height="100%"
+                       initialize="init()"
+                       currentState="normal">
+    <fx:Script><![CDATA[
+        import mx.collections.ArrayCollection;
+        import mx.events.CollectionEvent;
+
+        import ru.teachbase.model.App;
+        import ru.teachbase.module.documents.model.DocumentData;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        private const _label:String = "menu_recent";
+
+        [Bindable]
+        private var _dp:ArrayCollection;
+
+
+
+        private function init():void {
+
+            Localizer.addItem(this);
+            App.meeting.docsCollection.addEventListener(CollectionEvent.COLLECTION_CHANGE, listUpdated);
+
+            listUpdated();
+
+        }
+
+
+        override public function dispose():void {
+            _item = null;
+
+            selected = false;
+            fileList.selectedIndex = -1;
+        }
+
+
+        private function listUpdated(e:CollectionEvent = null):void{
+
+            _dp = filter(App.meeting.docsCollection);
+
+            if(!_dp.source.length) currentState = empty.name;
+            else currentState = normal.name;
+
+        }
+
+        private function itemSelected():void {
+
+            _item = fileList.selectedItem;
+
+            selected = true;
+
+        }
+
+
+        public function localize():void {
+
+        }
+
+
+        private function filter(list:ArrayCollection):ArrayCollection{
+
+            const result:Array = [];
+
+            for each(var d:DocumentData in list.source){
+
+                if(!d.instance_id) result.push(d);
+
+            }
+
+            return new ArrayCollection(result);
+
+        }
+
+
+
+        override public function get label():String {
+            return _label;
+        }
+        ]]></fx:Script>
+    <uploader:states>
+        <s:State id="normal" name="normal"/>
+        <s:State id="empty" name="empty"/>
+    </uploader:states>
+    <s:Group id="main" width="100%" height="100%">
+        <tbui:ScrollList id="fileList"
+                width="100%" height="100%"
+                includeIn="normal"
+                itemRenderer="ru.teachbase.module.documents.renderers.FileItemRenderer"
+                contentBackgroundAlpha="0" dataProvider="{_dp}" change="itemSelected()">
+            <tbui:layout>
+                <s:TileLayout id="listLayout" requestedColumnCount="4" columnWidth="126" paddingLeft="8" paddingRight="8" paddingTop="8" paddingBottom="8"/>
+            </tbui:layout>
+       </tbui:ScrollList>
+        <s:Group id="emptyGroup" width="100%" height="100%" verticalCenter="0" includeIn="empty">
+            <s:RichText width="100%" textAlign="center" verticalCenter="0" id="emptyText" horizontalCenter="0" fontSize="11" color="0x515151" height="60" initialize="emptyText.text = translate('recent_empty','file_upload');"/>
+        </s:Group>
+
+    </s:Group>
+</uploader:UploadDialog>

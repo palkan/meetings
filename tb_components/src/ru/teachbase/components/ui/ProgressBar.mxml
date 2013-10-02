@@ -9,6 +9,10 @@
 		<![CDATA[
         import ru.teachbase.utils.shortcuts.style;
 
+        /**
+         * @param value Number between 0 and 1
+         */
+
         public function set progress(value:Number):void {
             if (value > 1) value = 1;
             thumbMaskRect.width = this.width * value;

@@ -1,64 +1,81 @@
-package ru.teachbase.module.documents.model
-{
-	public class FileItem
-	{
-		private var _title:String; /// он же name отображает название
-		private var _url:String; ///url на контент
-		private var _thumbUrl:String; // ссылка на тамбунашку
-		private var _type:String;
-		private var _extention:String;		
-		private var _params:Object;
-		private var _id:int;
-		
-		public function FileItem($title:String = '', $url:String = '', $thumbUrl:String = '', $type:String = '', $extention:String = '', $id:int = 0, params:Object = null)
-		{
-			_title = $title;
-			_url = $url;
-			_thumbUrl = $thumbUrl;
-			_type = $type;
-			_extention = $extention;
-			_params = params;
-			_id = $id;
-		}
+package ru.teachbase.module.documents.model {
+import ru.teachbase.utils.system.registerClazzAlias;
 
-		public function get extention():String
-		{
-			return _extention;
-		}
+registerClazzAlias(FileItem);
 
-		public function get type():String
-		{
-			return _type;
-		}
-		
-		public function get thumbUrl():String
-		{
-			return _thumbUrl;
-		}
+public class FileItem {
+    //---------- File types -------------//
 
-		public function get url():String
-		{
-			return _url;
-		}
+    public static const IMAGE:String = 'image';
+    public static const VIDEO:String = 'video';
+    public static const AUDIO:String = 'audio';
+    public static const DOCUMENT:String = 'document';
+    public static const PRESENTATION:String = 'presentation';
+    public static const TABLE:String = 'table';
+    public static const WHITEBOARD:String = 'wb';
 
-		public function get title():String
-		{
-			return _title;
-		}
-		
-		public function getParam(val:String):Object{
-			if (!_params)
-				return null;
-			if (_params.hasOwnProperty(val))
-				return _params[val];
-			return null;
-		}
+    public var name:String;
+    public var url:String;
+    public var thumb:String;
 
-		public function get id():int
-		{
-			return _id;
-		}
+    /**
+     * Type of document.
+     * Can be:
+     * <li> <i>wb</i></li>
+     * <li> <i>image</i></li>
+     * <li> <i>video</i></li>
+     * <li> <i>audio</i></li>
+     * <li> <i>document</i></li>
+     * <li> <i>presentation</i></li>
+     * <li> <i>table</i></li>
+     */
 
 
-	}
+
+    public var type:String;
+    public var extension:String;
+    public var params:Object;
+    public var id:int;
+
+
+    public function FileItem(name:String = '', url:String = '', thumb:String = '', type:String = '', extension:String = '', id:int = 0, params:Object = null) {
+        this.name = name;
+        this.url = url;
+        this.thumb = thumb;
+        this.type = type;
+        this.extension = extension;
+        this.params = params;
+        this.id = id;
+    }
+
+    public function getParam(val:String):Object {
+        if (!params)
+            return null;
+
+        return params[val];
+    }
+
+    /**
+     *
+     * Create FileItem from web server data.
+     *
+     * @param data
+     * @return
+     */
+
+    public static function build(data:Object):FileItem {
+
+        return new FileItem(
+                data.name || "untitled",
+                data.file,
+                data.thumb,
+                data.type,
+                data.extension,
+                data.id || 0,
+                data.data
+        );
+
+    }
+
+}
 }

@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+               creationComplete="init()">
+    <fx:Metadata>
+        [SWF(width="1000", height="600")]
+    </fx:Metadata>
+    <fx:Script>
+
+        <![CDATA[
+        import mx.rpc.Responder;
+
+        import ru.teachbase.manage.Initializer;
+        import ru.teachbase.manage.LocaleManager;
+        import ru.teachbase.manage.SkinManager;
+        import ru.teachbase.utils.Configger;
+        import ru.teachbase.utils.HttpPoll;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.logger.LoggerMode;
+        import ru.teachbase.utils.shortcuts.debug;
+
+        private function init():void {
+
+            Configger.setDefaults({
+                "skin": "../../../assets/skins/skin.xml",
+                locales: [
+                    {
+                        "code": "ru",
+                        "label": "русский",
+                        "url": "../../../assets/locales/ru.xml"
+                    }
+                ]
+            });
+
+        //    Logger.MODE = LoggerMode.CONSOLE;
+
+            Initializer.instance.addEventListener(Event.COMPLETE, onComplete);
+
+            Initializer.initializeManagers(LocaleManager.instance, SkinManager.instance);
+
+        }
+
+        private function onComplete(e:Event) {
+
+            input_txt.enabled = true;
+
+        }
+
+        private function start_poll():void {
+            var poller:HttpPoll = new HttpPoll(
+                    "http://dev2.teachbase.ru/api/fyler/poll.php?id=" + input_txt.text,
+                    new mx.rpc.Responder(success, failure)
+            );
+
+
+            poller.poll();
+
+
+            function success(data:String) {
+                debug(JSON.parse(data));
+            }
+
+
+            function failure(message:String) {
+
+                debug(message);
+
+            }
+
+
+        }
+        ]]></fx:Script>
+
+    <s:HGroup>
+        <s:TextInput id="input_txt" enabled="false"></s:TextInput>
+        <s:Button click="start_poll()" label="call"/>
+    </s:HGroup>
+
+</s:Application>

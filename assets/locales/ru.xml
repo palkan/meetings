@@ -9,6 +9,7 @@
 				<element name="open"><![CDATA[открыть]]></element>
 				<element name="cancel"><![CDATA[oтменить]]></element>
 				<element name="close"><![CDATA[закрыть]]></element>
+                <element name="choose"><![CDATA[выбрать]]></element>
 				<element name="delete"><![CDATA[удалить]]></element>
 				<element name="confirm"><![CDATA[подтвердить]]></element>
 				<element name="decline"><![CDATA[отклонить]]></element>
@@ -137,6 +138,7 @@
 				<element name="whiteboard"><![CDATA[белая доска]]></element>
 				<element name="recent_docs"><![CDATA[Недавно открытые]]></element>
 				<element name="load_files"><![CDATA[Загрузить файл]]></element>
+                <element name="load_error"><![CDATA[Ошибка при загрузке]]></element>
 				<element name="choose_files"><![CDATA[Выбрать файл]]></element>
 				<element name="from_pc"><![CDATA[Из компьютера]]></element>
 				<element name="from_lib"><![CDATA[Из библиотеки]]></element>
@@ -146,6 +148,20 @@
 				<element name="drop"><![CDATA[Вы можете перенести и «бросить» файлы прямо сюда]]></element>
 			</elements>
 		</component>
+        <component name="file_upload">
+            <elements>
+                <element name="title"><![CDATA[Добавление документа]]></element>
+                <element name="upload_files"><![CDATA[Добавить файлы]]></element>
+                <element name="recent_empty"><![CDATA[Нет ранее открытых документов]]></element>
+                <element name="menu_from_pc"><![CDATA[Из компьютера]]></element>
+                <element name="menu_google"><![CDATA[Поиск Google Images]]></element>
+                <element name="menu_youtube"><![CDATA[Поиск Youtube]]></element>
+                <element name="menu_recent"><![CDATA[Недавно загруженные]]></element>
+                <element name="upload_progress"><![CDATA[Файл загружается... ${1}%]]></element>
+                <element name="upload_complete"><![CDATA[Файл готов к совместному использованию: ${1}]]></element>
+                <element name="upload_processing"><![CDATA[Файл обрабатывается]]></element>
+            </elements>
+        </component>
 		<component name="settings">
 			<elements>
 				<element name="common_set"><![CDATA[Общие настройки]]></element>

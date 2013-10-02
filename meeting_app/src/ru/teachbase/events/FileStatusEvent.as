@@ -5,11 +5,13 @@ import flash.events.Event;
 public class FileStatusEvent extends Event
 	{
 		
-		public static const START:String = "start";
-		public static const CANCEL:String = "cancel";
-		public static const PROGRESS:String = "progress";
-		public static const COMPLETE:String = "complete";
-		public static const SELECTED:String = "selected";
+		public static const START:String = "tb:fs:start";
+		public static const CANCEL:String = "tb:fs:cancel";
+		public static const PROGRESS:String = "tb:fs:progress";
+		public static const COMPLETE:String = "tb:fs:complete";
+		public static const SELECTED:String = "tb:fs:selected";
+        public static const PROCESSING:String = "tb:fs:processing";
+        public static const PROCESSING_COMPLETE:String = "tb:fs:processing_complete";
 		
 		private var _value:*;
 		

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               implements="ru.teachbase.utils.interfaces.ILocalable"
+               xmlns:tbcomp="ru.teachbase.components.*"
+               initialize="init()"
+               width="800"
+               height="600"
+               removedFromStage="close()"
+               creationComplete="creationComplete()">
+    <fx:Script>
+	<![CDATA[
+        import mx.collections.ArrayCollection;
+
+        import ru.teachbase.events.ChangeEvent;
+        import ru.teachbase.module.documents.model.DocumentData;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        import spark.events.IndexChangeEvent;
+
+        private const dashSize:int = 6;
+
+        [Bindable]
+        private var _currentDialog;
+        private var _dataProvider:ArrayCollection;
+        private var _selectedIndex:int;
+
+        private var _callback:Function;
+
+        private function init():void {
+            Localizer.addItem(this);
+        }
+
+        private function creationComplete():void {
+
+            btnBar.dataProvider = _dataProvider;
+
+            titleText.text = translate("title", "file_upload");
+
+            dashed.setStyle('dashLength', dashSize);
+            dashed.setStyle('gapLength', dashSize);
+
+            navigateToPanel(_selectedIndex);
+
+        }
+
+
+        private function close():void {
+
+            _currentDialog && _currentDialog.dispose();
+
+        }
+
+        public function navigateToPanel(id:int):void {
+
+            const dialog:UploadDialog = _dataProvider.getItemAt(id) as UploadDialog;
+
+            if (!dialog) return;
+
+            _currentDialog && _currentDialog.dispose();
+
+            _currentDialog && contentGroup.removeElement(_currentDialog);
+
+            contentGroup.addElement(dialog);
+
+            _currentDialog = dialog;
+
+            btnBar.selectedIndex = id;
+        }
+
+        private function changeSelection(event:IndexChangeEvent):void {
+            if (event.newIndex == -1)
+                return;
+            navigateToPanel(event.newIndex)
+        }
+
+
+        private function submit() {
+
+            if (!_currentDialog || !_currentDialog.selected) return;
+
+            const data:DocumentData = _currentDialog.item;
+
+            _currentDialog.submit();
+
+            if(_callback){
+                _callback(data);
+                _callback = null;
+            }
+        }
+
+
+        private function cancel() {
+
+            if (!_currentDialog) return;
+
+            _currentDialog.cancel();
+
+        }
+
+
+        public function localize():void {
+            titleText.text = translate("title", "file_upload");
+            submit_btn && (submit_btn.label = translate('Choose'));
+            cancel_btn && (cancel_btn.label = translate('Cancel'));
+            for each(var item:Object in btnBar.dataProvider) {
+                btnBar.dataProvider.itemUpdated(item, "label");
+            }
+        }
+
+        private function resize() {
+
+            if (!dashedGroup.width || !dashedGroup.height) return;
+
+            const wr:Number = int(dashedGroup.width) % (2 * dashSize);
+            const hr:Number = int(dashedGroup.height) % (2 * dashSize);
+
+            if (wr != dashSize) dashed.width = int(dashedGroup.width) - wr - dashSize;
+            else dashed.width = int(dashedGroup.width);
+
+            if (hr != dashSize) dashed.height = int(dashedGroup.height) - hr - dashSize;
+            else dashed.height = int(dashedGroup.height);
+
+        }
+
+
+        private function getLabel(item:Object):String {
+            return translate(item.label, 'file_upload');
+        }
+
+        public function get dataProvider():ArrayCollection {
+            return _dataProvider;
+        }
+
+        public function set dataProvider(value:ArrayCollection):void {
+            _dataProvider = value;
+
+            btnBar && (btnBar.dataProvider = value);
+        }
+
+        public function get selectedIndex():int {
+            return _selectedIndex;
+        }
+
+        public function set selectedIndex(value:int):void {
+            _selectedIndex = value;
+            contentGroup && navigateToPanel(_selectedIndex);
+        }
+
+        public function get callback():Function {
+            return _callback;
+        }
+
+        public function set callback(value:Function):void {
+            _callback = value;
+        }
+        ]]>
+</fx:Script>
+    <s:Rect id="background" width="100%" height="100%" left="1" top="1" right="1" bottom="1" radiusX="3" radiusY="3">
+        <s:fill>
+            <s:SolidColor id="backgroundFill" color="0xE3E3E3"/>
+        </s:fill>
+    </s:Rect>
+    <s:Group width="100%" height="100%">
+        <s:Group width="100%" height="70" left="40">
+            <s:Label color="0x101010" fontSize="18"  bottom="8" top="30" id="titleText" />
+        </s:Group>
+        <s:Group width="100%" height="100%" top="70" left="40">
+            <s:Group width="200">
+                <s:ButtonBar id="btnBar" width="100%" requireSelection="true"
+                             skinClass="ru.teachbase.skins.UploadButtonBarSkin"
+                             horizontalCenter="0" verticalCenter="0"
+                             change="changeSelection(event)"
+                             labelFunction="getLabel"
+                             top="10" selectedIndex="0">
+                    <s:layout>
+                        <s:VerticalLayout gap="1"/>
+                    </s:layout>
+                </s:ButtonBar>
+            </s:Group>
+            <s:Group width="100%" height="100%" id="main">
+                <s:Group id="dashedGroup" width="100%" height="100%" left="150" right="40" bottom="60" resize="resize()">
+                    <tbcomp:DashedBorderContainer id="dashed" borderColor="0xcecece" backgroundColor="0xffffff"/>
+                </s:Group>
+                <s:Group clipAndEnableScrolling="true" width="100%" height="100%" left="150" right="40" bottom="60">
+                    <s:Group id="contentGroup" height="100%" width="100%"/>
+                </s:Group>
+            </s:Group>
+            <s:HGroup bottom="10" left="150">
+                <s:Button skinClass="ru.teachbase.skins.StandartButton" enabled="{_currentDialog &amp;&amp; _currentDialog.selected}" id="submit_btn" initialize="submit_btn.label = translate('Choose');" click="submit()"/>
+                <s:Button skinClass="ru.teachbase.skins.StandartButton" id="cancel_btn" initialize="cancel_btn.label = translate('Cancel');" click="cancel()"/>
+            </s:HGroup>
+        </s:Group>
+    </s:Group>
+</s:Group>

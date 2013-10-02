@@ -9,6 +9,7 @@ public class WorkplaceRenderers
 		
 		public const wb:Class = BoardRenderer;
 		public const document:Class = DocumentsRenderer;
+        public const table:Class = DocumentsRenderer;
 		public const presentation:Class = PresentationRenderer;
 		public const image:Class = ImageRenderer;
 		public const video:Class = VideoRenderer;

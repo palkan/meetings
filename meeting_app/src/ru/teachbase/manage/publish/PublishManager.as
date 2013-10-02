@@ -504,7 +504,7 @@ public class PublishManager extends Manager {
             _stream.publish(null);
         }else{                               // update status immediately
             App.session.setShareStatus(status);
-            _stream.send('@setDataFrame','onAudioVideoStatus',{hasVideo:Permissions.camAvailable(status), hasAudio:Permissions.micAvailable(status)});
+            _stream && _stream.send('@setDataFrame','onAudioVideoStatus',{hasVideo:Permissions.camAvailable(status), hasAudio:Permissions.micAvailable(status)});
         }
 
     }
