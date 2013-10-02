@@ -23,6 +23,7 @@ import ru.teachbase.module.documents.events.MoveEvent;
 import ru.teachbase.module.documents.model.SlideAsset;
 import ru.teachbase.utils.logger.Logger;
 import ru.teachbase.utils.StaticTextUtil;
+import ru.teachbase.utils.shortcuts.warning;
 
 public class SlideItem extends EventDispatcher
 	{
@@ -42,7 +43,7 @@ public class SlideItem extends EventDispatcher
 		{
 			_asset = asset;
 			_clip.addEventListener(Event.RESIZE, resize);
-			_clip.addEventListener(Event.ADDED_TO_STAGE, addedToStage)
+			_clip.addEventListener(Event.ADDED_TO_STAGE, addedToStage);
 			_container = container;
 		}
 		
@@ -64,21 +65,19 @@ public class SlideItem extends EventDispatcher
 			if (Security.sandboxType!=Security.LOCAL_TRUSTED && Security.sandboxType!=Security.APPLICATION) context.securityDomain = SecurityDomain.currentDomain;
 			
 			_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadCompleteHandler);
+
 			try {
 				_loader.load(new URLRequest(_asset.assetURL), context);
 			}catch(evt:*){
-				//Logger.log("cant load asset "+_asset.assetURL,"slideItem");
+				warning("cant load asset "+_asset.assetURL,"slideItem");
 			}
 		}
 				
 		private function loadCompleteHandler(e:Event):void
 		{
 			
-			//Logger.log("asset loaded"+_asset.assetURL,"slideItem");
-			
 			_movie = _clip.getChildAt(0) as MovieClip;
-			
-					
+
 			_loader.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, handleUncaughtErrors);
 			
 			function handleUncaughtErrors(event:UncaughtErrorEvent):void
@@ -94,13 +93,18 @@ public class SlideItem extends EventDispatcher
 			//iSpringHack(_movie);
 		
 			_isLoaded = true;
-			_ratio =  _loader.contentLoaderInfo.width/_loader.contentLoaderInfo.height;//_movie.width / _movie.height;
+			_ratio =  _loader.contentLoaderInfo.width/_loader.contentLoaderInfo.height;
 			
 			_staticTextUtil.init(_movie);
 
-			if (_container.getAllSlide is Function) {
-				_container.getAllSlide(slideId+1);
+			if (_container.preload is Function) {
+				_container.preload(slideId+1);
 			}
+
+            if (_container.onLoaded is Function) {
+                _container.onLoaded();
+            }
+
 		}
 		
 		public function onMouse(evt:Event):void{
@@ -184,8 +188,6 @@ public class SlideItem extends EventDispatcher
 			if (_clip != null) {
 				_clip.removeEventListener(Event.RESIZE, resize);
 				_clip.removeEventListener(Event.ADDED_TO_STAGE, addedToStage);
-			}
-			if (_clip) { 
 				_clip.removeEventListener(MouseEvent.MOUSE_DOWN, onMouse);
 				_clip.removeEventListener(MouseEvent.MOUSE_UP, onMouse);
 				_clip.removeEventListener(MouseEvent.MOUSE_OUT, onMouse);

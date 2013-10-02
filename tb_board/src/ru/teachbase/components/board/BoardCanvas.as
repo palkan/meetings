@@ -71,6 +71,8 @@ public final class BoardCanvas extends SpriteVisualElement implements INotDraggl
         doubleClickEnabled = true;
         resizeMode = ResizeMode.SCALE;
 
+        canvasBackSprite.mouseEnabled = false;
+
         addChild(canvasMask);
         addChild(canvasBackSprite);
 

@@ -38,6 +38,7 @@ public class FigureManager {
     //----- properties ------//
 
     private var _canvas:BoardCanvas;
+    private var _startSlide:int=0;
 
     //----- external -------//
 
@@ -67,6 +68,8 @@ public class FigureManager {
     public function initialize(canvas:BoardCanvas):void {
         _canvas = canvas;
         _canvas._figures::setManager(this);
+
+        _canvas.goToPage(_startSlide);
     }
 
     /**
@@ -696,6 +699,14 @@ public class FigureManager {
     [Bindable]
     public function get history():BoardHistory {
         return _history;
+    }
+
+    public function get startSlide():int {
+        return _startSlide;
+    }
+
+    public function set startSlide(value:int):void {
+        _startSlide = value;
     }
 }
 }

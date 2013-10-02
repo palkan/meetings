@@ -36,9 +36,10 @@ public class FileItem {
     public var extension:String;
     public var params:Object;
     public var id:int;
+    public var thumbs:Array;
+    public var swfs:Array;
 
-
-    public function FileItem(name:String = '', url:String = '', thumb:String = '', type:String = '', extension:String = '', id:int = 0, params:Object = null) {
+    public function FileItem(name:String = '', url:String = '', thumb:String = '', type:String = '', extension:String = '', id:int = 0, thumbs:Array = null, swfs:Array = null ) {
         this.name = name;
         this.url = url;
         this.thumb = thumb;
@@ -46,6 +47,8 @@ public class FileItem {
         this.extension = extension;
         this.params = params;
         this.id = id;
+        this.thumbs = thumbs;
+        this.swfs = swfs;
     }
 
     public function getParam(val:String):Object {
@@ -72,7 +75,8 @@ public class FileItem {
                 data.type,
                 data.extension,
                 data.id || 0,
-                data.data
+                data.thumbs || [],
+                data.swfs || []
         );
 
     }

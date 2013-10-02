@@ -25,7 +25,7 @@
             horizontalThumb = new HorizontalThumbPanel();
             horizontalThumb.percentWidth = 100;
             horizontalThumb.setStyle('bottom', 0);
-            horizontalThumb.dataProvider = _assetList;
+            horizontalThumb.dataProvider = _assetsList;
             horizontalThumb.visible = _editable;
 
             navigateButtons = new NavigateButtons();
@@ -89,13 +89,4 @@
 	<s:Group verticalCenter="0" horizontalCenter="0" id="progressBarCont">
 		<s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
 	</s:Group>
-	<!--mx:UIComponent id="progressBarCont" verticalCenter="0" horizontalCenter="0">
-		
-		<!mx:creationComplete>
-			<![CDATA[
-			const tm:BusyCursor = new BusyCursor();
-			progressBarCont.addChild(tm);
-			]]>
-		</mx:creationComplete>
-	</mx:UIComponent-->
 </renderers:SWFRenderer>

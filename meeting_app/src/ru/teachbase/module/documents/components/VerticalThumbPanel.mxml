@@ -15,8 +15,6 @@
         import mx.collections.ArrayList;
 
         import ru.teachbase.module.documents.renderers.ThumbVerticalItemRenderer;
-        import ru.teachbase.utils.helpers.*;
-        import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
@@ -64,7 +62,6 @@
             }
             if (speed / 2 >= thumbList.measuredHeight - thumbList.layout.verticalScrollPosition - this.height + 12) {
                 thumbList.layout.verticalScrollPosition = thumbList.measuredHeight - this.height + 12;
-                return;
             } else if (thumbList.layout.verticalScrollPosition < thumbList.measuredHeight - this.height + 12) {
                 thumbList.layout.verticalScrollPosition += speed / 2;
             }
@@ -121,7 +118,7 @@
 	<s:Group id="mainGroup" width="100%" height="100%">
 		<components:CustomSkinableButton id="hideButton" left="-19" width="19" height="35" top="19" label="hide"  click="onHideButtonClick(event)"
 										 skinClass="ru.teachbase.skins.CustomSkinableButtonSkin" focusSkin="{null}"
-										 initialize="with(hideButton){toolTip=translate('hide');iconOver=ru.teachbase.utils.helpers.style('docs','leftHideButtonOver'); iconDown=ru.teachbase.utils.helpers.style('docs','leftHideButtonOver'); iconUp=ru.teachbase.utils.helpers.style('docs','leftHideButtonUp');}"
+										 initialize="with(hideButton){toolTip=translate('hide');iconOver=style('docs','leftHideButtonOver'); iconDown=style('docs','leftHideButtonOver'); iconUp=style('docs','leftHideButtonUp');}"
 										 />
 		
 		<s:Image id="backgroundRectVertical" initialize="backgroundRectVertical.source=style('docs','thumbListBg')"  scaleMode="stretch" height="100%" width="43" left="0" top="0" bottom="0"/>

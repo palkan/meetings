@@ -29,13 +29,13 @@
             verticalThumb = new VerticalThumbPanel();
             verticalThumb.setStyle('right', 0);
             verticalThumb.percentHeight = 100;
-            verticalThumb.dataProvider = _assetList;
+            verticalThumb.dataProvider = _assetsList;
             verticalThumb.visible = _editable;
             container.addElement(verticalThumb);
 
             bottomPanel.horizontalCenter = 0;
             bottomPanel.setStyle('bottom', 0);
-            bottomPanel.maxSlides = _assetList.length;
+            bottomPanel.maxSlides = _assetsList.length;
             //bottomPanel.visible = _editable;
             container.addElement(bottomPanel);
 
@@ -78,7 +78,7 @@
 
         override public function set slideItem(value:int):void {
             super.slideItem = value;
-            var asset:SlideAsset = _assetList.getItemAt(value) as SlideAsset;
+            var asset:SlideAsset = _assetsList.getItemAt(value) as SlideAsset;
             documentMap.pageSnapshot = asset.thumbURL;
             bottomPanel.curentSlide = value;
         }

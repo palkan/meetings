@@ -69,10 +69,10 @@
 
             addUndoRedo();
 
-            addProperty("background", [
+          /*  addProperty("background", [
                 {value: 0xfbfbfb, active: true},
                 {value: 0x434343, active: false}
-            ], true);
+            ], true); */
             addButton("tool", "pointer", false);
             addButton("tool", "pencil", false, ["stroke", "color"]);
             addButton("tool", "marker", false, ["stroke", "color"]);

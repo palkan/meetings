@@ -113,7 +113,6 @@
             _m.translate((content.width / 2) * (1 - scaleIn), (content.height / 2) * (1 - scaleIn));
 
             content.transform.matrix = _m;
-            _board && (_board.transform.matrix = _m);
         }
 
 
@@ -127,7 +126,6 @@
                 _m.tx = _m.ty = 0;
 
             content.transform.matrix = _m;
-            _board && (_board.transform.matrix = _m);
         }
 
 
@@ -137,7 +135,6 @@
             _m.rotate(Math.PI / 2);
             _m.translate((content.height + content.width) / 2, (content.height - content.width) / 2);
             content.transform.matrix = _m;
-            _board && (_board.transform.matrix = _m);
         }
 
         protected function rotateCCW(event:MouseEvent = null):void {
@@ -145,7 +142,6 @@
             _m.rotate(-Math.PI / 2);
             _m.translate((content.width - content.height) / 2, (content.height + content.width) / 2);
             content.transform.matrix = _m;
-            _board && (_board.transform.matrix = _m);
         }
 
 
@@ -210,7 +206,7 @@
             _board.canvas.maxCanvasWidth = _renderer.initialWidth;
 
             if (_renderer.data.slide)
-                _board.gotoPage(_renderer.data.slide);
+                _board.manager.startSlide = _renderer.data.slide;
 
             _board.addEventListener(FlexEvent.CREATION_COMPLETE, function(){
                 _board.removeEventListener(FlexEvent.CREATION_COMPLETE, arguments.callee);
@@ -267,7 +263,7 @@
         }
 
         protected function handleMessage(event:RTMPEvent):void {
-            const data:WorkplaceData = event.packet.data as WorkplaceData;
+            const data:Object = event.packet.data;
             changeHandler(new ControlEvent(ControlEvent.CHANGE, data.method, data.data as Array, false, data.host));
         }
 
@@ -284,6 +280,7 @@
 
             _listener = new RTMPListener(PacketType.DOCUMENT + "::" + _documentId, true);
             _listener.addEventListener(RTMPEvent.DATA, handleMessage);
+            _listener.readyToReceive = true;
 
             resizeHandler();
         }
