@@ -205,6 +205,10 @@ are connected and turned on]]></element>
 			<elements>
 				<element name="label"><![CDATA[Notifications]]></element>
 				<element name="set_receive"><![CDATA[Receive Notifications]]></element>
+                <element name="connection_failed"><![CDATA[Connection to server has failed... Reconnecting]]></element>
+                <element name="connection_failed_at_all"><![CDATA[Connection to server has failed permanently. Sorry(:]]></element>
+                <element name="connection_failed_again"><![CDATA[Connection to server has failed... Reconnecting again]]></element>
+                <element name="connection_restored"><![CDATA[Connection to server has been restored]]></element>
 				<element name="req_doc"><![CDATA[${1} is making request to enable workplace]]></element>
 				<element name="req_mic"><![CDATA[${1} is making request to enable microphone]]></element>
 				<element name="req_cam"><![CDATA[${1} is making request to enable camera]]></element>

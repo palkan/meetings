@@ -64,13 +64,11 @@
             _main.controller.addEventListener(AppEvent.LOADING_STATUS, onStatus);
 
             CONFIG::debug{
-                Configger.setDefaults({external: CONFIG::CONF_URL_D});
                 Logger.LEVEL = LoggerLevel.DEBUG;
             }
 
-            CONFIG::release{
-                Configger.setDefaults({external: FlexGlobals.topLevelApplication.parameters['conf'] ? FlexGlobals.topLevelApplication.parameters['conf'] : CONFIG::CONF_URL});
-            }
+            Configger.setDefaults({external: FlexGlobals.topLevelApplication.parameters['conf'] ? FlexGlobals.topLevelApplication.parameters['conf'] : CONFIG::CONF_URL});
+
 
             addElement(_main);
         }

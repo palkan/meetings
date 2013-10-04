@@ -31,7 +31,7 @@
       
       <define>
          <name>CONFIG::CONF_URL</name>
-         <value>"http://dem.teachbase.ru/erly_servers_config"</value>
+         <value>"../../../assets/config.json"</value>
          <!--value>"../config_json.txt"</value-->
       </define>
 	

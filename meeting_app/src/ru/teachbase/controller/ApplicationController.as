@@ -13,6 +13,7 @@ import flash.text.Font;
 import flash.utils.setTimeout;
 
 import ru.teachbase.assets.fonts.Pragmatica;
+import ru.teachbase.components.notifications.Notification;
 import ru.teachbase.components.settings.AudioSettings;
 import ru.teachbase.components.settings.GeneralSettings;
 import ru.teachbase.components.settings.VideoSettings;
@@ -38,7 +39,9 @@ import ru.teachbase.supervisors.OutStreamSup;
 import ru.teachbase.tb_internal;
 import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.GlobalError;
-import ru.teachbase.utils.interfaces.IDisposable;
+import ru.teachbase.utils.logger.Logger;
+import ru.teachbase.utils.shortcuts.config;
+import ru.teachbase.utils.shortcuts.notify;
 import ru.teachbase.utils.shortcuts.translate;
 
 use namespace tb_internal;
@@ -96,6 +99,7 @@ public class ApplicationController extends EventDispatcher{
                 break;
             case ErrorCodes.CONNECTION_FAILED:
                 errorMessage = translate("main_server", "error");
+                App.view && setTimeout(reinitialize,REINITIALIZE_INTERVAL);
                 break;
             case ErrorCodes.CONNECTION_DROPPED:
                 !_initializing && reinitialize();
@@ -107,6 +111,8 @@ public class ApplicationController extends EventDispatcher{
         }
 
         hasEventListener(AppEvent.CORE_LOAD_ERROR) && dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
+
+        App.view && notify(new Notification(errorMessage),true);
 
 
         //TODO: show error state in MainApplication
@@ -140,6 +146,9 @@ public class ApplicationController extends EventDispatcher{
 
 
     protected function configLoaded(e:Event):void{
+
+        if(config('debug')) Logger.MODE = config('debug');
+
         initializeManagers();
     }
 
@@ -173,7 +182,11 @@ public class ApplicationController extends EventDispatcher{
 
         _initializing = true;
 
+        notify(new Notification(translate("connection_failed","notifications")),true);
+
         const managers:Array = [App.rtmp,App.rtmpMedia,App.session,App.modules,App.layout,App.streams,App.publisher];
+
+        managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr && mgr.clear();});
 
         addInitializerListeners(reinirializationComplete, reinitializationFailed);
 
@@ -189,9 +202,7 @@ public class ApplicationController extends EventDispatcher{
 
         removeInitializerListeners(reinirializationComplete,reinitializationFailed);
 
-        //todo: show message
-
-        setTimeout(reinitialize,REINITIALIZE_INTERVAL);
+        notify(new Notification(translate("connection_failed_again","notifications")),true);
 
     }
 
@@ -199,6 +210,8 @@ public class ApplicationController extends EventDispatcher{
     private function reinirializationComplete(e:Event):void{
 
         _initializing = false;
+
+        notify(new Notification(translate("connection_restored","notifications")),true);
 
         removeInitializerListeners(reinirializationComplete,reinitializationFailed);
 

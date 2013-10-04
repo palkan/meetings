@@ -100,6 +100,7 @@ public class Manager {
 
     public function clear():void{
         _initialized = false;
+        _failed = false;
     }
 
 

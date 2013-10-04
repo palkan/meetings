@@ -204,6 +204,10 @@
 			<elements>
 				<element name="label"><![CDATA[Уведомления]]></element>
 				<element name="set_receive"><![CDATA[Получать уведомления]]></element>
+                <element name="connection_failed"><![CDATA[Соединение с сервером прервано... Идет подключение]]></element>
+                <element name="connection_failed_at_all"><![CDATA[Соединение с сервером восстановить не удалось. Мне искренне жаль(:]]></element>
+                <element name="connection_failed_again"><![CDATA[Соединение с сервером прервано... Пробуем еще раз]]></element>
+                <element name="connection_restored"><![CDATA[Соединение с сервером восстановлено]]></element>
 				<element name="req_doc"><![CDATA[${1} запрашивает право
 на рабочую область]]></element>
 				<element name="req_mic"><![CDATA[${1} запрашивает право

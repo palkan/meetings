@@ -84,6 +84,8 @@ public final class SessionManager extends Manager {
     override public function clear():void {
         super.clear();
 
+        App.user.shareStatus = 0;
+
         users_listener.dispose();
         meeting_listener.dispose();
         users_listener.removeEventListener(RTMPEvent.DATA, usersChangeHandler);

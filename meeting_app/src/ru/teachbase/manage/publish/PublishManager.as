@@ -50,7 +50,7 @@ import ru.teachbase.utils.system.requestUserMediaAccess;
  */
 public class PublishManager extends Manager {
 
-    const listener:RTMPListener = new RTMPListener(PacketType.PUBLISH, true);
+    const listener:RTMPListener = new RTMPListener(PacketType.PUBLISH);
 
     protected var _stream:NetStream;
 
@@ -101,6 +101,7 @@ public class PublishManager extends Manager {
         setQuality(App.user.settings.publishQuality);
 
         listener.addEventListener(RTMPEvent.DATA, handleMessage);
+        listener.initialize();
         listener.readyToReceive = true;
 
         _initialized = true;
@@ -108,7 +109,8 @@ public class PublishManager extends Manager {
 
 
     override public function clear():void{
-
+        closeCamera(false);
+        closeAudio(false);
         super.clear();
         listener.dispose();
         listener.removeEventListener(RTMPEvent.DATA, handleMessage);
