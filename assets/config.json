@@ -4,7 +4,9 @@
         "jre":"http://home.teachbase.ru/app/jre-7u9-windows-i586.exe"
     },
     "net":{
+        "rtmp2":"rtmp://test2013.teachbase.ru:443/",
         "rtmp":"127.0.0.1",
+        "rtmp_port":"443",
         "http":"http://test2013.teachbase.ru/"
     },
     "lang":"ru",
@@ -16,6 +18,9 @@
             "url":"../../../assets/locales/ru.xml"
         }
     ],
+    "recording":{
+        "url":"../../../assets/record/"
+    },
     "user_id": 12,
-    "meeting_id":36867
+    "meeting_id":2
 }

@@ -113,9 +113,10 @@
         }
 
 
-        public function attachResizer():ILayoutResizer {
+        public function attachResizer(onComplete:Function = null):ILayoutResizer {
 
             var resizer:ModuleResizer = new ModuleResizer();
+            onComplete && resizer.addEventListener(FlexEvent.CREATION_COMPLETE, onComplete);
             resizer.container = resizersContainer;
             resizer.visible = false;
             resizersContainer.addElement(resizer);

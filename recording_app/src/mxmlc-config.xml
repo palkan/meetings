@@ -1,0 +1,58 @@
+<!--for attach this config use "-load-config+=mxmlc-config.xml" in Project Properties / Compiler / Additional compiler arguments field.-->
+<flex-config>
+   <compiler>
+      <!-- compiler.debug: generates a movie that is suitable for debugging-->
+      <debug>true</debug>
+      <!-- compiler.define: define a global AS3 conditional compilation definition, e.g. -define=CONFIG::debugging,true or -define+=CONFIG::debugging,true (to append to existing definitions in flex-config.xml) -->
+            
+      <define>
+         <name>CONFIG::debug</name>
+         <value>true</value>
+      </define>
+      
+      <define>
+      	<name>CONFIG::RECORDING</name>
+      	<value>true</value>
+      </define>
+           
+       <define>
+	  	<name>CONFIG::AIR</name>
+	  	<value>false</value>
+	  </define>
+	  <define>
+	  	<name>CONFIG::WEB</name>
+	  	<value>false==CONFIG::AIR</value>
+	  </define>
+      
+      <define>
+      	<name>CONFIG::VERSION</name>
+      	<value>"v1.5.2r"</value>
+      </define>
+      
+      <define>
+         <name>CONFIG::CONF_URL</name>
+         <value>"../../../assets/config.json"</value>
+         <!--value>"../config_json.txt"</value-->
+      </define>
+	
+	 <define>
+         <name>CONFIG::CONF_URL_D</name>
+         <value>"../../../assets/config.json"</value>
+      </define>
+
+      
+      <!--Do not change the value of the CONFIG::release variable. It is changed automatically and depends on another variable - CONFIG::debug.-->
+      <define>
+         <name>CONFIG::release</name>
+         <value>false==CONFIG::debug</value>
+      </define>
+      
+      <define>
+         <name>CONFIG::LIVE</name>
+         <value>false==CONFIG::RECORDING</value>
+      </define>
+      
+      <!-- compiler.keep-generated-actionscript: save temporary source files generated during MXML compilation-->
+      <keep-generated-actionscript>false</keep-generated-actionscript>
+   </compiler>
+</flex-config>

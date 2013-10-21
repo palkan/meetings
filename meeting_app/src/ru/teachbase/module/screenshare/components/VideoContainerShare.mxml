@@ -92,7 +92,7 @@
 
 
         public function toggleCursor(point:Point):void {
-            if (!video)
+            if (!video || !point)
                 return;
             var posX:Number = point.x / 1000 * video.width + video.x;
             var posY:Number = point.y / 1000 * video.height + video.y;

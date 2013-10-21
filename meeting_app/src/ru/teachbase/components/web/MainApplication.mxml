@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
          xmlns:s="library://ns.adobe.com/flex/spark"
          creationComplete="controller.setView(this);controller.initialize()"
@@ -6,25 +7,21 @@
     <fx:Script>
 		<![CDATA[
         import mx.collections.ArrayList;
-        import mx.core.IVisualElement;
         import mx.graphics.BitmapFillMode;
 
         import ru.teachbase.components.LightboxContainer;
         import ru.teachbase.components.RTMPMonitor;
-
         import ru.teachbase.components.header.Header;
         import ru.teachbase.components.module.ModuleContainer;
-        import ru.teachbase.controller.ApplicationController;
         import ru.teachbase.components.notifications.Notification;
         import ru.teachbase.components.notifications.NotificationContainer;
+        import ru.teachbase.controller.ApplicationController;
         import ru.teachbase.model.App;
         import ru.teachbase.utils.shortcuts.style;
 
-        import spark.components.SkinnableContainer;
-
         import spark.primitives.BitmapImage;
 
-        public const controller:ApplicationController = new ApplicationController();
+        private const _controller:ApplicationController = new ApplicationController();
 
         private var _container:ModuleContainer;
         private var _header:Header;
@@ -98,6 +95,12 @@
         public function get monitor():RTMPMonitor {
             return _monitor;
         }
+
+        public function get controller():ApplicationController{
+            return _controller;
+        }
+
+
         ]]>
 	</fx:Script>
 </s:Group>

@@ -15,7 +15,7 @@
 
         public function set progress(value:Number):void {
             if (value > 1) value = 1;
-            thumbMaskRect.width = this.width * value;
+            thumbMaskRect.percentWidth = int(value*100);
         }
         ]]>
 	</fx:Script>

@@ -8,6 +8,7 @@ import mx.rpc.Responder;
 
 import ru.teachbase.components.board.model.IExternalBoardManager;
 import ru.teachbase.constants.PacketType;
+import ru.teachbase.events.GlobalEvent;
 import ru.teachbase.manage.rtmp.RTMPListener;
 import ru.teachbase.manage.rtmp.events.RTMPEvent;
 import ru.teachbase.manage.rtmp.model.Recipients;
@@ -38,6 +39,10 @@ public class BoardExternalManager implements IExternalBoardManager {
         _listener.initialize();
         _listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
+
+        GlobalEvent.addEventListener(GlobalEvent.RESET, handleReset);
+        GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
+
         rtmp_history(PacketType.WHITEBOARD+"::"+_id, new Responder(handleHistory,$null));
 
     }
@@ -57,6 +62,20 @@ public class BoardExternalManager implements IExternalBoardManager {
 
     }
 
+
+    private function handleReset(e:GlobalEvent):void{
+        _mgr.clearBoard();
+    }
+
+
+    private function handleReconnect(e:GlobalEvent):void{
+
+        _listener.dispose();
+
+        _listener.initialize();
+
+        rtmp_history(PacketType.WHITEBOARD+"::"+_id, new Responder(handleHistory,$null));
+    }
 
 
     private function handleHistory(data:Object):void{

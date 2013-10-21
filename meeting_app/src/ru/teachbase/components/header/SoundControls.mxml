@@ -237,6 +237,7 @@
                                     icon=style('actionBar','reccordIco');
                                     iconOver=style('actionBar','reccordIcoOver');
                                     iconSelected=style('actionBar','reccordIcoSelected');}"
+                       change="App.session.toggleRecording()"
                        preventToggle="true"
             >
     </c:ActionBarButton>

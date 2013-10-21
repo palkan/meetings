@@ -9,6 +9,7 @@ registerClazzAlias(StreamData);
         private var _name:String;
         private var _user_id:Number;
         private var _type:String;
+        private var _id:int;
 
         public function StreamData()
 		{
@@ -39,6 +40,14 @@ registerClazzAlias(StreamData);
 
         public function get type():String {
             return _type;
+        }
+
+        public function get id():int {
+            return _id;
+        }
+
+        public function set id(value:int):void {
+            _id = value;
         }
     }
 

@@ -42,7 +42,7 @@ import ru.teachbase.utils.shortcuts.warning;
 
 public dynamic class StreamManager extends Manager {
 
-    private const listener:RTMPListener = new RTMPListener(PacketType.STREAM);
+    protected const listener:RTMPListener = new RTMPListener(PacketType.STREAM);
 
     /**
      *  Reserved bandwidth for audio-only streams.
@@ -50,7 +50,7 @@ public dynamic class StreamManager extends Manager {
 
     private const AUDIO_BW:int = 20;
 
-    private var _model:Meeting;
+    protected var _model:Meeting;
 
     private var _bandwidth:Number = 0;
     private var _bw_per_stream:Number = 0;
@@ -123,7 +123,7 @@ public dynamic class StreamManager extends Manager {
     //------------ handlers --------------//
 
 
-    private function handleHistory(v:Array):void {
+    protected function handleHistory(v:Array):void {
         if (v && v.length) {
             for each (var str:StreamData in v) {
                 addStream(str);
@@ -202,7 +202,7 @@ public dynamic class StreamManager extends Manager {
 
     //--------------- ctrl ---------------//
 
-    private function addStream(stream:StreamData):void {
+    protected function addStream(stream:StreamData):void {
         var ns:NetStream = new NetStream(App.rtmpMedia.connection);
 
         ns.addEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler, false, EventPriority.DEFAULT_HANDLER);
@@ -246,13 +246,13 @@ public dynamic class StreamManager extends Manager {
 
         delete _model.streamsByName[name];
 
-        const ind:int = _model.streamList.getItemIndex(ns);
+        const ind:int = _model.streamList.source.indexOf(ns);
 
         (ind > -1) && _model.streamList.removeItemAt(ind);
 
     }
 
-    private function removeAllStreams():void{
+    protected function removeAllStreams():void{
 
         for each(var ns:NetStream in _model.streamList)
             delete _model.streamsByName[(ns.client as NetStreamClient).data.name];

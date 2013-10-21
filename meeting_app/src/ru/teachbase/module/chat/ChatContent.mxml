@@ -83,7 +83,7 @@
         private function creationCompleteHandler():void {
             currentState = chatState.name;
 
-            new ChatMessage(null, null);
+            new ChatMessage();
 
             label = translate('public_label', 'chat');
 
@@ -119,11 +119,15 @@
             listener.addEventListener(RTMPEvent.DATA, handleMessage);
             listener.initialize();
 
-            _privateChatEnabled = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
-            GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, settingsUpdate);
+            CONFIG::LIVE{
+                _privateChatEnabled = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
+                GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, settingsUpdate);
+            }
+
             GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, userLeaveHandler);
             GlobalEvent.addEventListener(GlobalEvent.USER_JOIN, userJoinHandler);
             GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
+            GlobalEvent.addEventListener(GlobalEvent.RESET, handleReset);
 
             rtmp_history(PacketType.CHAT, new mx.rpc.Responder(historyHandler, $null), 0, App.user.isAdmin() ? [Recipients.ALL, Recipients.ADMINS] : [Recipients.ALL]);
         }
@@ -131,6 +135,21 @@
 
         //--------------- handlers --------------------//
 
+
+        private function handleReset(e:GlobalEvent):void{
+
+           var buf:Vector.<ChatRoom> = new <ChatRoom>[];
+
+           for each(var room:ChatRoom in _rooms.source){
+               clearChat(room.roomId);
+
+               if(room.roomId != Recipients.ALL && !(room.roomId == Recipients.ADMINS && App.user.isAdmin()))
+                buf.push(buf);
+           }
+
+           for each(var r:ChatRoom in buf) removeRoom(r);
+
+        }
 
         private function handleReconnect(e:GlobalEvent):void {
 
@@ -214,7 +233,7 @@
 
             var m:ChatMessage = new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.TYPING);
 
-            rtmp_send(PacketType.CHAT, m, _currentRoom.roomId);
+            rtmp_send(PacketType.CHAT, m, _currentRoom.roomId,null,false);
         }
 
         private function inputFieldEnterHandler(e:Event):void {
@@ -324,6 +343,24 @@
                 label = translate('label', 'chat') + ": " + _currentRoom.roomName;
                 inputField.enabled = false;
             }
+
+            if (currentState == roomsState.name) {
+                _rooms.source.sort(compareChatRooms);
+                _rooms.refresh();
+                roomsList.validateNow();
+            }
+        }
+
+
+        private function removeRoom(room:ChatRoom):void {
+
+            if (_currentRoom.roomId == room.roomId){
+                switchChatRoom(Recipients.ALL);
+            }
+
+            delete _roomsById[room.roomId];
+            _rooms.source.indexOf(room) > -1 && _rooms.removeItemAt(_rooms.getItemIndex(room));
+
 
             if (currentState == roomsState.name) {
                 _rooms.source.sort(compareChatRooms);
@@ -561,7 +598,7 @@
         <ui:HidingScroller width="100%" height="100%" verticalScrollPolicy="on" horizontalScrollPolicy="off"
                            includeIn="chat" id="messagesScroller">
             <s:RichEditableText height="100%" width="100%" id="messagesList" editable="false" paddingLeft="10"
-                                paddingRight="10" paddingTop="5" paddingBottom="5">
+                                paddingRight="10" paddingTop="5" paddingBottom="5" focusSkin="{null}">
             </s:RichEditableText>
         </ui:HidingScroller>
 

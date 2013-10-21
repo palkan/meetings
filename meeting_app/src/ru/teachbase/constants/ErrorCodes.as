@@ -12,6 +12,8 @@ public class ErrorCodes {
 
     public static const APPLICATION:uint = 1 << 2;
 
+    public static const RECORDING:uint = 1 << 4;
+
     public static const TIMEOUT:uint = RTMP + (1 << 5);
     public static const LIMIT:uint = APPLICATION + (1 << 6);
     public static const NOT_FOUND:uint = APPLICATION + (1 << 7);
@@ -24,6 +26,10 @@ public class ErrorCodes {
     public static const KICKEDOFF:uint = APPLICATION+(1 << 11);
 
     public static const CONNECTION_DROPPED:uint = RTMP + (1 << 12);
+
+    public static const FILE_LOAD_ERROR:uint = RECORDING + (1 << 13);
+    public static const PACKET_DECODE_FAILED:uint = RECORDING + (1 << 14);
+    public static const HLS_STREAM_FAILED:uint = RECORDING + (1 << 15);
 
 }
 }

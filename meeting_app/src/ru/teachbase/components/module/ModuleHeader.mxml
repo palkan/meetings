@@ -13,7 +13,7 @@
 
 
         private var _title:String = '';
-        private var _p_enabled:Boolean = true;
+        private var _p_enabled:Boolean = false;
         private var _expanded:Boolean = false;
 
         private var _locked:Boolean = true;

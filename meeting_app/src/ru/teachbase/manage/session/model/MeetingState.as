@@ -7,7 +7,7 @@ package ru.teachbase.manage.session.model {
 public class MeetingState {
 
     public static const LIVE:uint = 1;
-    public static const RECORD:uint = 1 << 1;
+    public static const RECORD:uint = (1 << 1)+ LIVE;
 
 }
 }

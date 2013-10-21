@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+         xmlns:s="library://ns.adobe.com/flex/spark">
+	<fx:Script>
+		<![CDATA[
+
+        /**
+         * @param value Number between 0 and 1
+         */
+
+        public function set progress(value:Number):void {
+            if (value > 1) value = 1;
+            thumbMaskRect.percentWidth = int(value*100);
+        }
+
+        /**
+         *
+         * @param forward Buffer length as percent (0 .. 1)
+         * @param back    Back buffer length as percent (0..1)
+         */
+
+        public function setBuffer(forward:Number, back:Number=0):void {
+
+            back = back*100 > thumbMaskRect.percentWidth ? thumbMaskRect.percentWidth : int(back*100);
+
+            bufferMask.x = thumbMaskRect.width*(thumbMaskRect.percentWidth - back)/100;
+
+            bufferMaskRect.percentWidth =  int((back + forward)*100);
+        }
+
+        ]]>
+	</fx:Script>
+	<s:Group left="0" top="0" right="0" bottom="0" id="thumbMask" width="1">
+		<s:Rect left="0" top="0" bottom="0" width="0" id="thumbMaskRect">
+			<s:fill>
+				<s:SolidColor color="0xFFFFFF" alpha="0"/>
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+
+    <s:Group left="0" top="0" right="0" bottom="0" id="bufferMask" width="1">
+        <s:Rect left="0" top="0" bottom="0" width="0" id="bufferMaskRect">
+            <s:fill>
+                <s:SolidColor color="0xFFFFFF" alpha="0"/>
+            </s:fill>
+        </s:Rect>
+    </s:Group>
+
+	<s:Group id="bg" width="100%" height="100%">
+        <s:Rect left="0" top="0" bottom="0" width="100%">
+            <s:fill>
+                <s:SolidColor color="0x000000" alpha="1"/>
+            </s:fill>
+        </s:Rect>
+	</s:Group>
+
+    <s:Group id="buffer" width="100%" height="100%" mask="{bufferMask}">
+        <s:Rect left="0" top="0" bottom="0" width="100%">
+            <s:fill>
+                <s:SolidColor color="#93b1ff" alpha="1"/>
+            </s:fill>
+        </s:Rect>
+    </s:Group>
+
+	<s:Group id="thumb" width="100%" mask="{thumbMask}" height="100%">
+        <s:Rect left="0" top="0" bottom="0" width="100%">
+            <s:fill>
+                <s:SolidColor color="#1b37ff" alpha="0.7"/>
+            </s:fill>
+        </s:Rect>
+    </s:Group>
+</s:Group>

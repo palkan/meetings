@@ -45,6 +45,8 @@ class WindowlessFrame implements Serializable {
 	private final Paint blueColor = new Color(20,110,176,255);
 	private final Paint blueTransparenColor = new Color(20,110,176,102);
 	private final Color tColor = new Color(0,0,0,0);
+
+    private Boolean isMac = true;
 	
 	private static interface PropertyChanger {
 		void changeOn(Component component);
@@ -455,6 +457,9 @@ class WindowlessFrame implements Serializable {
 			    public void paintComponent(Graphics g){
 			        super.paintComponent(g);
 			        super.setBackground(tColor);
+                    if(isMac){
+                        getRootPane().putClientProperty("Window.alpha", new Float(0.2f));
+                    }
 			        Graphics2D g2 = (Graphics2D) g;
 					g2.setStroke(borderSolidStroke);
 
@@ -520,9 +525,14 @@ class WindowlessFrame implements Serializable {
 		mWindowFrame = new JWindow();
 
         if ("Mac OS X".equals(System.getProperty("os.name"))) {
-            mWindowFrame.setBackground(new Color(0,0,0,0));
-        }else{
-            mWindowFrame.setBackground(new Color(0,0,0,0));
+            isMac = true;
+        }
+
+
+        mWindowFrame.setBackground(new Color(0,0,0,0));
+
+        if(isMac){
+            mWindowFrame.getRootPane().putClientProperty("Window.alpha", new Float(0.2f));
         }
 
 		cFrame = new CaptureFrame(mWindowFrame);
@@ -555,7 +565,7 @@ class WindowlessFrame implements Serializable {
 		final OffsetLocator toolbarOffsetLocator = new OffsetLocator() {
 			@Override
 			public int getTopOffset() {
-				return mOverallSize.height - _toolbar.getHeight() - 10;
+				return mOverallSize.height + 10; // -_toolbar.getHeight() - 10;
 			}
 			
 			@Override

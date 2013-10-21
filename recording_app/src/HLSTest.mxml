@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:ui="ru.teachbase.components.ui.*"
+                backgroundColor="#cecece" addedToStage="init()">
+    <fx:Metadata>
+        [SWF(backgroundColor="0x393939", width="800", height="600")]
+    </fx:Metadata>
+    <fx:Script><![CDATA[
+        import com.mangui.HLS.HLS;
+        import com.mangui.HLS.HLSEvent;
+        import com.mangui.HLS.HLSStates;
+
+        import flashx.textLayout.formats.BlockProgression;
+
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.events.ClickEvent;
+
+        import ru.teachbase.utils.Strings;
+
+        import ru.teachbase.utils.shortcuts.debug;
+
+        private var _hls:HLS;
+        private var _video:Video;
+        private var _pause_on_playing:Boolean = true;
+        private var _duration:Number;
+        private var _connection:NetConnection;
+
+        private var _stream:NetStream;
+
+        private function init():void{
+            stage.scaleMode = StageScaleMode.NO_SCALE;
+            stage.align = StageAlign.TOP_LEFT;
+
+            _connection = new NetConnection();
+            _connection.connect(null);
+        }
+
+        private function _start():void{
+
+
+            _hls && _hls.stop();
+
+            _stream = new NetStream(_connection);
+
+            _video.attachNetStream(_stream);
+
+            _hls = new HLS(_stream);
+
+
+            _hls.setWidth(400);
+            _hls.addEventListener(HLSEvent.COMPLETE,_completeHandler);
+            _hls.addEventListener(HLSEvent.ERROR,_errorHandler);
+            _hls.addEventListener(HLSEvent.FRAGMENT,_fragmentHandler);
+            _hls.addEventListener(HLSEvent.MANIFEST,_manifestHandler);
+            _hls.addEventListener(HLSEvent.MEDIA_TIME,_firstMediaTimeHandler);
+            _hls.addEventListener(HLSEvent.STATE,_stateHandler);
+            _hls.addEventListener(HLSEvent.SWITCH,_switchHandler);
+
+            _hls.play(url_txt.text);
+
+        }
+
+        private function _play():void {
+            _hls.resume();
+        }
+
+        private function _pause():void { _hls.pause(); };
+        private function _seek(position:Number):void { _hls.seek(position); };
+        private function _stop():void { _hls.stop(); };
+
+        private function _completeHandler(event:HLSEvent):void {
+            debug("Complete");
+        }
+        private function _errorHandler(event:HLSEvent):void {
+            debug(event.message);
+        }
+        private function _fragmentHandler(event:HLSEvent):void {
+            debug("fragment");
+        }
+        private function _manifestHandler(event:HLSEvent):void {
+            debug("manifest");
+        }
+
+        private function _firstMediaTimeHandler(event:HLSEvent):void{
+
+            _duration =  event.mediatime.duration;
+
+            durationText.text = Strings.digits(int(event.mediatime.duration));
+            _hls.removeEventListener(HLSEvent.MEDIA_TIME,_firstMediaTimeHandler);
+            _hls.addEventListener(HLSEvent.MEDIA_TIME,_mediaTimeHandler);
+        }
+
+        private function _mediaTimeHandler(event:HLSEvent):void {
+
+            positionText.text = Strings.digits(int(event.mediatime.position));
+
+            progressBar.progress = event.mediatime.position / event.mediatime.duration;
+
+           // progressBar.setBuffer(event.mediatime.buffer / event.mediatime.duration);
+        }
+
+        private function _stateHandler(event:HLSEvent):void {
+
+            debug(event.state);
+
+            if(_pause_on_playing && event.state == HLSStates.PLAYING){
+                _hls.pause();
+                _pause_on_playing = false;
+            }
+        }
+
+
+
+        private function _switchHandler(event:HLSEvent):void {
+            debug(event);
+        }
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+            _video = new Video();
+            _video.smoothing = true;
+            _video.deblocking = 5;
+
+            videoComponent.addChild(_video);
+        }
+
+
+        private function seek(event:MouseEvent):void{
+
+            _hls.seek( _duration * (progressBar.mouseX / progressBar.width));
+
+        }
+
+
+        ]]></fx:Script>
+    <s:Group height="100%" width="100%">
+
+        <s:HGroup width="100%" height="40">
+            <s:Label text="url"/>
+            <s:RichEditableText id="url_txt" text="../../../assets/record/stream_1/stream_1.m3u8" width="400"/>
+        </s:HGroup>
+
+        <s:Group id="videoGroup" width="400" height="300" top="40">
+            <mx:UIComponent creationComplete="creationCompleteHandler(event)" height="400" width="300" id="videoComponent"/>
+        </s:Group>
+
+        <s:HGroup width="100%" height="24" bottom="10">
+            <s:Button label="load" click="_start()"/>
+            <s:Button label="play" click="_play()"/>
+            <s:Button label="pause" click="_pause()"/>
+            <s:RichText id="positionText" fontSize="11" width="40"/>
+            <s:Group height="24" width="400">
+                <ui:Slider id="progressBar" width="400" progress="0" height="10" top="7" click="seek(event)"/>
+            </s:Group>
+            <s:RichText id="durationText" fontSize="11" width="40"/>
+        </s:HGroup>
+    </s:Group>
+
+
+</s:Application>

@@ -58,9 +58,14 @@
 
         private var _model:ResizerModel;
 
+        private var _created:Boolean = false;
+
         private function creationCompleteHandler(e:FlexEvent):void {
 
-            setActualSize(Math.max(minWidth, width), Math.max(minHeight, height));
+        //    setActualSize(Math.max(minWidth, width), Math.max(minHeight, height));
+
+            _created = true;
+
             if (_model) model = _model;
         }
 
@@ -142,6 +147,8 @@
         public function set model(value:ResizerModel):void {
 
             _model = value;
+
+            if(!_created) return;
 
             setDirection(_model.direction);
 

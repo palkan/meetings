@@ -39,7 +39,9 @@
         private var _p_enabled:Boolean = false;
 
         private function addedToStage(evt:Event):void {
+CONFIG::LIVE{
             App.publisher.enable();
+}
         }
 
         private function creationCompleteHandler(event:FlexEvent):void {
@@ -209,7 +211,10 @@
 
         override public function hide():void {
             super.hide();
+
+CONFIG::LIVE{
             App.publisher.disable();
+}
 
             for each(var el:IVideoContainer in _elements) {
                 removeVideoContainer(el);

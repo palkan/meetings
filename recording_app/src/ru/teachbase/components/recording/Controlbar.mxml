@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ActionBar xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             xmlns:c="ru.teachbase.components.*" xmlns:rec="ru.teachbase.components.recording.*"
+             xmlns:header="ru.teachbase.components.header.*"
+             xmlns:ui="ru.teachbase.components.ui.*"
+             implements="ru.teachbase.utils.interfaces.ILocalable"
+             width="100%" height="43"
+             skinClass="ru.teachbase.skins.actionbar.CustomActionBarSkin"
+             creationComplete="creationCompleteHandler(event)"
+        >
+    <fx:Script>
+		<![CDATA[
+        import mx.events.FlexEvent;
+
+        import ru.teachbase.utils.BrowserUtils;
+        import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.style;
+        import ru.teachbase.utils.shortcuts.translate;
+        import ru.teachbase.utils.system.isFullScreenMode;
+        import ru.teachbase.utils.system.switchFullScreenMode;
+
+        private const NAME:String = "actionbar";
+
+        private function creationCompleteHandler(e:FlexEvent):void {
+            Localizer.addItem(this);
+        }
+
+        public function localize():void {
+            switchFullscreenButton && (switchFullscreenButton.toolTip = translate("fullscreen", NAME));
+        }
+        ]]>
+	</fx:Script>
+
+
+    <s:states>
+        <s:State id="normal" name="normal"/>
+        <s:State id="idle" name="idle"/>
+    </s:states>
+
+    <s:navigationContent>
+        <header:Logo left="10" id="logoClip"/>
+        <s:Image id="logoImg" left="{logoClip.x + logoClip.width+ 10}" top="0" height="43"
+                 initialize="logoImg.source = style('actionBar','separator')"/>
+    </s:navigationContent>
+
+
+    <s:titleContent>
+          <rec:RecordingControls id="controls"/>
+    </s:titleContent>
+
+
+    <s:actionContent>
+
+        <c:ActionBarButton id="switchFullscreenButton"
+                           focusSkin="{null}"
+                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                           addedToStage="switchFullscreenButton.selected = isFullScreenMode(switchFullscreenButton.stage);"
+                           click="switchFullscreenButton.selected = switchFullScreenMode(stage);"
+                           initialize="with(switchFullscreenButton){
+						                        toolTip=translate('fullscreen',NAME);
+						                        icon=style('actionBar','fullscreenIco');
+						                        iconOver=style('actionBar','fullscreenIcoHover');}"
+                />
+        <c:ActionBarButton id="exitButton"
+                           focusSkin="{null}"
+                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                           initialize="with(exitButton){
+						                    toolTip=translate('close',NAME);
+						                    icon=style('actionBar','exitIco');
+						                    iconOver=style('actionBar','exitIcoHover');}"
+                >
+            <c:click>
+				<![CDATA[
+                    exitButton.selected = false;
+                    CONFIG::WEB{
+                        BrowserUtils.closeWindow();
+                    }
+                ]]>
+			</c:click>
+        </c:ActionBarButton>
+    </s:actionContent>
+</s:ActionBar>

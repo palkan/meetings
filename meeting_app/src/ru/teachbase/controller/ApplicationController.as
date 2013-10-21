@@ -26,6 +26,7 @@ import ru.teachbase.manage.Initializer;
 import ru.teachbase.manage.LocaleManager;
 import ru.teachbase.manage.Manager;
 import ru.teachbase.manage.SkinManager;
+import ru.teachbase.manage.docs.DocsManager;
 import ru.teachbase.manage.layout.LayoutManager;
 import ru.teachbase.manage.modules.ModulesManager;
 import ru.teachbase.manage.publish.PublishManager;
@@ -46,13 +47,13 @@ import ru.teachbase.utils.shortcuts.translate;
 
 use namespace tb_internal;
 
-[Event(type="ru.teachbase.events.AppEvent",name="")]
+[Event(type="ru.teachbase.events.AppEvent", name="")]
 
-public class ApplicationController extends EventDispatcher{
+public class ApplicationController extends EventDispatcher {
 
     private static const REINITIALIZE_INTERVAL:int = 5000;
 
-    private var _initializing:Boolean = false;
+    protected var _initializing:Boolean = false;
 
     private var _view:MainApplication;
 
@@ -75,7 +76,7 @@ public class ApplicationController extends EventDispatcher{
         GlobalError.listen(onGlobalError);
     }
 
-    private final function onGlobalError(e:ErrorCodeEvent):void {
+    protected function onGlobalError(e:ErrorCodeEvent):void {
         var errorMessage:String;
 
         dispose();
@@ -83,7 +84,7 @@ public class ApplicationController extends EventDispatcher{
         switch (e.code) {
             case ErrorCodes.KICKEDOFF:
                 errorMessage = translate("kickedoff", "error");
-                setTimeout(reinitialize,REINITIALIZE_INTERVAL); //todo: don't forget about it!
+                setTimeout(reinitialize, REINITIALIZE_INTERVAL); //todo: don't forget about it!
                 break;
             case ErrorCodes.LIMIT:
                 errorMessage = translate("limit", "error");
@@ -99,7 +100,7 @@ public class ApplicationController extends EventDispatcher{
                 break;
             case ErrorCodes.CONNECTION_FAILED:
                 errorMessage = translate("main_server", "error");
-                App.view && setTimeout(reinitialize,REINITIALIZE_INTERVAL);
+                App.view && setTimeout(reinitialize, REINITIALIZE_INTERVAL);
                 break;
             case ErrorCodes.CONNECTION_DROPPED:
                 !_initializing && reinitialize();
@@ -112,21 +113,20 @@ public class ApplicationController extends EventDispatcher{
 
         hasEventListener(AppEvent.CORE_LOAD_ERROR) && dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
 
-        App.view && notify(new Notification(errorMessage),true);
+        App.view && notify(new Notification(errorMessage), true);
 
 
         //TODO: show error state in MainApplication
     }
 
 
-
-    public function setView(view:MainApplication):void{
+    public function setView(view:MainApplication):void {
         _view = view;
         App.tb_internal::setView(view);
     }
 
 
-    public function initialize(){
+    public function initialize():void {
 
         Configger.instance.addEventListener(Event.COMPLETE, configLoaded);
 
@@ -135,25 +135,27 @@ public class ApplicationController extends EventDispatcher{
     }
 
 
-    public function dispose(){
-        const managers:Array = [App.rtmp,App.rtmpMedia,App.session,App.modules,App.layout,App.streams,App.publisher];
+    public function dispose():void {
+        const managers:Array = [App.rtmp, App.rtmpMedia, App.session, App.modules, App.layout, App.streams, App.docs, App.publisher];
 
-        managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr && mgr.clear();});
+        managers.forEach(function (mgr:Manager, ind:int, arr:Array):void {
+            mgr && mgr.clear();
+        });
 
         OutStreamSup.stop();
         InStreamSup.stop();
     }
 
 
-    protected function configLoaded(e:Event):void{
+    protected function configLoaded(e:Event):void {
 
-        if(config('debug')) Logger.MODE = config('debug');
+        if (config('debug')) Logger.MODE = config('debug');
 
         initializeManagers();
     }
 
 
-    public function initializeManagers(){
+    public function initializeManagers():void {
 
         _initializing = true;
 
@@ -168,6 +170,7 @@ public class ApplicationController extends EventDispatcher{
                 new ModulesManager(true),  // loading modules models, initialize active modules
                 new LayoutManager(true),  // loading layout, positioning modules
                 new StreamManager(true),  // subscribe to existing streams
+                new DocsManager(true),
                 new PublishManager(true) // (local) mic/cam publishing
         );
 
@@ -175,45 +178,43 @@ public class ApplicationController extends EventDispatcher{
     }
 
 
-
-
-
-    protected function reinitialize():void{
+    protected function reinitialize():void {
 
         _initializing = true;
 
-        notify(new Notification(translate("connection_failed","notifications")),true);
+        notify(new Notification(translate("connection_failed", "notifications")), true);
 
-        const managers:Array = [App.rtmp,App.rtmpMedia,App.session,App.modules,App.layout,App.streams,App.publisher];
+        const managers:Array = [App.rtmp, App.rtmpMedia, App.session, App.modules, App.layout, App.streams, App.docs, App.publisher];
 
-        managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr && mgr.clear();});
+        managers.forEach(function (mgr:Manager, ind:int, arr:Array):void {
+            mgr && mgr.clear();
+        });
 
-        addInitializerListeners(reinirializationComplete, reinitializationFailed);
+        addInitializerListeners(reinitializationComplete, reinitializationFailed);
 
         Initializer.reinitializeManagers.apply(null, managers);
 
     }
 
 
-
-    private function reinitializationFailed(e:Event):void{
+    protected function reinitializationFailed(e:Event):void {
 
         _initializing = false;
 
-        removeInitializerListeners(reinirializationComplete,reinitializationFailed);
+        removeInitializerListeners(reinitializationComplete, reinitializationFailed);
 
-        notify(new Notification(translate("connection_failed_again","notifications")),true);
+        notify(new Notification(translate("connection_failed_again", "notifications")), true);
 
     }
 
 
-    private function reinirializationComplete(e:Event):void{
+    protected function reinitializationComplete(e:Event):void {
 
         _initializing = false;
 
-        notify(new Notification(translate("connection_restored","notifications")),true);
+        notify(new Notification(translate("connection_restored", "notifications")), true);
 
-        removeInitializerListeners(reinirializationComplete,reinitializationFailed);
+        removeInitializerListeners(reinitializationComplete, reinitializationFailed);
 
         OutStreamSup.run(30000);
         InStreamSup.run();
@@ -225,40 +226,40 @@ public class ApplicationController extends EventDispatcher{
     }
 
 
-
-    private function managersInitializedHandler(e:Event):void{
+    protected function managersInitializedHandler(e:Event):void {
 
         _initializing = false;
 
         removeInitializerListeners(managersInitializedHandler, managersErrorHandler, managersProgressHandler);
 
-        OutStreamSup.run(30000);
-        InStreamSup.run();
+        CONFIG::LIVE{
+            OutStreamSup.run(30000);
+            InStreamSup.run();
 
-        App.settings.addPanel(new AudioSettings());
-        App.settings.addPanel(new VideoSettings());
-        App.settings.addPanel(new GeneralSettings());
-
+            App.settings.addPanel(new AudioSettings());
+            App.settings.addPanel(new VideoSettings());
+            App.settings.addPanel(new GeneralSettings());
+        }
         _view.draw();
         dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_COMPLETE));
     }
 
-    private function managersProgressHandler(e:ProgressEvent):void {
+    protected function managersProgressHandler(e:ProgressEvent):void {
 
-        dispatchEvent(new AppEvent(AppEvent.LOADING_STATUS, false, false, "Managers initializing ... " + Math.round(e.bytesLoaded * 100 / e.bytesTotal)+"%"))
+        dispatchEvent(new AppEvent(AppEvent.LOADING_STATUS, false, false, "Managers initializing ... " + Math.round(e.bytesLoaded * 100 / e.bytesTotal) + "%"))
 
     }
 
-    private function managersErrorHandler(e:ErrorEvent):void {
+    protected function managersErrorHandler(e:ErrorEvent):void {
 
         _initializing = false;
 
-        removeInitializerListeners(managersInitializedHandler,managersErrorHandler,managersProgressHandler);
+        removeInitializerListeners(managersInitializedHandler, managersErrorHandler, managersProgressHandler);
         dispose();
         dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, e.text, true));
     }
 
-    private function addInitializerListeners(complete:Function, failed:Function, progress:Function = null):void{
+    protected function addInitializerListeners(complete:Function, failed:Function, progress:Function = null):void {
 
         Initializer.instance.addEventListener(Event.COMPLETE, complete);
         progress && Initializer.instance.addEventListener(ProgressEvent.PROGRESS, progress);
@@ -266,7 +267,7 @@ public class ApplicationController extends EventDispatcher{
 
     }
 
-    private function removeInitializerListeners(complete:Function, failed:Function, progress:Function = null):void{
+    protected function removeInitializerListeners(complete:Function, failed:Function, progress:Function = null):void {
 
         Initializer.instance.removeEventListener(Event.COMPLETE, complete);
         progress && Initializer.instance.removeEventListener(ProgressEvent.PROGRESS, progress);

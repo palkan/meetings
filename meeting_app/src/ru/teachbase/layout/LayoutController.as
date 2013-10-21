@@ -3,6 +3,10 @@ import flash.display.DisplayObjectContainer;
 import flash.events.EventDispatcher;
 import flash.geom.Point;
 import flash.geom.Rectangle;
+import flash.utils.clearTimeout;
+import flash.utils.setTimeout;
+
+import mx.events.FlexEvent;
 
 import ru.teachbase.behaviours.dragdrop.DragDirection;
 import ru.teachbase.layout.model.ILayoutResizer;
@@ -16,8 +20,6 @@ import ru.teachbase.tb_internal;
 import ru.teachbase.utils.LayoutUtils;
 import ru.teachbase.utils.data.Stack;
 import ru.teachbase.utils.data.TreeNode;
-import ru.teachbase.utils.shortcuts.debug;
-
 
 /**
  * @author Webils (2012)
@@ -26,6 +28,7 @@ import ru.teachbase.utils.shortcuts.debug;
 
 [Event(type="ru.teachbase.manage.layout.events.LayoutEvent", name="tb:layout_change")]
 [Event(type="ru.teachbase.manage.layout.events.LayoutEvent", name="tb:layout_lock")]
+[Event(type="ru.teachbase.manage.layout.events.LayoutEvent", name="tb:layout_active")]
 
 public class LayoutController extends EventDispatcher {
 
@@ -82,6 +85,10 @@ public class LayoutController extends EventDispatcher {
     private var _availableResizers:Vector.<ILayoutResizer> = new <ILayoutResizer>[];
 
     private var _resizersInUse:Vector.<ILayoutResizer> = new <ILayoutResizer>[];
+
+    private var _resizersID:uint;
+
+    private var _waitForRes:int = 0;
 
     public function LayoutController() {
     }
@@ -170,6 +177,17 @@ public class LayoutController extends EventDispatcher {
         updateDisplayList();
     }
 
+    /**
+     *
+     * @param groupKey
+     * @param l
+     * @param width
+     * @param height
+     * @param x
+     * @param y
+     * @param rw
+     * @param rh
+     */
 
     protected function initResizer(groupKey:String, l:uint, width:int, height:int, x:int, y:int, rw:int, rh:int):void {
 
@@ -201,6 +219,10 @@ public class LayoutController extends EventDispatcher {
         r.dragBounds.setTo(_x, _y, _w, _h);
     }
 
+    /**
+     *
+     */
+
 
     protected function hideResizers():void{
         const size:int = _resizersInUse.length;
@@ -213,16 +235,71 @@ public class LayoutController extends EventDispatcher {
         _resizers = {};
     }
 
+    /**
+     *
+     */
 
     protected function showResizers():void{
         var el:ILayoutResizer;
 
         for each(var m:ResizerModel in _resizers){
-            el = _availableResizers.length ? _availableResizers.pop() : _resizersFun();
+            el = _availableResizers.length ? _availableResizers.pop() : createResizer();
+
+            if(!el) continue;
+
             el.model = m;
             el.show();
             _resizersInUse.push(el);
         }
+    }
+
+    /**
+     *
+     */
+
+    protected function prepareResizers():void{
+        _resizersID && clearTimeout(_resizersID);
+        _resizersID = setTimeout(showResizers,200);
+    }
+
+    /**
+     *
+     * @return
+     */
+
+
+    protected function createResizer():ILayoutResizer{
+
+        if(!(_resizersFun is Function)) return null;
+
+        _waitForRes++;
+        var r:ILayoutResizer = _resizersFun(resizerCreated);
+
+        return r;
+
+    }
+
+
+    /**
+     *
+     * Pass this to resizer generator
+     *
+     * @param e
+     */
+
+    private function resizerCreated(e:FlexEvent):void{
+
+        const target:EventDispatcher = (e.target as EventDispatcher);
+
+        if(!target) return;
+
+        target.removeEventListener(FlexEvent.CREATION_COMPLETE,resizerCreated);
+
+        _availableResizers.push(target);
+
+        _waitForRes--;
+
+        if(!_waitForRes) showResizers();
     }
 
 
@@ -676,7 +753,7 @@ public class LayoutController extends EventDispatcher {
         }
 
 
-        !_locked && _resizersFun && showResizers();
+        !_locked && _resizersFun && prepareResizers();
 
     }
 
@@ -767,6 +844,8 @@ public class LayoutController extends EventDispatcher {
 
     public function set active(value:Boolean):void {
         _active = value;
+        updateDisplayList();
+        dispatchEvent(new LayoutEvent(LayoutEvent.ACTIVE));
     }
 
     public function get locked():Boolean {

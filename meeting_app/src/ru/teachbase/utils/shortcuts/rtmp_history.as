@@ -14,7 +14,7 @@ import ru.teachbase.model.App;
  * @param type - history id
  * @param responder
  * @param lastMessageID - receive only messages with <code>id</code> greater than <code>lastMessageID</code>
- * @param Additional args as array
+ * @param args additional arguments as array
  *
  */
 public function rtmp_history(type:String, responder:IResponder = null, lastMessageID:Number = 0, args:Array = null):void

@@ -8,7 +8,6 @@
         import caurina.transitions.Tweener;
 
         import mx.events.FlexEvent;
-
         import mx.events.ResizeEvent;
         import mx.graphics.ImageSnapshot;
 
@@ -20,16 +19,16 @@
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
         import ru.teachbase.manage.rtmp.model.Recipients;
         import ru.teachbase.module.documents.events.ControlEvent;
-        import ru.teachbase.module.documents.events.DocEvent;
         import ru.teachbase.module.documents.events.RendererEvent;
         import ru.teachbase.module.documents.model.DocumentData;
-        import ru.teachbase.module.documents.model.WorkplaceData;
         import ru.teachbase.module.documents.model.WorkplaceMethod;
         import ru.teachbase.module.documents.model.WorkplaceRenderers;
         import ru.teachbase.module.documents.renderers.IWorkplaceRenderer;
         import ru.teachbase.utils.LocalFile;
         import ru.teachbase.utils.shortcuts.rtmp_send;
         import ru.teachbase.utils.workplace.ControlHost;
+
+        private const zoom_limit:int = 4;
 
         private var _renderer:IWorkplaceRenderer;
 
@@ -77,7 +76,7 @@
             _renderer.editable = _editable;
             _renderer.setLayoutBoundsPosition(20, 20);
             _renderer.addEventListener(RendererEvent.INITIALIZED, rendererInitializedHandler);
-            content.addElementAt(_renderer,0);
+            content.addElementAt(_renderer, 0);
         }
 
         /**
@@ -102,12 +101,54 @@
 
         }
 
-        private function addControlsListener():void {
-            this.addEventListener(ControlEvent.CHANGE, changeHandler);
+        /**
+         *
+         * Pass reconnect history data to container and renderer (only if renderer stays the same as before reconnect)
+         *
+         * @param state
+         */
+
+        public function handleReconnect(state:Object):void {
+
+            _listener.dispose();
+
+            if (!_renderer) return;
+
+            clearState();
+
+            _renderer.data = state || {};
+
+            _renderer.data.rotation && callHostFunction(this, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));
+            _renderer.data.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));
+            _renderer.data.slide && callHostFunction(_renderer, WorkplaceMethod.CHANGE_SLIDE, [_renderer.data.slide]);
+            _renderer.data.slide && callHostFunction(this, WorkplaceMethod.CHANGE_SLIDE, [_renderer.data.slide]);
+
+            _listener.initialize();
+            _listener.readyToReceive = true;
+        }
+
+
+        /**
+         *
+         * Reset renderer state
+         *
+         */
+
+        public function clearState():void {
+
+            if (!_renderer) return;
+
+            _renderer.data.rotation && callHostFunction(this, WorkplaceMethod.ROTATE, [_renderer.data.rotation <= 0], Math.abs(_renderer.data.rotation));
+            _renderer.data.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_renderer.data.rotation <= 0], Math.abs(_renderer.data.rotation));
+            callHostFunction(_renderer, WorkplaceMethod.CHANGE_SLIDE, [0]);
+            callHostFunction(this, WorkplaceMethod.CHANGE_SLIDE, [0]);
         }
 
 
         protected function zoomIn(event:MouseEvent = null):void {
+
+            _renderer && (_renderer.data.zoom = _renderer.data.zoom ? _renderer.data.zoom + 1 : 1);
+
             var _m:Matrix = content.transform.matrix.clone();
             _m.scale(scaleIn, scaleIn);
             _m.translate((content.width / 2) * (1 - scaleIn), (content.height / 2) * (1 - scaleIn));
@@ -117,6 +158,8 @@
 
 
         protected function zoomOut(event:MouseEvent = null):void {
+
+            _renderer && (_renderer.data.zoom = _renderer.data.zoom ? _renderer.data.zoom - 1 : -1);
 
             var _m:Matrix = content.transform.matrix.clone();
             _m.scale(scaleOut, scaleOut);
@@ -131,6 +174,8 @@
 
         protected function rotateCW(event:MouseEvent = null):void {
 
+            _renderer && (_renderer.data.rotation = _renderer.data.rotation ? _renderer.data.rotation + 1 : 1);
+
             var _m:Matrix = content.transform.matrix.clone();
             _m.rotate(Math.PI / 2);
             _m.translate((content.height + content.width) / 2, (content.height - content.width) / 2);
@@ -138,6 +183,9 @@
         }
 
         protected function rotateCCW(event:MouseEvent = null):void {
+
+            _renderer && (_renderer.data.rotation = _renderer.data.rotation ? _renderer.data.rotation - 1 : -1);
+
             var _m:Matrix = content.transform.matrix.clone();
             _m.rotate(-Math.PI / 2);
             _m.translate((content.width - content.height) / 2, (content.height + content.width) / 2);
@@ -161,6 +209,8 @@
         /* control methods: make them public! */
 
         public function zoom(flag:Boolean):void {
+            if (_renderer && _renderer.data.zoom && Math.abs(_renderer.data.zoom) >= zoom_limit) return;
+
             if (flag)
                 (content.scaleX < maxScale) && zoomIn();
             else
@@ -176,6 +226,7 @@
 
         public function goToSlide(id:int):void {
             _board && _board.gotoPage(id);
+            _renderer && (_renderer.data.slide = id);
         }
 
 
@@ -185,6 +236,10 @@
             Tweener.addTween(content, {x: newP.x, y: newP.y, time: .15, transition: "linear"});
         }
 
+
+        private function addControlsListener():void {
+            this.addEventListener(ControlEvent.CHANGE, changeHandler);
+        }
 
         private function attachWhiteboard():void {
 
@@ -208,9 +263,10 @@
             if (_renderer.data.slide)
                 _board.manager.startSlide = _renderer.data.slide;
 
-            _board.addEventListener(FlexEvent.CREATION_COMPLETE, function(){
+            _board.addEventListener(FlexEvent.CREATION_COMPLETE, function () {
+                _board.editable = _editable;
                 _board.removeEventListener(FlexEvent.CREATION_COMPLETE, arguments.callee);
-                _board.resize(content.width-40,content.height-40);
+                _board.resize(content.width - 40, content.height - 40);
             });
 
             content.addElement(_board);
@@ -248,7 +304,7 @@
             }
 
             _renderer && _renderer.resize(content.width - 40, content.height - 40);
-            _board && _board.resize(content.width-40,content.height-40);
+            _board && _board.resize(content.width - 40, content.height - 40);
         }
 
 
@@ -272,6 +328,7 @@
             _renderer.data.rotation && callHostFunction(this, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));
             _renderer.data.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));
             _renderer.data.slide && callHostFunction(_renderer, WorkplaceMethod.CHANGE_SLIDE, [_renderer.data.slide]);
+
 
             _renderer.initParent(content);
             _renderer.useWB && attachWhiteboard();

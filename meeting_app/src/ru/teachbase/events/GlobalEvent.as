@@ -4,6 +4,7 @@ import flash.events.Event;
 public class GlobalEvent extends Event {
 
     public static const RECONNECT:String = "tb:global_reconnect";
+    public static const RESET:String = "tb:global_reset";
 
     public static const USER_LEAVE:String = "tb:global_user_leave";
     public static const USER_JOIN:String = "tb:global_user_add";

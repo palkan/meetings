@@ -86,6 +86,8 @@ public final class SessionManager extends Manager {
 
         App.user.shareStatus = 0;
 
+        App.meeting.tb_internal::setState(MeetingState.LIVE);
+
         users_listener.dispose();
         meeting_listener.dispose();
         users_listener.removeEventListener(RTMPEvent.DATA, usersChangeHandler);
@@ -147,16 +149,28 @@ public final class SessionManager extends Manager {
 
 
     /**
+     *
+     */
+
+    public function toggleRecording():void{
+
+        if (!(_model.settings & MeetingSettings.RECORD) || !App.user.isAdmin()) return;
+
+        if (_model.state == MeetingState.LIVE) startRecord();
+        else stopRecord();
+
+    }
+
+
+    /**
      * Start meeting recording
      */
 
-    public function startRecord():void {
-
-        if (_model.state == MeetingState.RECORD || !(_model.settings & MeetingSettings.RECORD) || !App.user.isAdmin()) return;
+    private function startRecord():void {
 
         function success(...args):void {
 
-            _model.tb_internal::setState(MeetingState.RECORD);
+            //_model.tb_internal::setState(MeetingState.RECORD);
 
         }
 
@@ -171,13 +185,10 @@ public final class SessionManager extends Manager {
      * Stop meeting recording
      */
 
-    public function stopRecord():void {
-
-        if (_model.state == MeetingState.LIVE || !(_model.settings & MeetingSettings.RECORD) || !App.user.isAdmin()) return;
-
+    private function stopRecord():void {
 
         function success(...args):void {
-            _model.tb_internal::setState(MeetingState.LIVE);
+            //_model.tb_internal::setState(MeetingState.LIVE);
         }
 
         function error(...args):void {
@@ -422,7 +433,7 @@ public final class SessionManager extends Manager {
 
         _model.users = getValue(meeting_model, "users", [], isArray);
 
-        (_model.usersByID[App.user.sid] as User).iam = true;
+        _model.usersByID[App.user.sid] && ((_model.usersByID[App.user.sid] as User).iam = true);
 
         _model.tb_internal::setState(getValue(meeting_model, "state", MeetingState.LIVE));
         _model.tb_internal::setSettings(getValue(meeting_model, "settings", 0));

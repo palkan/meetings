@@ -28,7 +28,7 @@ public class ScreenShare {
     public static ScreenShare instance = null;
 	public static ClientOptions options;
 	
-	private static final int C_MOUSE_FREQUENCY = 500;
+	private static final int C_MOUSE_FREQUENCY = 1000;
 	private static final int C_MOUSE_POS_FREQUENCY = 500;
 	
     public boolean startPublish = false;
@@ -43,6 +43,9 @@ public class ScreenShare {
 	private Thread thread = null;
 	private Thread mouseThread = null;
 	public Robot robot;
+
+    private int lastMouseX = -1;
+    private int lastMouseY = -1;
 	
 	public String host = "btg199251";
 	public String app = "oflaDemo";
@@ -116,7 +119,7 @@ public class ScreenShare {
 
     public void setup(String[] args){
 
-        instance.createRegion(10, 10);
+        instance.createRegion(60, 60);
 
         if (args.length == 8) {
             instance.host = args[0];
@@ -164,10 +167,11 @@ public class ScreenShare {
 			Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 			CaptureRegionListener crl = new CaptureRegionListenerImp(this);
 			frame = new CaptureRegionFrame(crl, 3);
-			frame.setHeight(Double.valueOf(screenSize.getHeight()).intValue() - 20);
-			frame.setWidth(Double.valueOf(screenSize.getWidth()).intValue() - 20);
+            frame.setVisible(true);
+            frame.setHeight(Double.valueOf(screenSize.getHeight()).intValue() - 120);
+			frame.setWidth(Double.valueOf(screenSize.getWidth()).intValue() - 120);
 			frame.setLocation(x, y);
-			frame.setVisible(true);		
+
 		}catch (Exception err)
 		{
 			System.out.println("createWindow Exception: ");
@@ -352,16 +356,21 @@ public class ScreenShare {
     	
     	int posX = ((Double)(x*1000)).intValue();
     	int posY = ((Double)(y*1000)).intValue();
+
+        if(posX == lastMouseX && posY == lastMouseY) return;
+
+        lastMouseX = posX;
+        lastMouseY = posY;
     	
     	//System.out.println(" SendMousePos after point x = " + posX + " point y =" + posY);
-    	
+
     	Amf0Object ob = new Amf0Object();
     	ob.put("msgtype", "mouse");
     	ob.put("posx", posX);
     	ob.put("posy", posY);
-		RtmpMessage rtmpMsg = new MetadataAmf0("onMetaData", ob);
+		RtmpMessage rtmpMsg = new MetadataAmf0("onMouseData", ob);
 		
-		publisher.write(clientChannel, rtmpMsg);	
+		publisher.write(clientChannel, rtmpMsg);
     }
     
 

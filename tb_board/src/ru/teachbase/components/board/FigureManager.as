@@ -78,10 +78,18 @@ public class FigureManager {
 
 
     public function dispose():void {
-        externals.length = 0;
-        _history.dispose();
+        clearBoard();
         _canvas && _canvas.dispose();
     }
+
+
+
+    public function clearBoard():void{
+        externals.length = 0;
+        _history.dispose();
+        _canvas && _canvas.clear();
+    }
+
 
     //--------------- internal API ---------------//
 

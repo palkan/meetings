@@ -43,7 +43,7 @@ public final class BoardCanvas extends SpriteVisualElement implements INotDraggl
 
     public var page:Page;
 
-    private var _pages:Object = new Object();
+    private var _pages:Object;
 
     public const formatBounds:Rectangle = new Rectangle();
 
@@ -76,11 +76,6 @@ public final class BoardCanvas extends SpriteVisualElement implements INotDraggl
         addChild(canvasMask);
         addChild(canvasBackSprite);
 
-        var _page:Page = new Page(this, canvasMask);
-        _pages[_page.pageId] = _page;
-
-        page = _page;
-
         canvasBackSprite.filters = [new DropShadowFilter(3, 45, 0, .4, 3, 3)];
 
         initialize();
@@ -94,12 +89,24 @@ public final class BoardCanvas extends SpriteVisualElement implements INotDraggl
 
 
     public function dispose():void {
+        page && page.hide();
         _pages = null;
+    }
 
+
+    public function clear():void{
+        dispose();
+        initialize();
     }
 
 
     private function initialize():void {
+        _pages = {};
+
+        var _page:Page = new Page(this, canvasMask);
+        _pages[_page.pageId] = _page;
+
+        page = _page;
         page.show();
     }
 

@@ -15,6 +15,7 @@
 
         import ru.teachbase.components.callouts.SettingsItem;
         import ru.teachbase.constants.PacketType;
+        import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
         import ru.teachbase.model.App;
@@ -45,14 +46,16 @@
 
             _listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
-            rtmp_history(PacketType.WORKPLACE + "::" + this.instanceID, new mx.rpc.Responder(historyHandler, $null));
-
             _settings.push(new SettingsItem("clear_workplace", SettingsItem.FUN, clearWorkspace));
             _settings.push(new SettingsItem("save_screenshot", SettingsItem.FUN, container.takeSnapshot))
 
             permissions = App.user ? App.user.permissions : 0;
 
             _module = (ownerModule as DocumentsModule);
+
+            GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
+
+            rtmp_history(PacketType.WORKPLACE + "::" + this.instanceID, new mx.rpc.Responder(historyHandler, $null));
         }
 
 
@@ -62,7 +65,7 @@
         public function attachDocument(doc:DocumentData) {
             if (!doc) return;
 
-            _module.addDocument(doc, this.instanceID);
+            App.docs.addDocument(doc, this.instanceID);
 
             _currentDoc = doc;
 
@@ -71,9 +74,9 @@
         }
 
 
-        public function detachDocument() {
+        public function detachDocument(commit:Boolean = true) {
 
-            _module.detachDocument(_currentDoc);
+            commit && App.docs.detachDocument(_currentDoc);
 
             container.dispose();
 
@@ -123,6 +126,34 @@
 
             _listener.readyToReceive = true;
             _initialized = true;
+        }
+
+        private function historyReconnectHandler(data:WorkplaceData):void {
+
+            // check if we using the same document as loaded
+
+            if (_currentDoc && data.type == "active" && _currentDoc.id == (data.data as DocumentData).id) {
+                container.handleReconnect(data.data.state);
+            } else if (data)
+                processData(data);
+            else
+                _currentDoc && detachDocument(false);
+
+            _listener.readyToReceive = true;
+            _initialized = true;
+        }
+
+
+        private function handleReconnect(e:GlobalEvent):void {
+
+            _initialized = false;
+
+            _listener.dispose();
+            _listener.initialize();
+
+            permissions = App.user ? App.user.permissions : 0;
+
+            rtmp_history(PacketType.WORKPLACE + "::" + this.instanceID, new mx.rpc.Responder(historyReconnectHandler, $null));
         }
 
 
@@ -177,7 +208,7 @@
 
 
         override public function hide():void {
-            detachDocument();
+            _currentDoc && detachDocument();
             super.hide();
         }
 

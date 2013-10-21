@@ -87,6 +87,8 @@
                 instancesToLoad = false;
             }
 
+            permissions = App.user.permissions;
+
             title = _title;
         }
 

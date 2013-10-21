@@ -13,11 +13,11 @@ public class LoggerLevel {
     public static function toString(level:uint):String{
 
         switch(level){
-            case ERROR: return "ERROR!";
-            case WARNING: return "WARNING!";
+            case ERROR: return "[ERROR!]";
+            case WARNING: return "[WARNING!]";
         }
 
-        return "DEBUG:";
+        return "[debug]";
     }
 }
 }

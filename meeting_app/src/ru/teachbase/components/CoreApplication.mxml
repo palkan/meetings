@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+        preinitialize="preinitHandler(event)">
+    <fx:Script>
+		<![CDATA[
+        import mx.core.FlexGlobals;
+        import mx.events.FlexEvent;
+        import mx.managers.SystemManager;
+        import mx.preloaders.Preloader;
+
+        import ru.teachbase.events.AppEvent;
+
+        import ru.teachbase.preloader.LogoCustomPreloader;
+        import ru.teachbase.utils.Configger;
+        import ru.teachbase.components.web.MainApplication;
+        import ru.teachbase.utils.logger.Logger;
+        import ru.teachbase.utils.logger.LoggerLevel;
+
+        private var _main:MainApplication;
+
+        private var _preloader:LogoCustomPreloader;
+
+        private function onStatus(event:AppEvent):void {
+            if (!_preloader)
+                return;
+            _preloader.setPreloaderLoadingText(event.statusText, event.isFatal);
+        }
+
+        private function getPreloader():LogoCustomPreloader {
+            const sm:SystemManager = this.parent as SystemManager;
+            const preloader:Preloader = sm.mx_internal::preloader;
+            if (!preloader)
+                return null;
+            if (preloader.numChildren > 0) {
+                if (preloader.getChildAt(0) is LogoCustomPreloader) {
+                    const pr:LogoCustomPreloader = preloader.getChildAt(0) as LogoCustomPreloader;
+                    return pr;
+                }
+            }
+            return null;
+        }
+
+
+        protected function createMainApp():MainApplication{
+            throw new IllegalOperationError("Abstract method! Override it!");
+        }
+
+        protected function preinitHandler(event:FlexEvent):void {
+
+            _preloader = getPreloader();
+            _preloader.manualComplete = true;
+
+            _preloader.setVersion(CONFIG::VERSION);
+
+            _main = createMainApp();
+            _main.percentHeight = 100;
+            _main.percentWidth = 100;
+            _main.controller.addEventListener(AppEvent.CORE_LOAD_COMPLETE, onCoreComplete);
+            _main.controller.addEventListener(AppEvent.CORE_LOAD_ERROR, onStatus);
+            _main.controller.addEventListener(AppEvent.LOADING_STATUS, onStatus);
+
+            CONFIG::debug{
+                Logger.LEVEL = LoggerLevel.DEBUG;
+            }
+
+            Configger.setDefaults({external: FlexGlobals.topLevelApplication.parameters['conf'] ? FlexGlobals.topLevelApplication.parameters['conf'] : CONFIG::CONF_URL});
+
+
+            addElement(_main);
+        }
+
+
+        protected function onCoreComplete(event:AppEvent):void {
+            _main.controller.removeEventListener(AppEvent.CORE_LOAD_COMPLETE, onCoreComplete);
+            _main.controller.removeEventListener(AppEvent.CORE_LOAD_ERROR, onStatus);
+            _main.controller.removeEventListener(AppEvent.LOADING_STATUS, onStatus);
+
+            if (!_preloader)
+                return;
+            _preloader.complete();
+        }
+        ]]>
+	</fx:Script>
+</s:Application>

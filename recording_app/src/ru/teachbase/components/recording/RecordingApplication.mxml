@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<web:MainApplication xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:web="ru.teachbase.components.web.*">
+    <fx:Script>
+		<![CDATA[
+        import mx.collections.ArrayList;
+        import mx.graphics.BitmapFillMode;
+
+        import ru.teachbase.components.LightboxContainer;
+        import ru.teachbase.components.header.Header;
+        import ru.teachbase.components.module.ModuleContainer;
+        import ru.teachbase.components.notifications.NotificationContainer;
+        import ru.teachbase.controller.ApplicationController;
+        import ru.teachbase.controller.RecordingController;
+        import ru.teachbase.utils.shortcuts.style;
+
+        import spark.primitives.BitmapImage;
+
+        private const _controller:RecordingController = new RecordingController();
+
+        private var _container:ModuleContainer;
+        private var _controls:Controlbar;
+        private var _notifications:NotificationContainer;
+
+        private var _lightbox:LightboxContainer;
+
+
+        override public function draw():void {
+
+            var background:BitmapImage = new BitmapImage();
+            background.source = style('globalsettings', 'bgicon');
+            background.left = background.right = background.top = background.bottom = 0;
+            background.fillMode = BitmapFillMode.REPEAT;
+
+            addElement(background);
+
+            _container = new ModuleContainer();
+            _container.left = _container.right = _container.bottom = 0;
+            _container.top = 43;
+            addElement(_container);
+
+
+            _controls  = new Controlbar();
+            _controls.left = _controls.right = _controls.top = 0;
+            _controls.height = 43;
+            addElement(_controls);
+
+            _notifications = new NotificationContainer();
+            _notifications.top = 43;
+            _notifications.right = 14;
+            _notifications.dataProvider = new ArrayList();
+            addElement(_notifications);
+
+            _lightbox = new LightboxContainer();
+            _lightbox.container = this;
+            _lightbox.percentHeight = 100;
+            _lightbox.percentWidth = 100;
+            _lightbox.setStyle('backgroundColor', 0x000000);
+            _lightbox.setStyle('backgroundAlpha', .5);
+
+        }
+
+        override public function get controller():ApplicationController {
+            return _controller;
+        }
+        ]]>
+	</fx:Script>
+</web:MainApplication>

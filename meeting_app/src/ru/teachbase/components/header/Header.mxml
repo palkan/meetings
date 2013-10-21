@@ -58,7 +58,10 @@
 
 
         private function permissionsHandler(e:GlobalEvent = null):void {
-            layoutGroup.visible = layoutGroup.includeInLayout = modulesGroup.visible = modulesGroup.includeInLayout = App.user.isAdmin();
+            if(!App.user.isAdmin())
+                layoutGroup.visible = layoutGroup.includeInLayout = modulesGroup.visible = modulesGroup.includeInLayout = false;
+            else
+                layoutGroup.visible = layoutGroup.includeInLayout = true;
         }
         ]]>
 	</fx:Script>

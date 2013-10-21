@@ -28,7 +28,13 @@ public class ScreenShareApplet extends JApplet {
 
         logger.debug(System.getProperty("java.version"));
 
-        String[] opts = {"127.0.0.1","tbshare/1","443","test_share","flashv2","2","1024","768"};
+        String[] opts = {
+                getParameter("host"),
+                getParameter("app"),
+                getParameter("port"),
+                getParameter("name"),
+                "flashv2","2","1024","768"
+        };
 
         _instance = ScreenShare.getInstance();
 

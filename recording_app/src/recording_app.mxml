@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:CoreApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+                            preloader="ru.teachbase.preloader.LogoCustomPreloader"
+                            xmlns:components="ru.teachbase.components.*"
+        >
+    <fx:Metadata>
+        [SWF(width="1000", height="600")]
+    </fx:Metadata>
+    <fx:Style source="defaults.css"/>
+
+    <fx:Script>
+		<![CDATA[
+        import ru.teachbase.components.recording.RecordingApplication;
+        import ru.teachbase.components.web.MainApplication;
+
+        override protected function createMainApp():MainApplication {
+            return new RecordingApplication();
+        }
+        ]]>
+	</fx:Script>
+</components:CoreApplication>

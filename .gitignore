@@ -23,3 +23,7 @@ tmp
 # IDEA files
 .idea/
 *.iml
+
+
+HLSProvider/
+desktop_test_app/

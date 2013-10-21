@@ -36,7 +36,7 @@
             _item = null;
 
             selected = false;
-            fileList.selectedIndex = -1;
+            fileList && (fileList.selectedIndex = -1);
         }
 
 
