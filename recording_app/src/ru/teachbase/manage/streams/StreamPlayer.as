@@ -53,6 +53,7 @@ public class StreamPlayer extends EventDispatcher{
 
     private var __initialized:Boolean = false;
 
+
     public function StreamPlayer(player:RecordingPlayer, manager:RecordStreamManager=null){
         _player = player;
         _manager = manager;
@@ -113,6 +114,7 @@ public class StreamPlayer extends EventDispatcher{
         for each(var data:StreamMapData in toActivate){
             data.hls.seek(time - data.start_ts);
             data.hls.client.seekTime = time - data.start_ts;
+            data.hls.client.completed = false;
             _manager && _manager.addHLSStream(data.hls.stream);
             _activeHLS.push(data.hls);
         }
@@ -131,9 +133,11 @@ public class StreamPlayer extends EventDispatcher{
         var ns:NetStream = new NetStream(connection);
 
         ns.client = new NetStreamClient(stream);
-        ns.client.onMetaData({hasVideo:true,hasAudio:true});
+       // ns.client.onMetaData({hasVideo:true,hasAudio:true});
 
         var _hls:HLS = new HLS(ns);
+
+        _hls.seekAccurate();
 
         ns.client.hls = _hls;
 
@@ -215,7 +219,11 @@ public class StreamPlayer extends EventDispatcher{
         }
     }
 
-    private function _mediaTimeHandler(e:HLSEvent):void{}
+    private function _mediaTimeHandler(e:HLSEvent):void{
+
+        ((e.target as HLS).stream.client.position is Function) && (e.target as HLS).stream.client.position(e.mediatime.position);
+
+    }
 
     private function _stateHandler(e:HLSEvent):void {
 
@@ -236,8 +244,8 @@ public class StreamPlayer extends EventDispatcher{
             warning('stopping?');
         }
 
-        if(hls.client.buffering && e.state == HLSStates.PLAYING){
-            hls.pause();
+        if(hls.client.buffering && (e.state == HLSStates.PLAYING || e.state == HLSStates.PAUSED)){
+            e.state == HLSStates.PLAYING && hls.pause();
             debug("seek and position: "+hls.client.seekTime+" - "+hls.getPosition());
             hls.client.buffering = false;
             _bufferingCount--;

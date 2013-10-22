@@ -15,6 +15,7 @@
 
         import ru.teachbase.model.App;
         import ru.teachbase.model.User;
+        import ru.teachbase.utils.Strings;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
@@ -38,6 +39,8 @@
         private var _isAdmin:Boolean;
 
         private var _rotated:Boolean = false;
+
+        private var _position:Number;
 
         [Bindable]
         private var _closeTooltip:String;
@@ -81,7 +84,7 @@
         }
 
         private function onStreamPause():void {
-            if(stream){
+            if (stream) {
                 stream.receiveVideo(false);
                 stream.client.metadata['paused'] = true;
                 App.meeting.streamList.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE));
@@ -90,7 +93,7 @@
         }
 
         private function onStreamPlay():void {
-            if(stream){
+            if (stream) {
                 (stream.client.metadata['fps'] > 0) && stream.receiveVideo(true);
                 stream.client.metadata['paused'] = false;
                 App.meeting.streamList.dispatchEvent(new CollectionEvent(CollectionEvent.COLLECTION_CHANGE));
@@ -120,9 +123,14 @@
             if (camera)
                 video.attachCamera(camera);
 
-            _closeTooltip = camera ? translate('close_sharing','video') : translate('close_user_stream','video');
+            _closeTooltip = camera ? translate('close_sharing', 'video') : translate('close_user_stream', 'video');
 
             uic.addChild(video);
+
+CONFIG::RECORDING{
+            position_txt.visible = true;
+}
+
         }
 
 
@@ -251,6 +259,17 @@
         public function set stream(value:NetStream):void {
             _stream = value;
         }
+
+        public function get position():Number {
+            return _position;
+        }
+
+        public function set position(value:Number):void {
+            _position = value;
+
+            if(_position) position_txt.text = Strings.digits(value);
+            else position_txt.text='';
+        }
         ]]>
 	</fx:Script>
 	<s:Rect width="100%" height="100%">
@@ -272,6 +291,7 @@
 			<s:SolidColor color="0x000000" alpha="0.6"/>
 		</s:fill>
 	</s:Rect>
+    <s:Label width="90%" text="" left="10" bottom="30" color="0xFF0000" id="position_txt" visible="false"/>
 	<s:Label width="90%" text="{userName}" left="10" bottom="3" color="0xFFFFFF"/>
 	
 	<s:Button id="playButton" 

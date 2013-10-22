@@ -21,13 +21,10 @@ import flash.utils.setTimeout;
 import mx.core.EventPriority;
 import mx.utils.ObjectUtil;
 
-import org.osmf.media.MediaPlayerState;
-
 import ru.teachbase.constants.ErrorCodes;
 import ru.teachbase.controller.RecordingController;
 import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.events.GlobalEvent;
-import ru.teachbase.manage.rtmp.PlayerStates;
 import ru.teachbase.manage.rtmp.model.Packet;
 import ru.teachbase.manage.streams.RecordStreamManager;
 import ru.teachbase.manage.streams.StreamPlayer;
@@ -45,7 +42,7 @@ import ru.teachbase.utils.shortcuts.warning;
 
 public class RecordingPlayer extends EventDispatcher{
 
-    private const seek_step:int = 5000;
+    private const timer_fix_count:int = 10;
 
     private var _manager:RTMPPretender;
 
@@ -94,6 +91,7 @@ public class RecordingPlayer extends EventDispatcher{
     private var _delta:Number = 0;
 
     private var _timer:Timer;
+    private var _timer_interval:Number = 500;
 
     private var _tid:uint;
     private var _cid:uint;
@@ -113,6 +111,12 @@ public class RecordingPlayer extends EventDispatcher{
     private var _need_to_reindex:Boolean = false;
     private var _wait_stream_buffer:Boolean = false;
 
+    private var _ticks_count:int = 0;
+
+    private var _last_ts:Number;
+
+    private var _last_position:Number = 0;
+
 
     //---------- data ------------//
 
@@ -123,7 +127,9 @@ public class RecordingPlayer extends EventDispatcher{
 
         _manager = mgr;
 
-        _timer = new Timer(100);
+
+        _timer = new Timer(_timer_interval);
+
 
         _timer.addEventListener(TimerEvent.TIMER, updatePosition);
 
@@ -164,7 +170,7 @@ public class RecordingPlayer extends EventDispatcher{
             return;
         }
 
-        if(_stream_player.state == PlayerStates.BUFFERING){
+        if(_stream_player.state == PlayerStates.BUFFERING || _stream_player.state == PlayerStates.SEEK){
             _wait_stream_buffer = true;
             state = PlayerStates.BUFFERING;
             return;
@@ -174,7 +180,7 @@ public class RecordingPlayer extends EventDispatcher{
 
         _stream_player.play();
 
-        _timer.start();
+        startTimer();
 
         prepareInvokeMessage();
     }
@@ -189,7 +195,7 @@ public class RecordingPlayer extends EventDispatcher{
 
         state = PlayerStates.PAUSED;
         _stream_player.pause();
-        _timer.reset();
+        stopTimer();
 
         _tid && clearTimeout(_tid);
 
@@ -308,6 +314,39 @@ public class RecordingPlayer extends EventDispatcher{
 
     //---------------- private --------------//
 
+    private function startTimer():void{
+
+        _last_ts = (new Date()).time;
+        _last_position = _position;
+        _timer.start();
+    }
+
+
+    private function stopTimer():void{
+
+        _timer.reset();
+        actualizeTime();
+    }
+
+
+    private function actualizeTime():void{
+
+        const ts:Number = (new Date()).time;
+
+        const real_shift:Number = (ts - _last_ts);
+
+        const calculated_shift:Number = _position - _last_position;
+
+        if(Math.abs(real_shift - calculated_shift) > _timer_interval/2){
+            _position = _last_position+real_shift;
+            debug("time shift: "+(real_shift - calculated_shift));
+        }
+
+        _ticks_count = 0;
+        _last_ts = ts;
+        _last_position = _position;
+
+    }
 
     private function needToLoadSnapshot(time:Number):Object{
 
@@ -486,6 +525,7 @@ public class RecordingPlayer extends EventDispatcher{
         dispatchEvent(new ErrorEvent(ErrorEvent.ERROR,false,false,message));
     }
 
+
     //------------------ loader methods/handlers ----------------//
 
     private function loadData(url:String,onComplete:Function = null):void {
@@ -661,16 +701,22 @@ public class RecordingPlayer extends EventDispatcher{
 
 
     protected function updatePosition(e:TimerEvent):void{
-        _position+=100;
+        _position+=_timer_interval;
+
+        _ticks_count++;
+
+        if(_ticks_count>timer_fix_count) actualizeTime();
 
         _bufferLength = Math.max(_bufferTime - _position,0);
         _backBufferLength = Math.max(_position - _backBufferTime,0);
 
         dispatchEvent(new ChangeEvent(this,'position',_position));
 
+
+
         if(_position >= _duration){
             pause();
-            _timer.stop();
+            stopTimer();
             state = PlayerStates.COMPLETE;
         }
 

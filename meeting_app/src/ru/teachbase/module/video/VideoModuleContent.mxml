@@ -148,6 +148,11 @@ CONFIG::LIVE{
             _streamsDic[ns] = vc;
             videoCont.addElement(vc);
             _streams++;
+
+CONFIG::RECORDING{
+            ns.client.position = function(value:Number):void{ vc.position = value;};
+}
+
         }
 
         private function addCamera(cam:Camera):void {
