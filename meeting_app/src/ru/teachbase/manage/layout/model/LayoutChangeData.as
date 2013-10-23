@@ -17,7 +17,7 @@ registerClazzAlias(LayoutChangeData);
 		public var i:uint = 0;
 		public var d:int = 0;
 		public var key:String = "";
-		
+		public var layout:Object;
 		
 		public function LayoutChangeData(obj:Object = null)
 		{

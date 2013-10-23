@@ -13,6 +13,7 @@ public class PlayerStates {
     public static const PAUSED:String = "paused";
     public static const SEEK:String = "seek";
     public static const COMPLETE:String = "complete";
+    public static const UNAVAILABLE:String = "unavailable";
 
 }
 }

@@ -38,10 +38,9 @@ public class LocaleManager extends Manager
             var locales = config('locales');
 
             if(locales && (locales is Array)){
-                const size:uint = locales.length;
-                for(var i:int = 0; i<size;i++) _availableLocales[locales[i].code] = new LangItem(locales[i].code,locales[i].label,locales[i].url);
+                for each(var locale:Object in locales) _availableLocales[locale.code] = new LangItem(locale.code,locale.label,locale.url);
 
-                var item:LangItem = _availableLocales[_lang] ? _availableLocales[_lang] : (_availableLocales[_defaultLang] ? _availableLocales[_defaultLang] : _availableLocales[locales[0].code]);
+                var item:LangItem = _availableLocales[_lang] ? _availableLocales[_lang] : (_availableLocales[_defaultLang] ? _availableLocales[_defaultLang] : _availableLocales[locale.code]);
 
                 _locale = item.code;
 
@@ -124,8 +123,8 @@ public class LocaleManager extends Manager
 		public static function getLocales():ArrayList{
 			
 			var al:ArrayList =  new ArrayList();
-			al.addItem(getItem("русский", "ru"));
-			al.addItem(getItem("english", "en"));
+
+            for each(var item:LangItem in instance._availableLocales) al.addItem(getItem(item.label, item.code));
 			return al;
 		}
 		

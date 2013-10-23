@@ -64,11 +64,14 @@ public class StreamPlayer extends EventDispatcher{
     }
 
 
+    //------------------ API ---------------------//
+
     public function buildMap(list:Array):void{
 
         _streams_map = new StreamMap();
 
         if(!list.length){
+            __state = PlayerStates.UNAVAILABLE;
             _initialized = true;
             return;
         }
@@ -90,7 +93,7 @@ public class StreamPlayer extends EventDispatcher{
 
     public function play():void{
 
-        if(_state == PlayerStates.BUFFERING || _state == PlayerStates.PLAYING || _state == PlayerStates.SEEK) return;
+        if(_state == PlayerStates.BUFFERING || _state == PlayerStates.PLAYING || _state == PlayerStates.SEEK || _state == PlayerStates.UNAVAILABLE) return;
 
         for each(var h:HLS in _activeHLS) h.resume();
 
@@ -99,11 +102,17 @@ public class StreamPlayer extends EventDispatcher{
     }
 
     public function pause():void{
+
+        if(_state == PlayerStates.UNAVAILABLE) return;
+
         for each(var h:HLS in _activeHLS) h.pause();
         _state = PlayerStates.PAUSED;
     }
 
     public function seek(time:Number):void{
+
+        if(_state == PlayerStates.UNAVAILABLE) return;
+
         stop();
         _state = PlayerStates.SEEK;
 
@@ -123,12 +132,19 @@ public class StreamPlayer extends EventDispatcher{
     }
 
     public function stop():void{
+
+        if(_state == PlayerStates.UNAVAILABLE) return;
+
         for each(var h:HLS in _activeHLS) h.pause();
         _manager && _manager.removeHLSStreams();
         _state = PlayerStates.IDLE;
     }
 
+
+
     public function createHLSStream(stream:StreamMapData):void{
+
+        if(_state == PlayerStates.UNAVAILABLE) return;
 
         var ns:NetStream = new NetStream(connection);
 
@@ -158,6 +174,8 @@ public class StreamPlayer extends EventDispatcher{
         _hls.play(_player.root_url+stream.name+"/"+stream.name+".m3u8");
     }
 
+
+    //----------------------------------------------------------------//
 
 
     protected function handleCuePoint(cue:CuePointData):void{
