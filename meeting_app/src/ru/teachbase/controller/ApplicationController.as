@@ -42,6 +42,7 @@ import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.GlobalError;
 import ru.teachbase.utils.logger.Logger;
 import ru.teachbase.utils.shortcuts.config;
+import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.notify;
 import ru.teachbase.utils.shortcuts.translate;
 
@@ -56,6 +57,8 @@ public class ApplicationController extends EventDispatcher {
     protected var _initializing:Boolean = false;
 
     private var _view:MainApplication;
+
+    private var _reiniting:Boolean = false;
 
     public function ApplicationController() {
 
@@ -81,10 +84,11 @@ public class ApplicationController extends EventDispatcher {
 
         dispose();
 
+        _reiniting = false;
+
         switch (e.code) {
             case ErrorCodes.KICKEDOFF:
                 errorMessage = translate("kickedoff", "error");
-                setTimeout(reinitialize, REINITIALIZE_INTERVAL); //todo: don't forget about it!
                 break;
             case ErrorCodes.LIMIT:
                 errorMessage = translate("limit", "error");
@@ -100,10 +104,16 @@ public class ApplicationController extends EventDispatcher {
                 break;
             case ErrorCodes.CONNECTION_FAILED:
                 errorMessage = translate("main_server", "error");
-                App.view && setTimeout(reinitialize, REINITIALIZE_INTERVAL);
+                if(App.view){
+                    _reiniting = true;
+                    setTimeout(reinitialize, REINITIALIZE_INTERVAL);
+                }
                 break;
             case ErrorCodes.CONNECTION_DROPPED:
-                !_initializing && reinitialize();
+                if(!_initializing){
+                    _reiniting = true;
+                    reinitialize();
+                }
                 errorMessage = translate("main_server", "error");
                 break;
             default:
@@ -113,10 +123,11 @@ public class ApplicationController extends EventDispatcher {
 
         hasEventListener(AppEvent.CORE_LOAD_ERROR) && dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
 
+        App.view && App.view.lightbox && App.view.lightbox.show();
         App.view && notify(new Notification(errorMessage), true);
 
+        App.view && !_reiniting && App.view.failed(errorMessage);
 
-        //TODO: show error state in MainApplication
     }
 
 
@@ -142,6 +153,7 @@ public class ApplicationController extends EventDispatcher {
             mgr && mgr.clear();
         });
 
+
         OutStreamSup.stop();
         InStreamSup.stop();
     }
@@ -150,6 +162,8 @@ public class ApplicationController extends EventDispatcher {
     protected function configLoaded(e:Event):void {
 
         if (config('debug')) Logger.MODE = config('debug');
+
+        debug(Configger.config);
 
         initializeManagers();
     }
@@ -176,6 +190,7 @@ public class ApplicationController extends EventDispatcher {
 
 
     }
+
 
 
     protected function reinitialize():void {
@@ -216,13 +231,15 @@ public class ApplicationController extends EventDispatcher {
 
         removeInitializerListeners(reinitializationComplete, reinitializationFailed);
 
-        OutStreamSup.run(30000);
-        InStreamSup.run();
+
+        config('net/monitor/out') && OutStreamSup.run(30000);
+        config('net/monitor/in') && InStreamSup.run();
 
         App.session.userReady();
 
         GlobalEvent.dispatch(GlobalEvent.RECONNECT);
 
+        App.view && App.view.lightbox.close();
     }
 
 
@@ -233,8 +250,8 @@ public class ApplicationController extends EventDispatcher {
         removeInitializerListeners(managersInitializedHandler, managersErrorHandler, managersProgressHandler);
 
         CONFIG::LIVE{
-            OutStreamSup.run(30000);
-            InStreamSup.run();
+            config('net/monitor/out') && OutStreamSup.run(30000);
+            config('net/monitor/in') && InStreamSup.run();
 
             App.settings.addPanel(new AudioSettings());
             App.settings.addPanel(new VideoSettings());

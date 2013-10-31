@@ -99,7 +99,10 @@
 
             bufferPoint = point;
 
-            curContainer.visible = true;
+            CONFIG::LIVE{
+                curContainer.visible = true;
+            }
+
             _liveCursorManager.posCursor(new Point(posX, posY));
         }
 
@@ -192,11 +195,12 @@
 
         private function createSnapshot(e:TimerEvent = null):void {
 
-            var _bmp:BitmapData = new BitmapData(video.width, video.height);
-            _bmp.draw(video, video.transform.matrix);
+            try{
+                var _bmp:BitmapData = new BitmapData(video.width, video.height);
+                _bmp.draw(video, video.transform.matrix);
 
-            _navigator.snapshotSource = _bmp;
-
+                _navigator.snapshotSource = _bmp;
+            }catch(e:Error){}
         }
 
         public function get videoWidth():Number {
@@ -254,7 +258,9 @@
         private var _liveCursorManager:SimpleLiveCursorManager;
 
         private function curInit():void {
-            _liveCursorManager = new SimpleLiveCursorManager(uic);
+            CONFIG::LIVE{
+                _liveCursorManager = new SimpleLiveCursorManager(uic);
+            }
         }
         ]]>
 	</fx:Script>

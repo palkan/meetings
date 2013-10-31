@@ -35,6 +35,7 @@
                 <element name="save_chat"><![CDATA[Save Chat]]></element>
 				<element name="minimize"><![CDATA[Minimize]]></element>
 				<element name="clear_workplace"><![CDATA[Clear Workplace]]></element>
+                <element name="open_document"><![CDATA[Open Document]]></element>
 				<element name="save_screenshot"><![CDATA[Save Screenshot]]></element>
                 <element name="export_user_list"><![CDATA[Save Users List]]></element>
                 <element name="user_set_user">Make Presenter</element>
@@ -190,7 +191,8 @@ are connected and turned on]]></element>
 				<element name="1_quality_low"><![CDATA[Low]]></element>
 				<element name="2_quality_medium"><![CDATA[Medium]]></element>
 				<element name="q_normal"><![CDATA[Normal]]></element>
-				<element name="3_quality_high"><![CDATA[High]]></element>
+				<element name="3_quality_high"><![CDATA[Standard]]></element>
+                <element name="4_quality_hd"><![CDATA[High]]></element>
 				<element name="lang_choose"><![CDATA[Language]]></element>
                 <element name="loopback_mic"><![CDATA[Microphone Loopback]]></element>
                 <element name="if_no_mic"><![CDATA[No Microphone Available]]></element>
@@ -227,6 +229,7 @@ ${2}]]></element>
                 <element name="role_changed"><![CDATA[Role is changed]]></element>
                 <element name="layout_locked"><![CDATA[Layout is locked]]></element>
                 <element name="layout_unlocked"><![CDATA[${1} is editing layout]]></element>
+                <element name="recording_buffering"><![CDATA[Buffering...]]></element>
                 <element name="bw_video_quality_decreased"><![CDATA[Video quality have been decreased due to low network bandwidth]]></element>
                 <element name="bw_cam_not_allowed"><![CDATA[Camera sharing not allowed due to low network bandwidth]]></element>
                 <element name="bw_instream_low_fps"><![CDATA[Incoming video quality have been decreased due to low network bandwidth]]></element>

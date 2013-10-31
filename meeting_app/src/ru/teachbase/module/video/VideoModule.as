@@ -28,6 +28,7 @@ import ru.teachbase.utils.shortcuts.style;
 			instanceID = 1;
 			var _videoPanel:VideoModuleContent = new VideoModuleContent();
 			_videoPanel.instanceID = instanceID;
+            _videoPanel.init();
 			_instances[instanceID] = _videoPanel;
 			return _videoPanel;
 		}

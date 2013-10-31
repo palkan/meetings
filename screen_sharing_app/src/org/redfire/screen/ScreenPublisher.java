@@ -105,11 +105,7 @@ public abstract class ScreenPublisher {
         currentConversationId++;
         startTime = System.currentTimeMillis();
 
-        if(seekTimeRequested >= 0) {
-            //seekTime = reader.seek(seekTimeRequested);
-        } else {
-            //seekTime = 0;
-        }
+
         timePosition = seekTime;
         logger.debug("publish start, seek requested: {} actual seek: {}, play length: {}, conversation: {}", new Object[]{seekTimeRequested, seekTime, playLength, currentConversationId});
 

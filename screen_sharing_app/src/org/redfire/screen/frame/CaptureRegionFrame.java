@@ -29,6 +29,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.TimerTask;
+import java.util.Timer;
 
 public class CaptureRegionFrame {
 	
@@ -43,6 +45,27 @@ public class CaptureRegionFrame {
 		this.client = client;
 		frame.setCaptureRegionListener(client);
 		frame.setToolbar(createToolbar());
+
+        //frame.setVisible(false);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                frame.setVisible(true);
+               frame.repaint();
+                frame.setVisible(false);
+            }
+        }, 500);
+
+        Timer timer2 = new Timer();
+        timer2.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                frame.setVisible(true);
+            }
+        }, 1000);
+
 	}
 	
 	public void setHeight(int h) {
@@ -163,7 +186,7 @@ public class CaptureRegionFrame {
 			setOpaque(false);
 			try {
 				cursorImageOver = ImageIO.read(ScreenShare.class.getResource("/redButton.png"));
-				cursorImageOut = ImageIO.read(ScreenShare.class.getResource("/redButtonVeryTransperent.png"));
+				cursorImageOut = ImageIO.read(ScreenShare.class.getResource("/redButton.png"));
 			}catch(Exception ex) {
 				
 			}

@@ -52,6 +52,7 @@ public class DocumentsModule extends Module {
     override protected function createInstance(instanceID:int):IModuleContent {
         const result:WorkplaceContent = new WorkplaceContent();
         result.instanceID = instanceID;
+        result.init();
         return result;
     }
 

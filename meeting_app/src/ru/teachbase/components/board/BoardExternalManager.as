@@ -15,6 +15,7 @@ import ru.teachbase.manage.rtmp.model.Recipients;
 import ru.teachbase.utils.helpers.getValue;
 import ru.teachbase.utils.helpers.isArray;
 import ru.teachbase.utils.shortcuts.$null;
+import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.rtmp_send;
 
@@ -29,22 +30,20 @@ public class BoardExternalManager implements IExternalBoardManager {
     public function BoardExternalManager(id:int){
         _id = id;
         _listener = new RTMPListener(PacketType.WHITEBOARD+"::"+_id);
+        _listener.initialize();
+        _listener.addEventListener(RTMPEvent.DATA, handleMessage);
+
+        debug("Whiteboard initializing: "+_id);
     }
 
 
     public function connect(mgr:FigureManager):void{
-
         _mgr = mgr;
-
-        _listener.initialize();
-        _listener.addEventListener(RTMPEvent.DATA, handleMessage);
-
 
         GlobalEvent.addEventListener(GlobalEvent.RESET, handleReset);
         GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
 
         rtmp_history(PacketType.WHITEBOARD+"::"+_id, new Responder(handleHistory,$null));
-
     }
 
 
@@ -54,6 +53,9 @@ public class BoardExternalManager implements IExternalBoardManager {
 
 
     public function dispose():void{
+
+        GlobalEvent.removeEventListener(GlobalEvent.RESET, handleReset);
+        GlobalEvent.removeEventListener(GlobalEvent.RECONNECT, handleReconnect);
 
         _listener.removeEventListener(RTMPEvent.DATA, handleMessage);
         _listener.dispose();
@@ -73,6 +75,8 @@ public class BoardExternalManager implements IExternalBoardManager {
         _listener.dispose();
 
         _listener.initialize();
+
+        if(!_mgr) return;
 
         rtmp_history(PacketType.WHITEBOARD+"::"+_id, new Responder(handleHistory,$null));
     }

@@ -19,15 +19,17 @@
         import ru.teachbase.model.App;
         import ru.teachbase.utils.shortcuts.style;
 
+        import spark.components.Label;
+
         import spark.primitives.BitmapImage;
 
         private const _controller:ApplicationController = new ApplicationController();
 
         private var _container:ModuleContainer;
         private var _header:Header;
-        private var _notifications:NotificationContainer;
+        protected var _notifications:NotificationContainer;
 
-        private var _lightbox:LightboxContainer;
+        protected var _lightbox:LightboxContainer;
 
         //TEMP!
 
@@ -53,14 +55,9 @@
             addElement(_header);
 
 
-            _notifications = new NotificationContainer();
-            _notifications.top = 43;
-            _notifications.right = 14;
-            _notifications.dataProvider = new ArrayList();
-            addElement(_notifications);
-
             _lightbox = new LightboxContainer();
             _lightbox.container = this;
+            _lightbox.index = -2;
             _lightbox.percentHeight = 100;
             _lightbox.percentWidth = 100;
             _lightbox.setStyle('backgroundColor', 0x000000);
@@ -78,6 +75,26 @@
 
             addElement(_monitor);
 
+            _notifications = new NotificationContainer();
+            _notifications.top = 43;
+            _notifications.right = 14;
+            _notifications.dataProvider = new ArrayList();
+            addElement(_notifications);
+        }
+
+
+        public function failed(message:String):void{
+
+            removeAllElements();
+
+            var _label:Label = new Label();
+
+            _label.horizontalCenter = 0;
+            _label.verticalCenter = 0;
+
+            _label.text = message;
+
+            addElement(_label);
 
         }
 

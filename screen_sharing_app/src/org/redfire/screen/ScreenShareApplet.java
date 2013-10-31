@@ -32,8 +32,11 @@ public class ScreenShareApplet extends JApplet {
                 getParameter("host"),
                 getParameter("app"),
                 getParameter("port"),
-                getParameter("name"),
-                "flashv2","2","1024","768"
+                getParameter("stream_name"),
+                "flashsv2",
+                getParameter("fps"),
+                getParameter("videoWidth"),
+                getParameter("videoHeight")
         };
 
         _instance = ScreenShare.getInstance();

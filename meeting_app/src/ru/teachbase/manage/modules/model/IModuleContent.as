@@ -26,6 +26,8 @@ import ru.teachbase.components.callouts.SettingsItem;
 		function get label():String;
 
 		function set permissions(value:uint):void;
+
+        function get inited():Boolean;
 		
 		function hide():void;
 		

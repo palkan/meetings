@@ -43,6 +43,7 @@ public final class Initializer extends EventDispatcher {
      *
      */
     public static function initializeManagers(...managers):void {
+        instance._reinitializeMode = false;
         instance.initializeSequence(managers);
     }
 
@@ -55,6 +56,18 @@ public final class Initializer extends EventDispatcher {
         instance._reinitializeMode = true;
         instance.initializeSequence(managers);
     }
+
+    /**
+     *
+     */
+
+
+    public function clear():void{
+        managersToDo.length = 0;
+        Shared.DISPATCHER.removeEventListener(ManagerEvent.INITIALIZED, managerInited);
+        Shared.DISPATCHER.removeEventListener(ManagerEvent.ERROR, managerFailed);
+    }
+
 
     private function initializeSequence(managers:Array):void {
         Shared.DISPATCHER.addEventListener(ManagerEvent.INITIALIZED, managerInited);

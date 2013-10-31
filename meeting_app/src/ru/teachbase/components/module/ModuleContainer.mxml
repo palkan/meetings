@@ -171,7 +171,7 @@
 
             _controller.active = false;
 
-            panel.addEventListener(FlexEvent.CREATION_COMPLETE, panelCreated);
+            panel.addEventListener(ModuleEvent.INITED, panelCreated);
             _wait_panels.push(panel);
 
             elementContainer.addElement(panel);
@@ -184,7 +184,8 @@
 
             panel.hide();
 
-            _panels.splice(_panels.indexOf(panel), 1);
+            if(_panels.indexOf(panel)>-1) _panels.splice(_panels.indexOf(panel), 1);
+            else if(_wait_panels.indexOf(panel) > -1) _wait_panels.splice(_wait_panels.indexOf(panel),1);
 
             elementContainer.removeElement(panel);
         }
@@ -297,7 +298,7 @@
         //------------ event handlers ---------------//
 
 
-        protected function panelCreated(e:FlexEvent):void {
+        protected function panelCreated(e:ModuleEvent):void {
 
             e.currentTarget.removeEventListener(e.type, panelCreated);
 

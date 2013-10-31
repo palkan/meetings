@@ -22,11 +22,17 @@
 
         private var _editable:Boolean = true;
 
-        private final function init():void{
+        private var _created:Boolean = false;
+
+        private var _ex_manager:BoardExternalManager;
+
+        private final function init():void {
             figureManager.initialize(canvas);
         }
 
         private final function creationCompleteHandler(e:FlexEvent):void {
+            _ex_manager && figureManager.setExternal(_ex_manager);
+            _created = true;
         }
 
         protected function onPropertyChanged(event:WhiteBoardEvent):void {
@@ -46,6 +52,14 @@
             figureManager.dispose();
         }
 
+        public function get ex_manager():BoardExternalManager {
+            return _ex_manager;
+        }
+
+        public function set ex_manager(value:BoardExternalManager):void {
+            _ex_manager = value;
+        }
+
         public function get editable():Boolean {
             return _editable;
         }
@@ -59,11 +73,16 @@
         }
 
 
-        public function set controlbar(value:WBControlbar):void{
+        public function get controlbar():WBControlbar {
+            return _controlbar;
+        }
 
-            if(value){
 
-                if(_controlbar != value) controlbar = null;
+        public function set controlbar(value:WBControlbar):void {
+
+            if (value) {
+
+                if (_controlbar != value) controlbar = null;
 
                 _controlbar = value;
 
@@ -71,12 +90,12 @@
                 _controlbar.addEventListener(WhiteBoardEvent.TOOL, onToolChanged);
                 _controlbar.addEventListener(WhiteBoardEvent.UNDOREDO, onUndoRedo);
 
-                BindingUtils.bindProperty(_controlbar,"undo",figureManager,["history","undoAvailable"],false,true);
-                BindingUtils.bindProperty(_controlbar,"redo",figureManager,["history","redoAvailable"],false,true);
+                BindingUtils.bindProperty(_controlbar, "undo", figureManager, ["history", "undoAvailable"], false, true);
+                BindingUtils.bindProperty(_controlbar, "redo", figureManager, ["history", "redoAvailable"], false, true);
 
                 _controlbar.visible = _editable;
 
-            }else if(_controlbar){
+            } else if (_controlbar) {
 
                 _controlbar.removeEventListener(WhiteBoardEvent.PROPERTY, onPropertyChanged);
                 _controlbar.removeEventListener(WhiteBoardEvent.TOOL, onToolChanged);
@@ -89,8 +108,8 @@
         }
 
 
-        public function resize(w:Number,h:Number):void{
-            setLayoutBoundsSize(w,h);
+        public function resize(w:Number, h:Number):void {
+            setLayoutBoundsSize(w, h);
             canvas.width = w;
             canvas.height = h;
         }
@@ -103,6 +122,10 @@
 
         public function get manager():FigureManager {
             return figureManager;
+        }
+
+        public function get created():Boolean {
+            return _created;
         }
         ]]>
 	</fx:Script>

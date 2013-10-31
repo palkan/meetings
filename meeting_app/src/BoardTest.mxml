@@ -51,42 +51,41 @@
 
             setupConnection();
 
-           _board_mgr = new SimpleBoardClient(boardConnect,boardData);
+            _board_mgr = new SimpleBoardClient(boardConnect, boardData);
 
             board.manager.setExternal(_board_mgr);
         }
 
 
-
-        public function boardConnect(mgr:FigureManager):void{
+        public function boardConnect(mgr:FigureManager):void {
 
             _mgr = mgr;
 
         }
 
-        public function boardData(data:Array):void{
+        public function boardData(data:Array):void {
 
-            if(!_connection || !_connection.connected) return;
+            if (!_connection || !_connection.connected) return;
 
             _group.post(data);
 
         }
 
 
-        private function setupConnection():void{
+        private function setupConnection():void {
 
-             _connection = new NetConnection();
+            _connection = new NetConnection();
 
             _connection.addEventListener(NetStatusEvent.NET_STATUS, netStatus);
             _connection.connect("rtmfp:");
         }
 
 
-        private function netStatus(e:NetStatusEvent):void{
+        private function netStatus(e:NetStatusEvent):void {
 
             debug(e.info.code);
 
-            switch(e.info.code){
+            switch (e.info.code) {
                 case NetConnectionStatusCodes.SUCCESS:
                     setupGroup();
                     break;
@@ -98,16 +97,15 @@
             }
         }
 
-        private function setupGroup():void{
+        private function setupGroup():void {
             var groupspec:GroupSpecifier = new GroupSpecifier("myGroup/groupOne");
             groupspec.postingEnabled = true;
             groupspec.ipMulticastMemberUpdatesEnabled = true;
             groupspec.addIPMulticastAddress("225.225.0.1:30303");
 
-            _group = new NetGroup(_connection,groupspec.groupspecWithAuthorizations());
-            _group.addEventListener(NetStatusEvent.NET_STATUS,netStatus);
+            _group = new NetGroup(_connection, groupspec.groupspecWithAuthorizations());
+            _group.addEventListener(NetStatusEvent.NET_STATUS, netStatus);
         }
-
         ]]></fx:Script>
 
 </s:Application>

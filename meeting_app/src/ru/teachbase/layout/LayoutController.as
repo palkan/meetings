@@ -619,11 +619,74 @@ public class LayoutController extends EventDispatcher {
     }
 
 
+
+    private function updateLayoutIndices():void {
+
+        if (_model.num <= 0) return;
+
+        var target:ITreeLayoutElement;
+
+        if (_model.num === 1) {
+            target = getElementById((_model.tree.data as LayoutElementData).id);
+            if (!target)
+                return;
+            target.layoutIndex = "";
+            return;
+        }
+
+        var right:Boolean = false;
+        var flag:Boolean = true;
+        var l:uint = 0;
+
+        var _node:TreeNode = _model.tree;
+
+        while (flag) {
+            l = (_node.data as LayoutElementData).layout;
+
+            if (!right) {
+                _node = _node.left;
+            } else {
+                _node = _node.right;
+            }
+
+            if (!_node.hasChildren) {
+                target = getElementById((_node.data as LayoutElementData).id);
+                if (!target)
+                    return;
+                target.layoutIndex = _node.key;
+
+                if (right) {
+
+                    while (_node.type === 1) {
+                        _node = _node.parent;
+                    }
+
+                    if (_node.type === 2)
+                        flag = false;
+                    else {
+                        _node = _node.parent;
+                    }
+                }
+                else {
+                    _node = _node.parent;
+                    right = true;
+                }
+            }
+            else
+                right = false;
+        }
+    }
+
+
     public function updateDisplayList():void {
 
 
-        if (_model.num <= 0 || !this.active)
+        if (_model.num <= 0) return;
+
+        if(!this.active){
+            updateLayoutIndices();
             return;
+        }
 
         hideResizers();
 
@@ -638,6 +701,7 @@ public class LayoutController extends EventDispatcher {
         if (_expanded) {
             _expandedTarget.setLayoutBoundsSize(width, height);
             _expandedTarget.setLayoutBoundsPosition(0, 0);
+            updateLayoutIndices();
             return;
         }
 

@@ -19,10 +19,6 @@
 
         private var _container:ModuleContainer;
         private var _controls:Controlbar;
-        private var _notifications:NotificationContainer;
-
-        private var _lightbox:LightboxContainer;
-
 
         override public function draw():void {
 
@@ -52,6 +48,7 @@
 
             _lightbox = new LightboxContainer();
             _lightbox.container = this;
+            _lightbox.index = -1;
             _lightbox.percentHeight = 100;
             _lightbox.percentWidth = 100;
             _lightbox.setStyle('backgroundColor', 0x000000);

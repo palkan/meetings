@@ -17,6 +17,19 @@ public class CameraQuality{
     private var _bandwidth:int;
     private var _bitrate:int;
 
+
+    /**
+     *
+     * @param id
+     * @param quality
+     * @param kfi
+     * @param fps
+     * @param width
+     * @param height
+     * @param bandwidth
+     * @param bitrate
+     */
+
     function CameraQuality(id:String,quality:int,kfi:int,fps:int,width:int,height:int,bandwidth:int = 0, bitrate:int = 0){
 
         this._id = id;

@@ -26,8 +26,7 @@ import com.sun.awt.AWTUtilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.peer.ComponentPeer;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -438,17 +437,21 @@ class WindowlessFrame implements Serializable {
 			}
 		}
 	}
-	
-	private class CaptureFrame extends JWindow implements LocationAndSizeUpdateable {
+
+
+	private class CaptureFrame extends JWindow implements LocationAndSizeUpdateable, WindowListener {
 		
 		private static final long serialVersionUID = 1L;
 		
 		private JPanel capturePanel;
 		private Boolean transparentFrame = false;
+        private WindowlessFrame ownerFrame;
 		
-		public CaptureFrame (JWindow window){
+		public CaptureFrame (JWindow window, WindowlessFrame owner){
 			super(window);
 			super.setAlwaysOnTop(true);
+            addWindowListener(this);
+            ownerFrame = owner;
 			
 			capturePanel = new JPanel(){
 				private static final long serialVersionUID = 1L;
@@ -456,14 +459,11 @@ class WindowlessFrame implements Serializable {
 				@Override
 			    public void paintComponent(Graphics g){
 			        super.paintComponent(g);
-			        super.setBackground(tColor);
-                    if(isMac){
-                        getRootPane().putClientProperty("Window.alpha", new Float(0.2f));
-                    }
+
 			        Graphics2D g2 = (Graphics2D) g;
 					g2.setStroke(borderSolidStroke);
 
-			        if (!transparentFrame) {
+			        //if (!transparentFrame) {
 						g2.setPaint(blueColor);
 						// big frame
 				        g2.drawRect(4, 4, getWidth()-9, getHeight()-9);
@@ -475,12 +475,16 @@ class WindowlessFrame implements Serializable {
 				        g2.fillRect(0, getHeight()-9, 9, 9);
 				        // bottom right
 				        g2.fillRect(getWidth()-9, getHeight()-9, 9, 9);
-			        }else{
-						g2.setPaint(blueTransparenColor);
+			        //}else{
+				//		g2.setPaint(blueTransparenColor);
 						// big frame
-				        g2.drawRect(4, 4, getWidth()-9, getHeight()-9);
-			        }
-			        
+				//        g2.drawRect(4, 4, getWidth()-9, getHeight()-9);
+			      //  }
+
+                    super.setBackground(tColor);
+                    if(isMac){
+                        getRootPane().putClientProperty("Window.alpha", new Float(0.2f));
+                    }
 			    }
 			};
 			add(capturePanel);
@@ -489,7 +493,22 @@ class WindowlessFrame implements Serializable {
 		public void setFrameTransparency(Boolean tr) {
 			transparentFrame = tr;
 		}
-		
+
+
+
+        public void windowActivated(WindowEvent e) {
+            ownerFrame.repaint();
+        }
+
+        public void windowOpened(WindowEvent e) {
+            ownerFrame.repaint();
+        }
+        public void windowDeactivated(WindowEvent e) {}
+        public void windowIconified(WindowEvent e) {}
+        public void windowClosing(WindowEvent e) {}
+        public void windowClosed(WindowEvent e) {}
+        public void windowDeiconified(WindowEvent e) {}
+
 		public void updateLocationAndSize() {
 			setSize(getWidth(), getHeight());
 			setLocation(getLocation());
@@ -524,10 +543,12 @@ class WindowlessFrame implements Serializable {
 
 		mWindowFrame = new JWindow();
 
-        if ("Mac OS X".equals(System.getProperty("os.name"))) {
+
+        if ("Mac OS X".equals(System.getProperty("os.name"))){
             isMac = true;
         }
 
+        cFrame = new CaptureFrame(mWindowFrame, this);
 
         mWindowFrame.setBackground(new Color(0,0,0,0));
 
@@ -535,8 +556,6 @@ class WindowlessFrame implements Serializable {
             mWindowFrame.getRootPane().putClientProperty("Window.alpha", new Float(0.2f));
         }
 
-		cFrame = new CaptureFrame(mWindowFrame);
-		
 		movingAdapter = createMovingMouseListener();
 		resizingAdapter = createResizingMouseListener();
 		changeBarFrames(new PropertyChanger() {
@@ -548,6 +567,8 @@ class WindowlessFrame implements Serializable {
 				component.addMouseMotionListener(movingAdapter);
 			}
 		}, false);
+
+        repaint();
 	}
 
 	public final MouseAdapter createMovingMouseListener() {
@@ -646,6 +667,12 @@ class WindowlessFrame implements Serializable {
 	public final void repaint() {
 		changeAll(REPAINTER, false);
 	}
+
+
+    public void setTransparency(Boolean flag){
+        cFrame.setFrameTransparency(flag);
+    }
+
 
 	public void changeToPreCaptureState() {
 		cFrame.setFrameTransparency(true);

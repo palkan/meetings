@@ -40,6 +40,7 @@ public final class UsersModule extends Module {
         instanceID = 1;
         var _el:UsersPanel = new UsersPanel();
         _el.instanceID = instanceID;
+        _el.init();
         _instances[instanceID] = _el;
         return _el;
     }

@@ -7,13 +7,15 @@
 		<![CDATA[
         import caurina.transitions.Tweener;
 
+        import mx.core.EventPriority;
+
         import mx.events.FlexEvent;
         import mx.events.ResizeEvent;
         import mx.graphics.ImageSnapshot;
 
         import ru.teachbase.components.board.BoardContent;
         import ru.teachbase.components.board.BoardExternalManager;
-        import ru.teachbase.components.board.WBControlbar;
+        import ru.teachbase.components.board.BoardModule;
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
@@ -25,6 +27,7 @@
         import ru.teachbase.module.documents.model.WorkplaceRenderers;
         import ru.teachbase.module.documents.renderers.IWorkplaceRenderer;
         import ru.teachbase.utils.LocalFile;
+        import ru.teachbase.utils.shortcuts.debug;
         import ru.teachbase.utils.shortcuts.rtmp_send;
         import ru.teachbase.utils.workplace.ControlHost;
 
@@ -70,8 +73,15 @@
 
             _documentId = data.id;
 
+            debug("Document initializing: " + _documentId);
+
+            _listener = new RTMPListener(PacketType.DOCUMENT + "::" + _documentId, true);
+            _listener.addEventListener(RTMPEvent.DATA, handleMessage);
+
             _renderer.file = data.file;
             _renderer.data = data.state || {};
+
+            if (_renderer.useWB) _board = BoardModule.getElement(_documentId);
 
             _renderer.editable = _editable;
             _renderer.setLayoutBoundsPosition(20, 20);
@@ -85,13 +95,12 @@
 
         public function dispose():void {
 
+            clearState();
+
             _renderer && _renderer.dispose();
-            _board && _board.dispose();
-            _board_mgr && _board_mgr.dispose();
 
             _renderer = null;
             _board = null;
-            _board_mgr = null;
 
             content.removeAllElements();
             controls.removeAllElements();
@@ -142,8 +151,8 @@
             _renderer.data.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_renderer.data.rotation <= 0], Math.abs(_renderer.data.rotation));
             callHostFunction(_renderer, WorkplaceMethod.CHANGE_SLIDE, [0]);
             callHostFunction(this, WorkplaceMethod.CHANGE_SLIDE, [0]);
+            _renderer.data.zoom && callHostFunction(this,WorkplaceMethod.ZOOM,[_renderer.data.zoom <= 0], Math.abs(_renderer.data.zoom));
         }
-
 
         protected function zoomIn(event:MouseEvent = null):void {
 
@@ -243,32 +252,34 @@
 
         private function attachWhiteboard():void {
 
-            _board = new BoardContent();
-            _board.x = 20;
-            _board.y = 20;
+            if (!_board) return;
 
-            _board.canvas.backgroundAlpha = 0;
 
-            var controlbar:WBControlbar = new WBControlbar();
-            _board.controlbar = controlbar;
-            controls.addElement(controlbar);
+            if (!_board.created) {
+                _board.x = 20;
+                _board.y = 20;
 
-            _board_mgr = new BoardExternalManager(_documentId);
+                _board.canvas.backgroundAlpha = 0;
+                _board.canvas.ratio = _renderer.ratio;
+                _board.canvas.maxCanvasWidth = _renderer.initialWidth;
 
-            _board.manager.setExternal(_board_mgr);
+                if (_renderer.data.slide)
+                    _board.manager.startSlide = _renderer.data.slide;
 
-            _board.canvas.ratio = _renderer.ratio;
-            _board.canvas.maxCanvasWidth = _renderer.initialWidth;
+                _board.addEventListener(FlexEvent.CREATION_COMPLETE, function (e:Event):void {
+                    _board.editable = _editable;
+                    _board.removeEventListener(FlexEvent.CREATION_COMPLETE, arguments.callee);
+                    _board.resize(content.width - 40, content.height - 40);
+                });
 
-            if (_renderer.data.slide)
-                _board.manager.startSlide = _renderer.data.slide;
-
-            _board.addEventListener(FlexEvent.CREATION_COMPLETE, function () {
+            } else {
+                if (_renderer.data.slide)
+                    _board.manager.goToPage(_renderer.data.slide);
                 _board.editable = _editable;
-                _board.removeEventListener(FlexEvent.CREATION_COMPLETE, arguments.callee);
                 _board.resize(content.width - 40, content.height - 40);
-            });
+            }
 
+            controls.addElement(_board.controlbar);
             content.addElement(_board);
         }
 
@@ -304,7 +315,7 @@
             }
 
             _renderer && _renderer.resize(content.width - 40, content.height - 40);
-            _board && _board.resize(content.width - 40, content.height - 40);
+            _board && _board.created && _board.resize(content.width - 40, content.height - 40);
         }
 
 
@@ -335,8 +346,6 @@
             _renderer.hasControls && _renderer.initControls(controls) && addControlsListener();
             _renderer.removeEventListener(RendererEvent.INITIALIZED, rendererInitializedHandler);
 
-            _listener = new RTMPListener(PacketType.DOCUMENT + "::" + _documentId, true);
-            _listener.addEventListener(RTMPEvent.DATA, handleMessage);
             _listener.readyToReceive = true;
 
             resizeHandler();

@@ -2,6 +2,7 @@ package ru.teachbase.manage.publish {
 import flash.events.ActivityEvent;
 import flash.events.AsyncErrorEvent;
 import flash.events.ErrorEvent;
+import flash.events.Event;
 import flash.events.IOErrorEvent;
 import flash.events.NetStatusEvent;
 import flash.media.Camera;
@@ -18,6 +19,7 @@ import ru.teachbase.constants.NetStreamStatusCodes;
 import ru.teachbase.constants.PacketType;
 import ru.teachbase.constants.PublishQuality;
 import ru.teachbase.events.ChangeEvent;
+import ru.teachbase.events.GlobalEvent;
 import ru.teachbase.manage.*;
 import ru.teachbase.manage.rtmp.RTMPListener;
 import ru.teachbase.manage.rtmp.RTMPManager;
@@ -65,7 +67,7 @@ public class PublishManager extends Manager {
     private var _h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
     private var _qualityId:String;
 
-    private var _maxQuality:String = PublishQuality.HIGH;
+    private var _maxQuality:String = PublishQuality.HD;
 
     private var _cameraEnabled:Boolean = true;
 
@@ -100,6 +102,10 @@ public class PublishManager extends Manager {
 
         setQuality(App.user.settings.publishQuality);
 
+
+        GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE, permissionsHandler);
+
+
         listener.addEventListener(RTMPEvent.DATA, handleMessage);
         listener.initialize();
         listener.readyToReceive = true;
@@ -108,10 +114,14 @@ public class PublishManager extends Manager {
     }
 
 
+
     override public function clear():void{
         closeCamera(false);
         closeAudio(false);
         super.clear();
+
+        GlobalEvent.removeEventListener(GlobalEvent.PERMISSIONS_UPDATE, permissionsHandler);
+
         listener.dispose();
         listener.removeEventListener(RTMPEvent.DATA, handleMessage);
 
@@ -244,6 +254,10 @@ public class PublishManager extends Manager {
                 CameraUtils.setHighQuality(_camera);
                 _useH264 && _h264Settings.setProfileLevel(H264Profile.MAIN, H264Level.LEVEL_3_2);
                 break;
+            case PublishQuality.HD:
+                CameraUtils.setHDQuality(_camera);
+                _useH264 && _h264Settings.setProfileLevel(H264Profile.MAIN, H264Level.LEVEL_3_2);
+                break;
             case PublishQuality.MEDIUM:
             default:
                 CameraUtils.setMediumQuality(_camera);
@@ -281,7 +295,15 @@ public class PublishManager extends Manager {
 
         setCamera(true);
 
-        if(videoSharing)  _stream.attachCamera(_camera);
+        if(videoSharing){
+
+            _stream.attachCamera(null);
+            _stream.attachCamera(_camera);
+
+            // send user changed event to update camera loopback
+
+            App.user.shareStatus = App.user.shareStatus;
+        }
 
     }
 
@@ -308,14 +330,21 @@ public class PublishManager extends Manager {
 
     private function setCamera(force:Boolean = false):void{
 
-        if (_camera || !force) return;
+        if (_camera && !force) return;
 
         if(!_cameraEnabled){
             notify(new Notification(translate('bw_cam_not_allowed','notifications')),true);
             return;
         }
 
-        _camera = CameraUtils.getCamera(App.user.settings.camID);
+
+        const index:String = (Camera.names.indexOf(App.user.settings.camID)).toString();
+
+        debug("Switch to camera: "+ App.user.settings.camID+", index: "+index);
+
+        _camera = CameraUtils.getCamera(index);
+
+        debug("Switched to camera: " + (_camera ? _camera.name : "none"));
 
         if (!_camera) return;
 
@@ -333,7 +362,13 @@ public class PublishManager extends Manager {
 
     private function setMicrophone(force:Boolean = false):void{
         if(_microphone && !force) return;
+
+        debug("Switch to microphone: "+ App.user.settings.micID);
+
         _microphone = MicrophoneUtils.getMicrophone(App.user.settings.micID,true);
+
+        debug("Switched to microphone: " + (_microphone ? _microphone.name : "none"));
+
         MicrophoneUtils.configure(_microphone);
         _microphone.gain = App.user.settings.micLevel;
     }
@@ -539,9 +574,28 @@ public class PublishManager extends Manager {
 
     //------------- handlers ----------------//
 
+
+    protected function permissionsHandler(e:GlobalEvent):void{
+
+        if(!e.value) closeAll();
+
+    }
+
+
     protected function handleMessage(e:RTMPEvent):void{
 
         e.packet.data && e.packet.data['action'] && (this['remote'+Strings.capitalize(e.packet.data.action)] is Function) && this['remote'+Strings.capitalize(e.packet.data.action)](e.packet);
+
+    }
+
+    protected function streamLooksDeadHandler(e:Event):void{
+
+        const _watcher:RTMPWatch = e.target as RTMPWatch;
+
+        _watcher.removeEventListener(Event.CLEAR,  streamLooksDeadHandler);
+
+        warning("Publish failed: empty stream");
+        closeAll();
 
     }
 
@@ -562,6 +616,7 @@ public class PublishManager extends Manager {
                 _stream.send('@setDataFrame','onMetaData',{quality:_qualityId, fps:CameraUtils.DEFAULT_FPS});
 
                 var _watcher:RTMPWatch = new RTMPWatch(_stream);
+                _watcher.addEventListener(Event.CLEAR, streamLooksDeadHandler);
                 App.rtmpMedia.stats.registerOutput(_watcher);
                 break;
             }

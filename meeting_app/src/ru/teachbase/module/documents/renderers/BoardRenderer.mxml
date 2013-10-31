@@ -46,8 +46,6 @@
                 rect.y = (h - rect.height) / 2;
             }
 
-            debug("Renderer:",rect.x, rect.y, rect.width,rect.height);
-
         }
 
 

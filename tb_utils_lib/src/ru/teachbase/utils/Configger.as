@@ -116,7 +116,7 @@ public final class Configger extends EventDispatcher {
     private function loadFlashvars():void {
         try {
             for (var key:String in FlexGlobals.topLevelApplication.parameters)
-                _config[key] = FlexGlobals.topLevelApplication.parameters[key];
+                setConfigParam(key,FlexGlobals.topLevelApplication.parameters[key]);
         } catch (e:Error) {
             warning("Loading flashvars error", e.message);
         }

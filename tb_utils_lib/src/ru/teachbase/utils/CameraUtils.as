@@ -16,11 +16,13 @@ public class CameraUtils {
 
     private static var MEDIUM_QUALITY:CameraQuality = new CameraQuality(PublishQuality.MEDIUM, 80, 10, DEFAULT_FPS, 320, 240, 0, 300);
 
-    private static var HIGH_QUALITY:CameraQuality = new CameraQuality(PublishQuality.HIGH, 90, 10, DEFAULT_FPS, 480, 360, 0, 700);
+    private static var HIGH_QUALITY:CameraQuality = new CameraQuality(PublishQuality.HIGH, 90, 10, DEFAULT_FPS, 480, 360, 0, 600);
 
-    public static const AVAILABLE_QUALITIES:Array = [LOW_QUALITY, MEDIUM_QUALITY, HIGH_QUALITY];
+    private static var HD_QUALITY:CameraQuality = new CameraQuality(PublishQuality.HD, 90, 10, DEFAULT_FPS, 640, 480, 0, 800);
 
-    public static const AVAILABLE_QUALITIES_ID:Array = [PublishQuality.LOW, PublishQuality.MEDIUM, PublishQuality.HIGH];
+    public static const AVAILABLE_QUALITIES:Array = [LOW_QUALITY, MEDIUM_QUALITY, HIGH_QUALITY, HD_QUALITY];
+
+    public static const AVAILABLE_QUALITIES_ID:Array = [PublishQuality.LOW, PublishQuality.MEDIUM, PublishQuality.HIGH, PublishQuality.HD];
 
     public static function getCamera(id:String = null):Camera {
 
@@ -45,6 +47,10 @@ public class CameraUtils {
 
     public static function setHighQuality(cam:Camera):Camera {
         return HIGH_QUALITY.setup(cam);
+    }
+
+    public static function setHDQuality(cam:Camera):Camera {
+        return HD_QUALITY.setup(cam);
     }
 
 

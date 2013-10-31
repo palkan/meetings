@@ -28,6 +28,8 @@
 
             usersUpdateHandler();
 
+            _initialized = true;
+
         }
 
 

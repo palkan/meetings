@@ -4,19 +4,22 @@
  * Time: 2:03 PM
  */
 package ru.teachbase.constants {
+
 public class QualityFPSBitrate {
 
     private static const fps:Array = [15,10,6,2];
 
-    private static const hi_bitrates:Array = [700, 575, 450, 300];
+    private static const hd_bitrates:Array = [800, 675, 450, 300];
+
+    private static const hi_bitrates:Array = [600, 500, 350, 250];
 
     private static const med_bitrates:Array = [300, 250, 180, 150];
 
     private static const low_bitrates:Array = [180, 100, 80, 65];
 
-    private static const q2b:Array = [hi_bitrates, med_bitrates, low_bitrates];
+    private static const q2b:Array = [hd_bitrates, hi_bitrates, med_bitrates, low_bitrates];
 
-    private static const qualities:Array = [PublishQuality.HIGH, PublishQuality.MEDIUM, PublishQuality.LOW];
+    private static const qualities:Array = [PublishQuality.HD, PublishQuality.HIGH, PublishQuality.MEDIUM, PublishQuality.LOW];
 
 
     /**

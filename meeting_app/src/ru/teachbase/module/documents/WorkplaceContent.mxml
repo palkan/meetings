@@ -31,8 +31,6 @@
 
         private var _settings:Vector.<SettingsItem> = new Vector.<SettingsItem>();
 
-        private var _initialized:Boolean = false;
-
         private var _module:DocumentsModule;
 
         private var _currentDoc:DocumentData;
@@ -40,13 +38,18 @@
 
         //-------------------------- initialize -------------------------------//
 
-        protected function creationCompleteHandler(event:Event = null):void {
+        override public function init():void {
 
             _listener = new RTMPListener(PacketType.WORKPLACE + "::" + this.instanceID, true);
 
             _listener.addEventListener(RTMPEvent.DATA, handleMessage);
 
+        }
+
+        protected function creationCompleteHandler(e:Event = null):void {
+
             _settings.push(new SettingsItem("clear_workplace", SettingsItem.FUN, clearWorkspace));
+            _settings.push(new SettingsItem("open_document", SettingsItem.FUN, loadDocument));
             _settings.push(new SettingsItem("save_screenshot", SettingsItem.FUN, container.takeSnapshot))
 
             permissions = App.user ? App.user.permissions : 0;
@@ -132,7 +135,7 @@
 
             // check if we using the same document as loaded
 
-            if (_currentDoc && data.type == "active" && _currentDoc.id == (data.data as DocumentData).id) {
+            if (_currentDoc && data && data.type == "active" && _currentDoc.id == (data.data as DocumentData).id) {
                 container.handleReconnect(data.data.state);
             } else if (data)
                 processData(data);
@@ -166,7 +169,7 @@
         }
 
 
-        private function loadDocument(e:Event):void {
+        public function loadDocument(e:Event = null):void {
             _module.uploader.callback = uploaderHandler;
             App.view.lightbox.show(_module.uploader);
         }
@@ -209,6 +212,9 @@
 
         override public function hide():void {
             _currentDoc && detachDocument();
+            _listener && _listener.dispose();
+            _initialized = false;
+            GlobalEvent.removeEventListener(GlobalEvent.RECONNECT, handleReconnect);
             super.hide();
         }
 

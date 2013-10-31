@@ -111,6 +111,12 @@
 
             resize(this.width, this.height);
         }
+
+
+        override public function get useWB():Boolean {
+            return true;
+        }
+
         ]]>
 	</fx:Script>
     <renderers:states>

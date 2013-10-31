@@ -31,5 +31,6 @@ public class ErrorCodes {
     public static const PACKET_DECODE_FAILED:uint = RECORDING + (1 << 14);
     public static const HLS_STREAM_FAILED:uint = RECORDING + (1 << 15);
 
+    public static const MEETING_FAILED:uint = APPLICATION + (1 << 16);
 }
 }

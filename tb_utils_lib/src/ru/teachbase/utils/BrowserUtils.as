@@ -56,11 +56,12 @@ public class BrowserUtils {
      *
      * @param method
      * @param args
+     * @return false|*
      */
 
-    public static function sendCall(method,...args):void{
+    public static function sendCall(method,...args):*{
 
-        if (!ExternalInterface.available) return;
+        if (!ExternalInterface.available) return false;
 
         const callString:String = method+"(["+args.map(function(arg:*){
 
@@ -68,7 +69,7 @@ public class BrowserUtils {
 
         }).join(",")+"])";
 
-        ExternalInterface.call(callString);
+        return ExternalInterface.call(callString);
 
     }
 

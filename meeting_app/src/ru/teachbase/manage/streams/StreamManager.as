@@ -1,6 +1,7 @@
 package ru.teachbase.manage.streams {
 import flash.events.AsyncErrorEvent;
 import flash.events.ErrorEvent;
+import flash.events.Event;
 import flash.events.IOErrorEvent;
 import flash.events.NetStatusEvent;
 import flash.net.NetStream;
@@ -111,7 +112,7 @@ public dynamic class StreamManager extends Manager {
     public function setupBandwidth(bw:Number):void{
 
         _bandwidth = bw;
-        calculatePerStreamBW();
+       // calculatePerStreamBW();
 
     }
 
@@ -158,9 +159,17 @@ public dynamic class StreamManager extends Manager {
             case CollectionEventKind.REMOVE:
             case CollectionEventKind.UPDATE:
             case CollectionEventKind.RESET:
-                calculatePerStreamBW();
+                //calculatePerStreamBW();
                 break;
         }
+
+    }
+
+    private function streamLooksDeadHandler(e:Event):void{
+
+        const watcher:RTMPWatch = e.target as RTMPWatch;
+
+        checkFailedStream(watcher.client.data);
 
     }
 
@@ -189,6 +198,9 @@ public dynamic class StreamManager extends Manager {
 
                 var _watcher:RTMPWatch = new RTMPWatch(ns);
                 App.rtmpMedia.stats.registerInput(_watcher);
+
+                _watcher.addEventListener(Event.CLEAR, streamLooksDeadHandler);
+
                 _watcher.watch();
                 (ns.client as NetStreamClient).watcher = _watcher;
 
@@ -218,6 +230,9 @@ public dynamic class StreamManager extends Manager {
 
         ns.bufferTime = 0;
         ns.backBufferTime = 0;
+
+        debug("Stream play: "+stream.name);
+
         ns.play(stream.name,0,false,App.user.sid.toString());
     }
 
@@ -235,10 +250,11 @@ public dynamic class StreamManager extends Manager {
 
         const watcher:RTMPWatch = (ns.client as NetStreamClient).watcher;
         watcher && watcher.unwatch();
+        watcher && watcher.removeEventListener(Event.CLEAR, streamLooksDeadHandler);
 
         App.rtmpMedia.stats.unregisterInput(watcher);
 
-        ns.dispose();
+        //ns.dispose();
         ns.removeEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
         ns.removeEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
         ns.removeEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler);
@@ -262,8 +278,11 @@ public dynamic class StreamManager extends Manager {
     }
 
     private function checkFailedStream(data:StreamData):void {
-            removeStreamByName(data.name);
-            addStream(data);
+
+        debug("Stream failed; try again: "+data.name);
+
+        removeStreamByName(data.name);
+        addStream(data);
     }
 
 

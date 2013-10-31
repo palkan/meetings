@@ -52,6 +52,11 @@ public class Supervisor {
     }
 
 
+    protected function reset():void{
+        _position = -1;
+    }
+
+
     private function loop():void{
 
         switch(_state){
@@ -68,6 +73,7 @@ public class Supervisor {
 
     }
 
+    protected function get state():String{ return _state;}
 
     protected function set state(value:String):void{
 

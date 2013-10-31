@@ -120,14 +120,14 @@ public final class SessionManager extends Manager {
      *
      * login by hash (as authorized user or guest).
      *
-     * Hash is a key to record in Redis (for example) where all other data is stored.
-     *
      * @param hash
      * @param meeting_id
      */
 
     public function loginByHash(hash:String, meeting_id:uint):void {
-        //TODO
+        _onAfterLogin = loadMeetingModel;
+
+        App.rtmp.callServer("tb_login_by_hash", new Responder(loginSuccess, loginError), hash, meeting_id);
     }
 
     /**
@@ -360,6 +360,7 @@ public final class SessionManager extends Manager {
 
         _onAfterLogin && _onAfterLogin();
     }
+
 
     private function loginError(err:*):void {
         error('Login failed', err.hasOwnProperty('errorId') ? uint(err.errorId) : ErrorCodes.AUTHORIZATION_FAILED);

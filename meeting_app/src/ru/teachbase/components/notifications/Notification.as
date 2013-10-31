@@ -13,6 +13,16 @@ public class Notification {
     private var _cancelLabel:String;
     private var _cancelFunction:Function;
 
+    /**
+     *
+     * @param text
+     * @param icon
+     * @param submit_lb
+     * @param submit_fun
+     * @param cancel_lb
+     * @param cancel_fun
+     */
+
     public function Notification(text:String, icon:DisplayObject = null, submit_lb:String = '', submit_fun:Function = null, cancel_lb:String = '', cancel_fun:Function = null):void {
         _text = text;
         _icon = icon;

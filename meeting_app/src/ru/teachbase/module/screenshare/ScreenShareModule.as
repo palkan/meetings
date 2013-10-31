@@ -24,6 +24,7 @@ public class ScreenShareModule extends Module
 			instanceID = 1;
 			var _el:ScreenShareContent = new ScreenShareContent();
 			_el.instanceID = instanceID;
+            _el.init();
 			_instances[instanceID] = _el;
 			return _el;
 		}

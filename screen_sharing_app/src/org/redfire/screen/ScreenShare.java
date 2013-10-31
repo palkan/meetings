@@ -29,6 +29,7 @@ public class ScreenShare {
 	public static ClientOptions options;
 	
 	private static final int C_MOUSE_FREQUENCY = 1000;
+    private static final int C_KEEP_ALIVE_FREQUENCY = 2000;
 	private static final int C_MOUSE_POS_FREQUENCY = 500;
 	
     public boolean startPublish = false;
@@ -42,6 +43,7 @@ public class ScreenShare {
 	public CaptureScreen capture = null;
 	private Thread thread = null;
 	private Thread mouseThread = null;
+    private Thread kpThread = null;
 	public Robot robot;
 
     private int lastMouseX = -1;
@@ -143,6 +145,7 @@ public class ScreenShare {
             System.exit(0);
         }
 
+
         logger.debug("host: " + instance.host + ", app: " + instance.app + ", port: " + instance.port + ", publish: " + instance.publishName + ", fps: " + instance.frameRate);
 
         if (options == null)
@@ -167,7 +170,7 @@ public class ScreenShare {
 			Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 			CaptureRegionListener crl = new CaptureRegionListenerImp(this);
 			frame = new CaptureRegionFrame(crl, 3);
-            frame.setVisible(true);
+            //frame.setVisible(true);
             frame.setHeight(Double.valueOf(screenSize.getHeight()).intValue() - 120);
 			frame.setWidth(Double.valueOf(screenSize.getWidth()).intValue() - 120);
 			frame.setLocation(x, y);
@@ -229,6 +232,7 @@ public class ScreenShare {
         try {
             thread = null;
             mouseThread = null;
+            kpThread = null;
             startPublish = false;
 
             disconnect();
@@ -313,6 +317,14 @@ public class ScreenShare {
 				mouseThread = new Thread(smc);
 				mouseThread.start();
 			}
+
+
+            /* SendKeepAlive skp = new SendKeepAlive();
+
+            if (kpThread == null) {
+                kpThread = new Thread(skp);
+                kpThread.start();
+            }   */
 			
 			startPublish = true;
 
@@ -347,6 +359,16 @@ public class ScreenShare {
 		RtmpMessage rtmpMsg = new MetadataAmf0("onMetaData", ob);
 		publisher.write(clientChannel, rtmpMsg);	
     }
+
+    private void sendKeepAlive(){
+        if(false || !startPublish) return;
+
+        Amf0Object ob = new Amf0Object();
+        ob.put("msgtype", "keepalive");
+        RtmpMessage rtmpMsg = new MetadataAmf0("_keepalive", ob);
+
+        publisher.write(clientChannel, rtmpMsg);
+    }
     
     private void sendMousePos(double x, double y) {
     	if (!startPublish) 
@@ -369,7 +391,11 @@ public class ScreenShare {
     	ob.put("posx", posX);
     	ob.put("posy", posY);
 		RtmpMessage rtmpMsg = new MetadataAmf0("onMouseData", ob);
-		
+
+        final long ts = System.currentTimeMillis() - startTime;
+
+        rtmpMsg.getHeader().setTime((int)ts);
+
 		publisher.write(clientChannel, rtmpMsg);
     }
     
@@ -497,18 +523,20 @@ public class ScreenShare {
 		{
 			this.x = x;
 			this.y = y;
-			this.width = width;
-			this.height = height;
+			this.width = Double.valueOf(width /2).intValue()*2;
+			this.height = Double.valueOf(height / 2).intValue()*2;
 			
 			if(width > maxWidth || height > maxHeight){
-			
-				
+
 				this.rescale = true;
 				
-				double ratio = Double.valueOf(width) / Double.valueOf(height);
-			
-				maxWidth = Double.valueOf(ratio * Double.valueOf(maxHeight)).intValue();
-				
+				double ratio = Double.valueOf(width)/Double.valueOf(height);
+
+                if(ratio > maxWidth/maxHeight){
+                    maxHeight = Double.valueOf(Double.valueOf(maxWidth / ratio).intValue() /2).intValue()*2;
+                }else{
+                    maxWidth = Double.valueOf(Double.valueOf(ratio * Double.valueOf(maxHeight)).intValue() / 2).intValue() * 2;
+                }
 			}
 
 		   	logger.debug( "CaptureScreen: x=" + x + ", y=" + y + ", w=" + width + ", h=" + height );
@@ -542,17 +570,14 @@ public class ScreenShare {
 			{
 				ScreenCodec screenCodec;
 
-				if ("flashsv1".equals(codec))
-					screenCodec = new ScreenCodec1(rescale ? maxWidth : width, rescale ? maxHeight : height);
-				else
-					screenCodec = new ScreenCodec2(rescale ? maxWidth : width, rescale ? maxHeight : height);
 
-				
+				screenCodec = new ScreenCodec2(rescale ? maxWidth : width, rescale ? maxHeight : height);
+
 				
 				while (active)
 				{
 				
-					if (mousePosX ==  MouseInfo.getPointerInfo().getLocation().x && 
+					/*if (mousePosX ==  MouseInfo.getPointerInfo().getLocation().x &&
 							mousePosY == MouseInfo.getPointerInfo().getLocation().y && 
 							kt  > 20 && (kt % 10) != 0) {
 						//pushMessage("alive");
@@ -560,7 +585,7 @@ public class ScreenShare {
 						
 						Thread.sleep(C_MOUSE_POS_FREQUENCY);
 						continue;
-					}
+					} */
 					
 					final long ctime = System.currentTimeMillis();
 					
@@ -573,13 +598,18 @@ public class ScreenShare {
 						
 						if (this.rescale)
 						{
-							image = scaleImage(image, maxWidth, maxHeight);
+                            System.out.println( "WxH before" + image.getWidth()+"x"+image.getHeight());
+                            System.out.println( "WxH max" + maxWidth+"x"+maxHeight);
+
+                            image = scaleImage(image, maxWidth, maxHeight);
+
+                            System.out.println( "WxH after" + image.getWidth()+"x"+image.getHeight());
 						}
 
-						timestamp =  System.currentTimeMillis() - startTime;
-
 						final byte[] screenBytes = screenCodec.encode(image);
-						pushVideo(screenBytes, timestamp);
+
+                        timestamp =  System.currentTimeMillis() - startTime;
+                        pushVideo(screenBytes, timestamp);
 
 					}
 					catch (Exception e)
@@ -616,15 +646,15 @@ public class ScreenShare {
 			return newImage;
 		}*/
 
-        private BufferedImage scaleImage(BufferedImage orig, int w, int h)
+        private BufferedImage scaleImage(BufferedImage src, int w, int h)
         {
-           	BufferedImage tmp = configuration.createCompatibleImage(w, h, Transparency.TRANSLUCENT);
-           	Graphics2D g2 = tmp.createGraphics();
- 			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        	g2.drawImage(orig, 0, 0, w, h, null);
-            g2.dispose();
 
-            return tmp;
+            BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TRANSLUCENT);
+            Graphics2D g2 = resizedImg.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.drawImage(src, 0, 0, w, h, null);
+            g2.dispose();
+            return resizedImg;
         }
         
 	}
@@ -680,5 +710,24 @@ public class ScreenShare {
 		}
 		
 	}
+
+    private class SendKeepAlive implements Runnable{
+
+        @Override
+        public void run() {
+            while (true) {
+
+                sendKeepAlive();
+
+                try {
+                    Thread.sleep(C_KEEP_ALIVE_FREQUENCY);
+                }catch (Exception ex) {
+                    logger.info("error while sleeping send send keep alive");
+                }
+            }
+        }
+
+    }
+
 }
 

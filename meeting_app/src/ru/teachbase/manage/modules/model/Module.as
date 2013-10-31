@@ -21,7 +21,7 @@ import ru.teachbase.model.App;
 		/**
 		 * [instID] : IModuleContent
 		 */		
-		protected const _instances:Object = new Object();
+		protected const _instances:Object = {};
 		
 		protected var _icon:DisplayObject;
 		protected var _iconHover:DisplayObject;

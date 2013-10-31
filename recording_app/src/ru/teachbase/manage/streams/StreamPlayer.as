@@ -109,6 +109,12 @@ public class StreamPlayer extends EventDispatcher{
         _state = PlayerStates.PAUSED;
     }
 
+
+    /**
+     * Seek to position at <code>time</code> in seconds
+     * @param time
+     */
+
     public function seek(time:Number):void{
 
         if(_state == PlayerStates.UNAVAILABLE) return;
@@ -118,17 +124,18 @@ public class StreamPlayer extends EventDispatcher{
 
         _activeHLS.length = 0;
 
-        const toActivate:Vector.<StreamMapData> = _streams_map.find(time);
+        const toActivate:Vector.<StreamMapData> = _streams_map.find(time*1000);
 
         for each(var data:StreamMapData in toActivate){
-            data.hls.seek(time - data.start_ts);
-            data.hls.client.seekTime = time - data.start_ts;
+            data.hls.client.seekTime = time - data.start_ts/1000;
             data.hls.client.completed = false;
-            _manager && _manager.addHLSStream(data.hls.stream);
             _activeHLS.push(data.hls);
+            data.hls.seek(time - data.start_ts/1000);
         }
 
-        _cuePoint = _streams_map.nextCuePoint(time);
+        if(!_activeHLS.length) _state = PlayerStates.BUFFER_FULL;
+
+        _cuePoint = _streams_map.nextCuePoint(time*1000);
     }
 
     public function stop():void{
@@ -141,6 +148,12 @@ public class StreamPlayer extends EventDispatcher{
     }
 
 
+    public function registerActiveStreams():void{
+
+        for each(var h:HLS in _activeHLS) _manager && _manager.addHLSStream(h.stream);
+
+    }
+
 
     public function createHLSStream(stream:StreamMapData):void{
 
@@ -152,8 +165,6 @@ public class StreamPlayer extends EventDispatcher{
        // ns.client.onMetaData({hasVideo:true,hasAudio:true});
 
         var _hls:HLS = new HLS(ns);
-
-        _hls.seekAccurate();
 
         ns.client.hls = _hls;
 
@@ -192,7 +203,8 @@ public class StreamPlayer extends EventDispatcher{
 
         }else{
 
-            cue.data.hls.getState() != HLSStates.PLAYING && cue.data.hls.pause();
+            if(cue.data.hls.getPosition() != 0) cue.data.hls.seek(0);
+            else cue.data.hls.resume();
 
             _activeHLS.push(cue.data.hls);
 
@@ -263,10 +275,10 @@ public class StreamPlayer extends EventDispatcher{
         }
 
         if(hls.client.buffering && (e.state == HLSStates.PLAYING || e.state == HLSStates.PAUSED)){
-            e.state == HLSStates.PLAYING && hls.pause();
             debug("seek and position: "+hls.client.seekTime+" - "+hls.getPosition());
             hls.client.buffering = false;
             _bufferingCount--;
+            e.state == HLSStates.PLAYING && hls.pause();
             !_bufferingCount && (_state = PlayerStates.BUFFER_FULL);
         }
 
@@ -281,7 +293,7 @@ public class StreamPlayer extends EventDispatcher{
 
         if(e.property != "position" || !_cuePoint) return;
 
-        if(int(e.value/1000) >= _cuePoint.ts){
+        if(int(e.value) >= _cuePoint.ts){
 
             handleCuePoint(_cuePoint);
 

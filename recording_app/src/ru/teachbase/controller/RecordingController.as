@@ -4,6 +4,8 @@
  * Time: 11:59 AM
  */
 package ru.teachbase.controller {
+import com.mangui.HLS.utils.Log;
+
 import flash.events.Event;
 
 import ru.teachbase.components.notifications.Notification;
@@ -19,6 +21,7 @@ import ru.teachbase.manage.rtmp.RTMPPretender;
 import ru.teachbase.manage.session.SessionManager;
 import ru.teachbase.manage.streams.RecordStreamManager;
 import ru.teachbase.model.App;
+import ru.teachbase.utils.shortcuts.config;
 import ru.teachbase.utils.shortcuts.notify;
 import ru.teachbase.utils.shortcuts.translate;
 
@@ -32,9 +35,12 @@ public class RecordingController extends ApplicationController {
         managers.forEach(function(mgr:Manager,ind:int,arr:Array):void{ mgr && mgr.clear();});
     }
 
+
+
     /**
-     *  Reset all managers and modules to current history (use to seek).
+     *  Reset all managers and reload history.
      */
+
 
     public function reset():void{
 
@@ -82,6 +88,8 @@ public class RecordingController extends ApplicationController {
     }
 
     override public function initializeManagers():void{
+
+        if(!config('hls/debug')) Log.LOGGING = false;
 
         _initializing = true;
 

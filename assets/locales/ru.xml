@@ -35,6 +35,7 @@
                 <element name="save_chat"><![CDATA[Сохранить чат]]></element>
 				<element name="minimize"><![CDATA[Свернуть окно]]></element>
 				<element name="clear_workplace"><![CDATA[Очистить рабочую область]]></element>
+                <element name="open_document"><![CDATA[Открыть документ]]></element>
 				<element name="save_screenshot"><![CDATA[Сохранить скриншот]]></element>
                 <element name="export_user_list"><![CDATA[Сохранить список пользователей]]></element>
                 <element name="user_set_user">Сделать участником</element>
@@ -119,7 +120,7 @@
 				<element name="prepare_me"><![CDATA[Запускается приложение для демонстрации экрана]]></element>
 				<element name="prepare"><![CDATA[${1} готовится транслировать рабочий стол]]></element>
 				<element name="user_share_title"><![CDATA[Рабочий стол - ${1}]]></element>
-				<element name="stop_share"><![CDATA[Остановить демонстацию]]></element>
+				<element name="stop_share"><![CDATA[Остановить демонстрацию]]></element>
 				<element name="share_me"><![CDATA[Сейчас вы транслируете свой рабочий стол]]></element>
 				<element name="need_app"><![CDATA[Для работы с функцией Демонстрация рабочего стола, которая позволяем демонстрировать участникам все что происходит  у Вас на экране, Вам необходимо запустить приложение]]></element>
 				<element name="desc"><![CDATA[Вы можете демонстрировать участникам то что происходит у вас на экране монитора]]></element>
@@ -193,7 +194,8 @@
 				<element name="1_quality_low"><![CDATA[Низкое]]></element>
 				<element name="2_quality_medium"><![CDATA[Среднее]]></element>
 				<element name="q_normal"><![CDATA[Нормальное]]></element>
-				<element name="3_quality_high"><![CDATA[Высокое]]></element>
+				<element name="3_quality_high"><![CDATA[Стандартное]]></element>
+                <element name="4_quality_hd"><![CDATA[Высокое]]></element>
 				<element name="lang_choose"><![CDATA[Язык интерфейса]]></element>
                 <element name="loopback_mic"><![CDATA[Прослушать микрофон]]></element>
                 <element name="if_no_mic"><![CDATA[Микрофон не найден]]></element>
@@ -229,6 +231,7 @@ ${2}]]></element>
                 <element name="role_changed"><![CDATA[Роль изменена]]></element>
                 <element name="layout_locked"><![CDATA[Макет зафиксирован]]></element>
                 <element name="layout_unlocked"><![CDATA[${1} редактирует макет]]></element>
+                <element name="recording_buffering"><![CDATA[Буфферизация...]]></element>
                 <element name="bw_video_quality_decreased"><![CDATA[Качество видео снижено из-за недостаточной пропускной способности сети]]></element>
                 <element name="bw_cam_not_allowed"><![CDATA[Трансляция видео недоступна из-за недостаточной пропускной способности сети]]></element>
                 <element name="bw_instream_low_fps"><![CDATA[Качество входящего видео снижено из-за недостаточной пропускной способности сети]]></element>

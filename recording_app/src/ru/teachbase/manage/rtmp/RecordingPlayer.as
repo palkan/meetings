@@ -20,11 +20,17 @@ import flash.utils.setTimeout;
 
 import mx.core.EventPriority;
 import mx.utils.ObjectUtil;
+import mx.utils.ObjectUtil;
+
+import ru.teachbase.components.notifications.Notification;
 
 import ru.teachbase.constants.ErrorCodes;
 import ru.teachbase.controller.RecordingController;
 import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.events.GlobalEvent;
+import ru.teachbase.manage.rtmp.PlayerStates;
+import ru.teachbase.manage.rtmp.PlayerStates;
+import ru.teachbase.manage.rtmp.PlayerStates;
 import ru.teachbase.manage.rtmp.model.Packet;
 import ru.teachbase.manage.streams.RecordStreamManager;
 import ru.teachbase.manage.streams.StreamPlayer;
@@ -34,6 +40,8 @@ import ru.teachbase.utils.TBSReader;
 import ru.teachbase.utils.helpers.lambda;
 import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
+import ru.teachbase.utils.shortcuts.notify;
+import ru.teachbase.utils.shortcuts.translate;
 import ru.teachbase.utils.shortcuts.warning;
 
 [Event(type="ru.teachbase.events.ChangeEvent",name="tb:changed")]
@@ -105,7 +113,7 @@ public class RecordingPlayer extends EventDispatcher{
     private var _load_complete:Function;
     private var _snaphot_loaded:Function;
     private var _chunks_loaded:Function;
-    private var _state_before_seek:String;
+    private var _state_before:String;
     private var _need_to_reset:Boolean = false;
     private var _state_reseted:Boolean = false;
     private var _need_to_reindex:Boolean = false;
@@ -116,7 +124,6 @@ public class RecordingPlayer extends EventDispatcher{
     private var _last_ts:Number;
 
     private var _last_position:Number = 0;
-
 
     //---------- data ------------//
 
@@ -211,7 +218,7 @@ public class RecordingPlayer extends EventDispatcher{
 
         time = int(time/1000) * 1000;
 
-        _state_before_seek = _state;
+        _state_before = _state;
 
         _state === PlayerStates.PLAYING && pause();
 
@@ -260,7 +267,7 @@ public class RecordingPlayer extends EventDispatcher{
                     },false,EventPriority.DEFAULT_HANDLER);
 
             (App.view.controller as RecordingController).reset();
-
+            return;
         }
 
         needToLoadChunks(time);
@@ -296,9 +303,11 @@ public class RecordingPlayer extends EventDispatcher{
 
     private function completeSeek():void{
 
-        var _was_playing:Boolean = _state_before_seek === PlayerStates.PLAYING;
+        var _was_playing:Boolean = _state_before === PlayerStates.PLAYING;
 
-        state = _state_before_seek;
+        state = _stream_player.state == PlayerStates.BUFFERING ? PlayerStates.BUFFERING : _state_before;
+
+        _stream_player.registerActiveStreams();
 
         _was_playing && play();
 
@@ -464,7 +473,9 @@ public class RecordingPlayer extends EventDispatcher{
 
         _lastMessageIndex++;
 
-        const packet:Packet = m.data as Packet;
+        const packet:Packet = ObjectUtil.copy(m.data) as Packet;
+
+        debug("Send message: "+packet.type);
 
         _manager.tb_rtmp::incomingCall.apply(null, [packet.type,packet]);
 
@@ -572,7 +583,10 @@ public class RecordingPlayer extends EventDispatcher{
 
         if(e.property != 'state') return;
 
+        debug("stream player state: "+ e.value);
+
         if(e.value == PlayerStates.BUFFERING){
+            _state_before = (_state == PlayerStates.SEEK) ? _state_before : _state;
             pause();
             state = PlayerStates.BUFFERING;
             _wait_stream_buffer = true;
@@ -581,8 +595,10 @@ public class RecordingPlayer extends EventDispatcher{
 
         if(e.value == PlayerStates.BUFFER_FULL && _wait_stream_buffer){
             _wait_stream_buffer = false;
-            _state = PlayerStates.IDLE;
-           // play();
+
+            state = PlayerStates.PAUSED;
+
+            if(_state_before == PlayerStates.PLAYING) play();
         }
 
     }
@@ -726,6 +742,13 @@ public class RecordingPlayer extends EventDispatcher{
     public function set state(value:String):void{
         var _old:String = _state;
         _state = value;
+
+        if(_state == PlayerStates.BUFFERING){
+           _state != _old && (App.view && App.view.lightbox && App.view.lightbox.show(null,false));
+        }else if(_old == PlayerStates.BUFFERING){
+            App.view && App.view.lightbox && App.view.lightbox.close();
+        }
+
         dispatchEvent(new ChangeEvent(this,"state",_state,_old));
     }
 

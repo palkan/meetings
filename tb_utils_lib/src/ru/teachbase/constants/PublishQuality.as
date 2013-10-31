@@ -16,5 +16,6 @@ public class PublishQuality {
     public static const LOW:String="1_quality_low";
     public static const MEDIUM:String="2_quality_medium";
     public static const HIGH:String="3_quality_high";
+    public static const HD:String="4_quality_hd";
 }
 }

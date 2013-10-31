@@ -9,6 +9,7 @@ import flash.utils.setTimeout;
 
 import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.model.App;
+import ru.teachbase.utils.shortcuts.config;
 import ru.teachbase.utils.shortcuts.debug;
 
 public class InStreamSup extends Supervisor {
@@ -20,6 +21,8 @@ public class InStreamSup extends Supervisor {
     private const RESERVED_BW:Number = 100;
 
     private var _lastBW:Number = 0;
+
+    private var _wait_for_commit:Boolean = false;
 
     private static var instance:InStreamSup;
 
@@ -95,17 +98,34 @@ public class InStreamSup extends Supervisor {
 
     private function analyze(value:Number):void{
 
-        debug('Analyze input bandwidth: '+value.toFixed(1)+' kB/s');
+        debug('Analyze input bandwidth: '+value.toFixed(1)+' kB/s; previous '+_lastBW+' kB/s; current ' + App.rtmpMedia.stats.total_in + ' kB/s');
 
-        App.streams && App.streams.setupBandwidth(value - RESERVED_BW);
+        const size:int = App.meeting.streamList.source.length;
 
-        if(Math.abs((value - _lastBW)/ value) > .3)
+        if(_wait_for_commit || Math.abs((value - _lastBW)/ value) > .3){
+
+            debug("Commit input bandwidth: " + _wait_for_commit);
+
+            if(_wait_for_commit){
+                config('net/adaptive/in',false) && commit(value);
+                reset();
+            }
+
+            _wait_for_commit = !_wait_for_commit && (value < size*700 || _lastBW < size*700);
+
             state = SupervisorState.MONITORING;
-        else
+        }else{
+            _wait_for_commit = false;
             state = SupervisorState.NORMAL;
+        }
 
         _lastBW =  value;
 
+    }
+
+
+    protected function commit(value:Number):void{
+        App.streams && App.streams.setupBandwidth(value - RESERVED_BW + App.rtmpMedia.stats.total_in);
     }
 
 

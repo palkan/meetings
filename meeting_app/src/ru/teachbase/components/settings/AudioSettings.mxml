@@ -15,6 +15,7 @@
         import ru.teachbase.model.App;
         import ru.teachbase.utils.DelayedWriter;
         import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.debug;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
         import ru.teachbase.utils.system.requestUserMediaAccess;
@@ -65,21 +66,22 @@
 
             scanHardware();
 
+            debug('mics',Microphone.names);
+
+            micSelector.dataProvider = new ArrayList(Microphone.names);
+
             if (Microphone.names.length) {
 
                 _no_mic_found = false;
 
                 !App.publisher.audioSharing && requestUserMediaAccess(-1, -2, success, failure, stage);
 
+                App.publisher.audioSharing && success(true);
 
                 function success(flag:Boolean):void {
 
                     !App.publisher.microphone && App.publisher.updateMicrophone();
-
-                    micSelector.dataProvider = new ArrayList(Microphone.names);
-                    micSelector.addEventListener(ClickEvent.TYPE, micSelected, false, 0, true);
                     micSelector.selectedIndex = App.publisher.microphone.index;
-
                     _enabled = true;
 
                 }
@@ -132,11 +134,14 @@
 
             if (micSelector.selectedIndex == currentIndex) return;
 
+            _loopbacked && micToggleLoopback();
+
             App.user.settings.micID = micSelector.selectedIndex;
 
             App.publisher.updateMicrophone();
 
             micEq.stopDisplay();
+
             App.publisher.microphone && micEq.startDisplay(function ():Number {
                 return App.publisher.microphone.activityLevel;
             });
@@ -159,6 +164,8 @@
             _loopbacked = !_loopbacked;
 
             mic.setLoopBack(_loopbacked);
+
+            loopback_cb.selected = _loopbacked;
 
             _loopbacked && micEq.startDisplay(function ():Number {
                 return App.publisher.microphone.activityLevel;

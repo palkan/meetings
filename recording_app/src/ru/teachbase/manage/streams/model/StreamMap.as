@@ -90,15 +90,15 @@ public class StreamMap {
 
         for each(var s:StreamMapData in _elements){
 
-           if(s.start_ts-time > 0){
-              _delta = Math.min(_delta, s.start_ts-time);
+           if(s.start_ts-time>0 && s.start_ts-time < _delta){
+              _delta = s.start_ts-time;
               _data = s;
               _kind = CuePointData.START;
               _ts = s.start_ts;
            }
 
-           if(s.finish_ts-time > 0){
-              _delta = Math.min(_delta, s.finish_ts-time);
+           if(s.finish_ts-time>0 && s.finish_ts-time < _delta){
+              _delta = s.finish_ts-time;
               _data = s;
               _kind = CuePointData.STOP;
               _ts = s.finish_ts;

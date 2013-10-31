@@ -11,6 +11,17 @@
 
         public var container:IVisualElementContainer;
 
+        /**
+         * Lightbox index within container;
+         *
+         * Default <code>int.MAX_VALUE</code> means above all.
+         *
+         * If index is negative add to <code>container.numElements-1+index</code>
+         *
+         */
+
+        public var index:int = int.MAX_VALUE;
+
         private var _canClose:Boolean = true;
 
         private var _source:IVisualElement;
@@ -21,24 +32,38 @@
 
         public function close():void {
 
-            _canClose && container && (container.getElementIndex(this) > -1) && container.removeElement(this) && (_source && this.removeElement(_source));
+            container && (this.parentDocument == container) && container.removeElement(this) && (_source && this.removeElement(_source));
 
         }
 
 
-        public function show(element:IVisualElement, canClose:Boolean = true):void{
+        /**
+         *
+         * @param element
+         * @param canClose
+         */
+
+        public function show(element:IVisualElement = null, canClose:Boolean = true):void{
             _canClose = canClose;
 
-            element.verticalCenter = 0;
-            element.horizontalCenter = 0;
+            if(element){
+                element.verticalCenter = 0;
+                element.horizontalCenter = 0;
 
-            addElement(element);
+                addElement(element);
 
-            _source = element;
+                _source = element;
+            }
 
-            container.addElement(this);
+            if(index == int.MAX_VALUE || index > container.numElements-1)
+                container.addElement(this);
+            else if(index>=0)
+                container.addElementAt(this,index);
+            else
+                container.addElementAt(this,Math.max(container.numElements-1+index,0));
 
         }
+
 
         /**
          *  Define whether close UI is available
@@ -51,5 +76,5 @@
 
         ]]></fx:Script>
 
-    <s:Group id="clickArea" height="100%" width="100%" click="close()"></s:Group>
+    <s:Group id="clickArea" height="100%" width="100%" click="_canClose &amp;&amp; close()"></s:Group>
 </s:SkinnableContainer>

@@ -6,6 +6,7 @@ import ru.teachbase.model.IElement;
 
 public interface IModulePanel extends IElement, IVisualElement
 	{
+        function init():void;
 		function get content():IModuleContent;
         function set data(value:ModuleInstanceData):void;
         function get data():ModuleInstanceData;

@@ -61,6 +61,8 @@ CONFIG::LIVE{
 
             GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
 
+            _initialized = true;
+
         }
 
 
@@ -108,7 +110,9 @@ CONFIG::LIVE{
                     break;
                  }
                  case CollectionEventKind.RESET:{
-                    for each(var el:IVideoContainer in _elements) removeVideo(el);
+                     while(_elements.length){
+                        removeVideo(_elements[0]);
+                     }
                     break;
                  }
              }

@@ -33,6 +33,7 @@ import ru.teachbase.utils.shortcuts.style;
 			instanceID = 1;
 			const result:ChatContent = new ChatContent();
 			result.instanceID = instanceID;
+            result.init();
 			_instances[instanceID] = result;
 			return result;
 		}

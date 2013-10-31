@@ -164,7 +164,9 @@ public class ScreenClientHandler extends SimpleChannelUpstreamHandler {
 						String resultFor = transactionToCommandMap.get(command.getTransactionId());
 						logger.info("result for method call: {}", resultFor);
 
-						if(resultFor.equals("connect"))
+                        if(resultFor == null){
+                            logger.warn("server result for null received");
+                        }else if(resultFor.equals("connect"))
 						{
 							writeCommandExpectingResult(channel, Command.createStream());
 

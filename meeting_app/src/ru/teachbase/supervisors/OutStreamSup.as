@@ -14,6 +14,7 @@ import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.model.App;
 import ru.teachbase.utils.CameraQuality;
 import ru.teachbase.utils.CameraUtils;
+import ru.teachbase.utils.shortcuts.config;
 import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.notify;
 import ru.teachbase.utils.shortcuts.translate;
@@ -27,6 +28,10 @@ public class OutStreamSup extends Supervisor {
     private const RESERVED_BW:Number = 100;
 
     private var _lastBW:Number = 0;
+
+    private var _lastQuality:String;
+
+    private var _wait_for_commit:Boolean = false;
 
     private static var instance:OutStreamSup;
 
@@ -110,31 +115,52 @@ public class OutStreamSup extends Supervisor {
             return;
         }
 
-        debug('Analyze output bandwidth: '+value.toFixed(1)+' kB/s');
+        debug('Analyze output bandwidth: '+value.toFixed(1)+' kB/s; previous: '+_lastBW+' kB/s; current: '+ App.rtmpMedia.stats.total_out+' kB/s');
 
-        const quality:CameraQuality = CameraUtils.getMaxAvailableQuality(value - RESERVED_BW);
+        const quality:CameraQuality = CameraUtils.getMaxAvailableQuality(value - RESERVED_BW + App.rtmpMedia.stats.total_out);
 
+        if(Math.abs( (value - _lastBW)/ value) > .3 || (!quality || quality.id != PublishQuality.HIGH)){
+
+            debug("Commit output bandwidth: " + _wait_for_commit);
+
+            if(_wait_for_commit){
+                config('net/adaptive/out') && commit(quality);
+                reset();
+            }
+
+            _wait_for_commit = !_wait_for_commit && (value < 1000 || _lastBW < 1000);
+
+            state = SupervisorState.MONITORING;
+        }else{
+            _wait_for_commit = false;
+            state = SupervisorState.NORMAL;
+        }
+
+        debug("Analyze output bandwidth: state "+state+"; camera quality "+(quality ? quality.id : "none"));
+
+        _lastBW =  value;
+
+    }
+
+
+    private function commit(quality:CameraQuality):void{
         quality && (App.publisher.maxQuality = quality.id);
 
         if(!quality){
             App.publisher.cameraEnabled = false;
-        }else if(!App.publisher.cameraEnabled){
+        }
+        else if(!App.publisher.cameraEnabled){
             App.publisher.cameraEnabled = true;
             App.publisher.setQuality(quality.id);
         }
         else if(App.user.settings.publishQuality > quality.id){
+            _lastQuality = App.user.settings.publishQuality;
             App.publisher.setQuality(quality.id);
             notify(new Notification(translate('bw_video_quality_decreased','notifications')),true);
         }
-
-
-        if(Math.abs( (value - _lastBW)/ value) > .3 && (!quality || quality.id != PublishQuality.HIGH))
-            state = SupervisorState.MONITORING;
-        else
-            state = SupervisorState.NORMAL;
-
-        _lastBW =  value;
-
+        else if(_lastQuality && App.user.settings.publishQuality < quality.id && _lastQuality >= quality.id){
+            App.publisher.setQuality(quality.id);
+        }
     }
 
 

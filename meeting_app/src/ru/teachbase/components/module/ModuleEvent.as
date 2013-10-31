@@ -9,6 +9,7 @@ public class ModuleEvent extends Event
 		public static const SETTINGS:String = "module_settings";
 		public static const REMOVE:String = "module_remove";
 		public static const RESIZE:String = "module_resize";
+        public static const INITED:String = "module_inited";
 		
 		
 		private var _value:*;

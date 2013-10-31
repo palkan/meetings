@@ -14,12 +14,27 @@ import flash.utils.setInterval;
 import ru.teachbase.manage.streams.model.NetStreamClient;
 import ru.teachbase.utils.Arrays;
 import ru.teachbase.utils.data.LimitArray;
+import ru.teachbase.utils.shortcuts.debug;
+
+/**
+ *  Dispatches when metrics is updated.
+ *
+ *  @eventType flash.events.Event.CHANGE
+ */
+
+[Event(type="flash.events.Event", name="change")]
+
+/**
+ * Dispatches when stream send/receive no bytes for a long time (3s)
+ *
+ * @eventType flash.events.Event.CLEAR
+ */
+
+[Event(type="flash.events.Event", name="clear")]
 
 /**
  *  Class for supervising NetStream properties.
  */
-
-[Event(type="flash.events.Event", name="change")]
 
 public class RTMPWatch extends EventDispatcher{
 
@@ -30,6 +45,8 @@ public class RTMPWatch extends EventDispatcher{
      */
 
     private const HISTORY_INTERVAL:uint = 6;
+
+    private const RESTART_THRESHOLD:uint = 3000;
 
     private var _netstream:NetStream;
     private var _client:NetStreamClient;
@@ -66,6 +83,13 @@ public class RTMPWatch extends EventDispatcher{
 
     private var _fps:Number = 0;
 
+    private var _empty_since:Number = 0;
+
+
+    /**
+     *
+     * @param target
+     */
 
 
     function RTMPWatch(target:NetStream = null) {
@@ -138,6 +162,23 @@ public class RTMPWatch extends EventDispatcher{
 
         }else
             _counter--;
+
+
+        if(!_total_kbs){
+
+            if(!_empty_since) _empty_since = (new Date()).time;
+            else{
+
+                if((new Date()).time - _empty_since > RESTART_THRESHOLD){
+
+                    debug("RTMPWatch: stream was empty for more than 3 seconds; "+_client.data.name);
+
+                    dispatchEvent(new Event(Event.CLEAR));
+                }
+
+            }
+
+        }else if(_empty_since) _empty_since = 0;
 
 
         dispatchEvent(new Event(Event.CHANGE));
@@ -251,6 +292,10 @@ public class RTMPWatch extends EventDispatcher{
 
     public function get total_kbs():Number {
         return _total_kbs;
+    }
+
+    public function get client():NetStreamClient {
+        return _client;
     }
 }
 

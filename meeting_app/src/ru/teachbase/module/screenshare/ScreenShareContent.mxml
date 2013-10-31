@@ -44,8 +44,16 @@
 
         private var _sizeInited:Boolean = false;
 
+        private var _sizeId:uint;
+
         [Bindable]
         private var _p_enabled:Boolean = false;
+
+
+        override public function init():void{
+            listener.initialize();
+            listener.addEventListener(RTMPEvent.DATA, handleMessage);
+        }
 
 
         private function creationCompleteHandler(event:FlexEvent):void {
@@ -58,12 +66,11 @@
 
             _p_enabled = Permissions.docsAvailable(App.user.permissions);
 
-            listener.initialize();
-            listener.addEventListener(RTMPEvent.DATA, handleMessage);
-
             App.meeting.streamList.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStreamChangeEvent);
 
             GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
+            GlobalEvent.addEventListener(GlobalEvent.RESET, handleReset);
+            GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, handleUserLeave);
 
             start && (start.enabled = start.visible = _p_enabled);
 
@@ -78,8 +85,14 @@
                 addStream(ns);
 
                 listener.readyToReceive = true;
+                _initialized = true;
             } else
                 rtmp_history(PacketType.SCREEN_SHARING, new mx.rpc.Responder(handleHistory, $null));
+        }
+
+
+        private function handleUserLeave(e:GlobalEvent):void{
+            if(_activeUser && _activeUser.sid == e.value.sid) dispose();
         }
 
 
@@ -88,6 +101,21 @@
             data && processData(data);
 
             listener.readyToReceive = true;
+
+            _initialized = true;
+
+        }
+
+
+        private function handleReset(e:GlobalEvent):void{
+
+            dispose();
+
+            listener.dispose();
+            listener.initialize();
+
+
+            App.meeting.streamList.removeEventListener(CollectionEvent.COLLECTION_CHANGE, onStreamChangeEvent);
 
         }
 
@@ -101,6 +129,8 @@
 
             _p_enabled = Permissions.docsAvailable(App.user.permissions);
 
+            App.meeting.streamList.addEventListener(CollectionEvent.COLLECTION_CHANGE, onStreamChangeEvent);
+
             var share_streams:Array = App.meeting.streamList.toArray().filter(filter);
 
             if (share_streams.length) {
@@ -112,6 +142,7 @@
 
                 addStream(ns);
                 listener.readyToReceive = true;
+                _initialized = true;
             } else
                 rtmp_history(PacketType.SCREEN_SHARING, new mx.rpc.Responder(handleHistory, $null));
 
@@ -162,10 +193,12 @@
 
         private function processData(data:Object):void {
 
-            if (data && data.type === "prepare" && data.uid) {
+            if(data && data.type === "prepare" && data.uid) {
                 prepareShare(data.uid);
             } else if (data && data.type === "stop") {
                 dispose();
+            }else if(data && data.type === "start" && data.uid == user.sid){
+                currentState = iams.name;
             }
 
         }
@@ -198,6 +231,8 @@
 
             BrowserUtils.sendCall("exCall","run",config("net/rtmp"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
 
+            debug("Share:",config("net/rtmp"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
+
             rtmp_send(PacketType.SCREEN_SHARING, {type: "prepare", uid: App.user.sid});
 
         }
@@ -218,14 +253,22 @@
                 return;
             }
 
+            _netStream = stream;
+
             if(!_activeUser){
-                warning("User unknown: " + (_netStream.client as NetStreamClient).data.name);
-                return;
+
+                if((_netStream.client as NetStreamClient) && (_netStream.client as NetStreamClient).data)
+                    _activeUser = App.meeting.usersByID[(_netStream.client as NetStreamClient).data.user_id];
+
+
+                if(!_activeUser){
+                    warning("No active user!");
+                    return;
+                }
             }
 
             label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
 
-            _netStream = stream;
 
             _netStream.client.onMouseData = function (metadata:Object):void {
                 if (!metadata)
@@ -235,12 +278,9 @@
                     _vc && _vc.toggleCursor(new Point(metadata.posx, metadata.posy));
                 }
 
-                if (!_sizeInited && _vc && _vc.width > 0 && _vc.videoWidth > 0) {
-                    _vc && _vc.setActualSize(_vc.width, _vc.height);
-                    _sizeInited = true;
-                }
-
             };
+
+            _sizeId = setInterval(setVideoSize,100);
 
             currentState = sharing.name;
 
@@ -278,7 +318,6 @@
             label = translate('label', 'screenshare');
 
             currentState = idle.name;
-
         }
 
         public function localize():void {
@@ -291,6 +330,18 @@
             start && (start.label = translate('start', 'screenshare'));
             stopshareBtn && (stopshareBtn.label = translate('stop_share', 'screenshare'));
             descTxt && (descTxt.text = translate('desc', 'screenshare'));
+        }
+
+
+
+        private function setVideoSize():void{
+
+            if (!_sizeInited && _vc && _vc.width > 0 && _vc.videoWidth > 0) {
+                _vc && _vc.setActualSize(_vc.width, _vc.height);
+                _sizeInited = true;
+                clearInterval(_sizeId);
+            }
+
         }
 
 

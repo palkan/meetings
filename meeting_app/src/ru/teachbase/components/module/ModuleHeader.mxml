@@ -6,6 +6,7 @@
              creationComplete="creationCompleteHandler(event)">
     <fx:Script><![CDATA[
         import mx.events.FlexEvent;
+        import mx.graphics.shaderClasses.LuminosityMaskShader;
 
         import ru.teachbase.components.module.ModuleEvent;
 
@@ -51,6 +52,11 @@
             _p_enabled = value;
             hide_btn.visible = !_locked && value;
             settings_btn.visible = settings_btn.includeInLayout = hide_btn.includeInLayout = value;
+
+            CONFIG::RECORDING{
+               minmax_btn.visible = false;
+            }
+
         }
 
         public function get expanded():Boolean {

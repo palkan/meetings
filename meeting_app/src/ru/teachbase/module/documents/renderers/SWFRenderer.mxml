@@ -11,10 +11,9 @@
         import mx.core.UIComponent;
         import mx.events.FlexEvent;
 
-        import ru.teachbase.module.documents.model.FileItem;
-
-        import ru.teachbase.module.documents.model.SlideAsset;
         import ru.teachbase.module.documents.components.SlideItem;
+        import ru.teachbase.module.documents.model.FileItem;
+        import ru.teachbase.module.documents.model.SlideAsset;
 
         protected var _slideItem:SlideItem;
 
@@ -45,15 +44,15 @@
 
         override public function set file(value:FileItem):void {
 
-            if(!value) return;
+            if (!value) return;
 
             const size:int = value.thumbs.length;
 
-            if(value.swfs.length != size) return;
+            if (value.swfs.length != size) return;
 
-            var i:int=0;
+            var i:int = 0;
 
-            for(;i<size;i++) {
+            for (; i < size; i++) {
                 var asset:SlideAsset = new SlideAsset();
                 asset.id = i;
                 asset.assetURL = value.swfs[i];
@@ -70,7 +69,7 @@
 
         public function set slideItem(value:int):void {
 
-            if(_slidesList.source.length < value+1) return;
+            if (_slidesList.source.length < value + 1) return;
 
             _slideItem = _slidesList.getItemAt(value) as SlideItem;
 
@@ -109,6 +108,10 @@
 
         override public function get ratio():Number {
             return _ratio;
+        }
+
+        override public function get useWB():Boolean {
+            return true;
         }
 
         protected function set clip(value:UIComponent):void {

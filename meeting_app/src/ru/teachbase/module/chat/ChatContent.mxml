@@ -74,11 +74,15 @@
         [Bindable]
         private var _privateChatEnabled:Boolean = false;
 
-        private var _initialized:Boolean = false;
-
         private var _lastMessageId:int = 0;
 
         //------------- initialization / creation------------------//
+
+
+        override public function init():void{
+            listener.addEventListener(RTMPEvent.DATA, handleMessage);
+            listener.initialize();
+        }
 
         private function creationCompleteHandler():void {
             currentState = chatState.name;
@@ -116,9 +120,6 @@
             _settings.push(new SettingsItem("save_chat", SettingsItem.FUN, saveAsCSV));
             _settings.push(new SettingsItem("clear_chat", SettingsItem.FUN, clearChatHandler));
 
-            listener.addEventListener(RTMPEvent.DATA, handleMessage);
-            listener.initialize();
-
             CONFIG::LIVE{
                 _privateChatEnabled = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
                 GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, settingsUpdate);
@@ -144,7 +145,7 @@
                clearChat(room.roomId);
 
                if(room.roomId != Recipients.ALL && !(room.roomId == Recipients.ADMINS && App.user.isAdmin()))
-                buf.push(buf);
+                buf.push(room);
            }
 
            for each(var r:ChatRoom in buf) removeRoom(r);
