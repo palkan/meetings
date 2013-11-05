@@ -7,16 +7,18 @@
     <fx:Script>
 
         <![CDATA[
-        import mx.rpc.Responder;
+        import mx.collections.ArrayCollection;
 
+        import ru.teachbase.components.uploader.UploadPanel;
+        import ru.teachbase.components.uploader.dialogs.LocalFileDialog;
+        import ru.teachbase.components.uploader.dialogs.RecentFilesDialog;
         import ru.teachbase.manage.Initializer;
         import ru.teachbase.manage.LocaleManager;
         import ru.teachbase.manage.SkinManager;
+        import ru.teachbase.model.App;
+        import ru.teachbase.module.documents.model.DocumentData;
+        import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.utils.Configger;
-        import ru.teachbase.utils.HttpPoll;
-        import ru.teachbase.utils.logger.Logger;
-        import ru.teachbase.utils.logger.LoggerMode;
-        import ru.teachbase.utils.shortcuts.debug;
 
         private function init():void {
 
@@ -31,7 +33,7 @@
                 ]
             });
 
-        //    Logger.MODE = LoggerMode.CONSOLE;
+            //    Logger.MODE = LoggerMode.CONSOLE;
 
             Initializer.instance.addEventListener(Event.COMPLETE, onComplete);
 
@@ -41,38 +43,64 @@
 
         private function onComplete(e:Event) {
 
-            input_txt.enabled = true;
 
-        }
+            var _img:FileItem = new FileItem("image 1","","http://cs412224.vk.me/v412224567/2fd1/b8d7IUXFPKM.jpg",FileItem.IMAGE,"jpg",1);
 
-        private function start_poll():void {
-            var poller:HttpPoll = new HttpPoll(
-                    "http://dev2.teachbase.ru/api/fyler/poll.php?id=" + input_txt.text,
-                    new mx.rpc.Responder(success, failure)
+            var _doc:FileItem = new FileItem("document with a vary long name","","http://s3-eu-west-1.amazonaws.com/devtbupload/ff/1382943146667429_01746f4a78164f2ed5dcdd1d8469e5ab/thumbs/thumb_1.png", FileItem.PRESENTATION,"",3);
+
+            var _doc2:FileItem = new FileItem("Invitro.ppt","","https://s3-eu-west-1.amazonaws.com/devtbupload/ff/fe4e3af7f5dbc40f4b4f6048a9af6bb5_1381311051269633/fe4e3af7f5dbc40f4b4f6048a9af6bb5_thumb.png",FileItem.DOCUMENT,"",5);
+
+
+            var d1:DocumentData = new DocumentData({id:1,file:_img});
+            var d2:DocumentData = new DocumentData({id:2,file:_img});
+            var d3:DocumentData = new DocumentData({id:3,file:_doc2});
+            var d4:DocumentData = new DocumentData({id:4,file:_img});
+            var d5:DocumentData = new DocumentData({id:5,file:_img});
+            var d6:DocumentData = new DocumentData({id:7,file:_doc});
+            var d7:DocumentData = new DocumentData({id:6,file:_doc2});
+            var d8:DocumentData = new DocumentData({id:6,file:_doc});
+            var d9:DocumentData = new DocumentData({id:6,file:_doc2});
+            var d10:DocumentData = new DocumentData({id:6,file:_doc});
+            var d11:DocumentData = new DocumentData({id:6,file:_doc2});
+            var d12:DocumentData = new DocumentData({id:6,file:_doc2});
+            var d13:DocumentData = new DocumentData({id:6,file:_doc});
+
+
+
+            App.meeting.docsCollection.addItem(d1);
+            App.meeting.docsCollection.addItem(d2);
+            App.meeting.docsCollection.addItem(d3);
+            App.meeting.docsCollection.addItem(d4);
+            App.meeting.docsCollection.addItem(d5);
+            App.meeting.docsCollection.addItem(d6);
+            App.meeting.docsCollection.addItem(d7);
+            App.meeting.docsCollection.addItem(d8);
+            App.meeting.docsCollection.addItem(d9);
+            App.meeting.docsCollection.addItem(d10);
+            App.meeting.docsCollection.addItem(d11);
+            App.meeting.docsCollection.addItem(d12);
+            App.meeting.docsCollection.addItem(d13);
+
+
+            var _uploader:UploadPanel = new UploadPanel();
+
+            const dp:ArrayCollection = new ArrayCollection(
+                    [
+                        new LocalFileDialog(),
+                        new RecentFilesDialog()
+                    ]
             );
 
+            _uploader.dataProvider = dp;
 
-            poller.poll();
+            _uploader.horizontalCenter = 0;
+            _uploader.verticalCenter = 0;
 
-
-            function success(data:String) {
-                debug(JSON.parse(data));
-            }
-
-
-            function failure(message:String) {
-
-                debug(message);
-
-            }
+            addElement(_uploader);
 
 
         }
         ]]></fx:Script>
 
-    <s:HGroup>
-        <s:TextInput id="input_txt" enabled="false"></s:TextInput>
-        <s:Button click="start_poll()" label="call"/>
-    </s:HGroup>
 
 </s:Application>

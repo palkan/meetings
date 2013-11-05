@@ -11,6 +11,9 @@
 		<![CDATA[
         import mx.events.FlexEvent;
 
+        import ru.teachbase.components.callouts.LayoutCallout;
+        import ru.teachbase.components.callouts.SettingsItem;
+
         import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.layout.events.LayoutEvent;
         import ru.teachbase.model.App;
@@ -23,6 +26,8 @@
 
         private const NAME:String = "actionbar";
 
+        private const layout_clt:LayoutCallout = new LayoutCallout();
+
         private function creationCompleteHandler(e:FlexEvent):void {
             Localizer.addItem(this);
 
@@ -31,6 +36,33 @@
             GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE, permissionsHandler);
 
             if (App.layout.layout_owner) layoutLockButton.enabled = layoutLockButton.selected = false;
+
+            layoutGroup.visible = layoutGroup.includeInLayout = false;
+
+
+            CONFIG::release{
+
+                helpButton.visible = helpButton.includeInLayout = false;
+
+            }
+
+            //--------- init layout switcher -----------//
+
+            var s1:SettingsItem = new SettingsItem('l_presentation',SettingsItem.FUN,App.layout.switchLayout,0);
+            s1.icon = style('actionbar','layout_1');
+
+            var s2:SettingsItem = new SettingsItem('l_video',SettingsItem.FUN,App.layout.switchLayout,1);
+            s2.icon = style('actionbar','layout_2');
+
+            var s3:SettingsItem = new SettingsItem('l_share',SettingsItem.FUN,App.layout.switchLayout,2);
+            s3.icon = style('actionbar','layout_3');
+
+            var _layouts:Vector.<SettingsItem> = new <SettingsItem>[];
+            _layouts.push(s1,s2,s3);
+
+
+            layout_clt.dataProvider = _layouts;
+            layout_clt.host = layoutGroup;
 
             permissionsHandler();
 
@@ -45,13 +77,13 @@
 
             if (!App.layout.layout_owner) {
 
-                layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = false;
+                layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = layoutGroup.visible = layoutGroup.includeInLayout = false;
 
                 layoutLockButton.enabled = true;
 
             } else {
 
-                layoutLockButton.enabled = layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = App.layout.is_owner;
+                layoutLockButton.enabled = layoutLockButton.selected = modulesGroup.visible = modulesGroup.includeInLayout = layoutGroup.visible = layoutGroup.includeInLayout = App.layout.is_owner;
             }
 
         }
@@ -59,9 +91,9 @@
 
         private function permissionsHandler(e:GlobalEvent = null):void {
             if(!App.user.isAdmin())
-                layoutGroup.visible = layoutGroup.includeInLayout = modulesGroup.visible = modulesGroup.includeInLayout = false;
+                layoutGroup.visible = layoutGroup.includeInLayout = modulesGroup.visible = modulesGroup.includeInLayout = layoutLockButton.visible = layoutLockButton.includeInLayout = false;
             else
-                layoutGroup.visible = layoutGroup.includeInLayout = true;
+                layoutLockButton.visible = layoutLockButton.includeInLayout = true;
         }
         ]]>
 	</fx:Script>
@@ -101,55 +133,34 @@
                  initialize="sep1.source = style('actionBar','separator')"/>
 
 
-        <s:HGroup id="layoutGroup">
+
+        <c:ActionBarButton id="layoutGroup"
+                           focusSkin="{null}"
+                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
+                           initialize="with(layoutGroup){
+                                    iconSelected=style('actionBar','layout_list_open');
+                                    iconOver=style('actionBar','layout_list');
+                                    icon=style('actionBar','layout_list');}"
+                           click="layout_clt.open(layoutGroup)"
+                />
+
         <c:ActionBarButton id="layoutLockButton"
                            focusSkin="{null}"
                            skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
                            initialize="with(layoutLockButton){
-                                    toolTip=translate('mic_req','actionbar');
-                                    iconSelected=style('actionBar','layoutLockIconSelected');
-                                    iconOver=style('actionBar','layoutLockIconOver');
-                                    icon=style('actionBar','layoutLockIcon');}"
+                                    iconSelected=style('actionBar','layout_lock');
+                                    iconOver=style('actionBar','layout_unlock');
+                                    icon=style('actionBar','layout_unlock');}"
                            preventToggle="true"
                            change="layoutLockButton.selected ? App.layout.lock() : App.layout.unlock()"
                 />
-        <c:ActionBarButton id="switch0"
-                           focusSkin="{null}"
-                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
-                           initialize="with(switch0){
-                                    toolTip=translate('mic_req','actionbar');
-                                    iconSelected=style('actionBar','layoutLockIcon');
-                                    iconOver=style('actionBar','layoutLockIconOver');
-                                    icon=style('actionBar','layoutLockIcon');}"
-                           click="App.layout.switchLayout(0)"
-                />
-        <c:ActionBarButton id="switch1"
-                           focusSkin="{null}"
-                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
-                           initialize="with(switch1){
-                                    toolTip=translate('mic_req','actionbar');
-                                    iconSelected=style('actionBar','layoutLockIcon');
-                                    iconOver=style('actionBar','layoutLockIconOver');
-                                    icon=style('actionBar','layoutLockIcon');}"
-                           click="App.layout.switchLayout(1)"
-                />
-        <c:ActionBarButton id="switch2"
-                           focusSkin="{null}"
-                           skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
-                           initialize="with(switch2){
-                                    toolTip=translate('mic_req','actionbar');
-                                    iconSelected=style('actionBar','layoutLockIcon');
-                                    iconOver=style('actionBar','layoutLockIconOver');
-                                    icon=style('actionBar','layoutLockIcon');}"
-                           click="App.layout.switchLayout(2)"
-                />
-        </s:HGroup>
     </s:titleContent>
 
     <s:actionContent>
         <c:ActionBarButton id="helpButton"
                            initialize="with(helpButton){
                            icon = style('actionBar','helpIco');
+                           iconSelected=style('actionBar','helpIco');
                            iconOver = style('actionBar','helpIcoHover');}"
 						   skinClass="ru.teachbase.skins.actionbar.ActionBarToggleButtonSkin"
 						   click="App.view.monitor.visible = !App.view.monitor.visible;"
@@ -160,6 +171,7 @@
                            initialize="with(applicationPropertiesButton){
 						                       toolTip=translate('settings',NAME);
 						                       icon=style('actionBar','settingsIco');
+						                       iconSelected=style('actionBar','settingsIco');
 						                       iconOver=style('actionBar','settingsIcoHover');}"
                            click="App.settings.show();"
                 />
@@ -171,6 +183,7 @@
                            initialize="with(switchFullscreenButton){
 						                        toolTip=translate('fullscreen',NAME);
 						                        icon=style('actionBar','fullscreenIco');
+						                        iconSelected=style('actionBar','fullscreenIco');
 						                        iconOver=style('actionBar','fullscreenIcoHover');}"
                 />
         <c:ActionBarButton id="exitButton"
@@ -179,6 +192,7 @@
                            initialize="with(exitButton){
 						                    toolTip=translate('close',NAME);
 						                    icon=style('actionBar','exitIco');
+						                    iconSelected=style('actionBar','exitIco');
 						                    iconOver=style('actionBar','exitIcoHover');}"
                 >
             <c:click>

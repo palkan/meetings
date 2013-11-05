@@ -2,7 +2,7 @@
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
                 xmlns:s="library://ns.adobe.com/flex/spark"
                 xmlns:users="ru.teachbase.module.users.components.*"
-                autoDrawBackground="false" width="100%" height="32">
+                autoDrawBackground="false" width="100%" height="27">
     <fx:Script>
 		<![CDATA[
         import ru.teachbase.components.callouts.ConfirmCallout;
@@ -211,7 +211,7 @@
                        includeIn="hovered"/>
     </s:Group>
     <s:Group id="calloutGroup" width="100" mouseChildren="false" mouseEnabled="false">
-        <s:Label text="{_name}" id="nameLabel" fontSize="13" mouseEnabled="false" left="28" top="10"/>
+        <s:Label text="{_name}" id="nameLabel" fontSize="13" mouseEnabled="false" left="28" top="5"/>
     </s:Group>
     <s:HGroup right="12" top="0" bottom="0" height="100%">
         <s:Group height="100%">

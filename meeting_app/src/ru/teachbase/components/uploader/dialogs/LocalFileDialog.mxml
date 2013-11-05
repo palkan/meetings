@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <uploader:UploadDialog xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:uploader="ru.teachbase.components.uploader.*"
                        xmlns:s="library://ns.adobe.com/flex/spark"
-                       xmlns:tbcomp="ru.teachbase.components.*"
+                       xmlns:flash="*"
                        xmlns:tbui="ru.teachbase.components.ui.*"
                        xmlns:tbrender="ru.teachbase.module.documents.renderers.*"
                        implements="ru.teachbase.utils.interfaces.ILocalable"
@@ -14,6 +14,7 @@
         import ru.teachbase.module.documents.model.DocumentData;
         import ru.teachbase.module.documents.model.FileItem;
         import ru.teachbase.utils.Localizer;
+        import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
         private const _label:String = "menu_from_pc";
@@ -101,7 +102,7 @@
 
         private function fileCompleteHandler(e:FileStatusEvent):void {
 
-            _item = new DocumentData({file:FileItem.build(e.value)});
+            _item = new DocumentData({file: FileItem.build(e.value)});
 
             removeListeners();
 
@@ -109,7 +110,7 @@
 
             currentState = complete.name;
 
-            completeText.text = translate("upload_complete", "file_upload", _item.name);
+           // completeText.text = translate("upload_complete", "file_upload", _item.name);
 
             file_preview.data = _item;
 
@@ -122,6 +123,8 @@
 
             progressText.text = translate("upload_processing", "file_upload");
             progressBar.progress = 100;
+
+            currentState = processing.name;
 
         }
 
@@ -150,24 +153,32 @@
         ]]></fx:Script>
     <uploader:states>
         <s:State id="idle" name="idle"/>
-        <s:State id="progress" name="progress"/>
-        <s:State id="complete" name="complete"/>
+        <s:State id="progress" name="progress" stateGroups="progressStates"/>
+        <s:State id="processing" name="processing" stateGroups="progressStates"/>
+        <s:State id="complete" name="complete" />
     </uploader:states>
     <s:Group id="main" width="100%" height="100%">
 
         <s:RichText id="errorText" horizontalCenter="0" color="#990000" fontSize="11" includeIn="idle"/>
 
-        <tbcomp:RedButton id="upload_btn" verticalCenter="0" fontSize="13" includeIn="idle" fontWeight="bold" horizontalCenter="0" width="140" click="startUpload()"
-                initialize="upload_btn.label = translate('upload_files','file_upload');"
-                />
+        <s:Group id="idleGroup" width="100%" height="100%" includeIn="idle">
+            <s:RichText width="100%" textAlign="center" id="idleText" horizontalCenter="0" fontSize="14" fontWeight="bold" color="0x454545" verticalCenter="-42"
+                    initialize="idleText.text = translate('upload_desc','file_upload');"/>
+            <s:RichText width="100%" textAlign="center" id="idleTextSmall" horizontalCenter="0" fontSize="13" fontWeight="normal" color="0x454545" verticalCenter="-22"
+                        initialize="idleTextSmall.text = translate('upload_desc_2','file_upload');"/>
+            <s:Button  height="31" id="upload_btn" verticalCenter="14" horizontalCenter="0" width="140" click="startUpload()" color="0xffffff" skinClass="ru.teachbase.skins.spark.ColorButton"
+                       initialize="upload_btn.setStyle('backgroundColor',0xf9240d); upload_btn.setStyle('borderColor',0xd71506); upload_btn.label = translate('upload_files','file_upload');"/>
+        </s:Group>
 
-        <s:Group id="progressGroup" width="100%" height="200" verticalCenter="0" includeIn="progress">
-            <s:RichText width="100%" left="40" right="40" id="progressText" horizontalCenter="0" fontSize="11" color="0x515151" height="60"/>
-            <tbui:ProgressBar width="200" height="20" id="progressBar" horizontalCenter="0"/>
+        <s:Group id="progressGroup" width="100%" height="200" verticalCenter="0" includeIn="progressStates">
+            <s:BitmapImage source="{style('docs','icon_document')}" verticalCenter="-32" horizontalCenter="0"/>
+            <s:RichText width="100%" left="40" right="40" id="progressText" horizontalCenter="0" verticalCenter="0" textAlign="center" fontSize="13" color="0x454545"/>
+            <tbui:Slider width="100%" height="8" id="progressBar" horizontalCenter="0" verticalCenter="24" sliderColor="0x008bf8" background="0xd7d7d7" includeIn="progress"/>
+            <flash:Loading horizontalCenter="0" verticalCenter="26" includeIn="processing"/>
         </s:Group>
 
         <s:Group id="completeGroup" width="100%" height="100%" verticalCenter="0" includeIn="complete">
-            <s:RichText width="100%" left="40" right="40" top="40" id="completeText" horizontalCenter="0" fontSize="11" color="0x515151" height="60"/>
+            <!--s:RichText width="100%" left="40" right="40" top="40" id="completeText" horizontalCenter="0" fontSize="11" color="0x515151" height="60"/-->
             <tbrender:FileItemRenderer horizontalCenter="0" verticalCenter="0" id="file_preview"/>
         </s:Group>
     </s:Group>

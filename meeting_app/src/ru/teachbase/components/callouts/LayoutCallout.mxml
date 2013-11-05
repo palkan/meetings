@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<callouts:TempCallout xmlns:fx="http://ns.adobe.com/mxml/2009"
+                      xmlns:s="library://ns.adobe.com/flex/spark"
+                      xmlns:callouts="ru.teachbase.components.callouts.*"
+                      backgroundColor="0x000000" backgroundAlpha="0.9" contentBackgroundAlpha="0"
+                      skinClass="ru.teachbase.skins.CalloutSkinAS"
+                      verticalPosition="after"
+        >
+    <callouts:layout>
+        <s:VerticalLayout gap="0"/>
+    </callouts:layout>
+    <fx:Script>
+		<![CDATA[
+        import mx.core.IVisualElement;
+
+        import ru.teachbase.components.ActionBarButton;
+        import ru.teachbase.skins.CalloutIconButtonSkin;
+        import ru.teachbase.utils.shortcuts.translate;
+
+        import spark.components.Button;
+
+        private var _dataProvider:Vector.<SettingsItem>;
+
+        public var host:ActionBarButton;
+
+        public function set dataProvider(value:Vector.<SettingsItem>):void {
+
+            removeAllElements();
+
+            var but:Button;
+
+            for each(var setting:SettingsItem in value) {
+
+                but = new Button();
+                but.label = translate(setting.label, "settings_callout");
+                but.setStyle("iconItem", setting.icon);
+                but.setStyle("fontSize", 11);
+                but.setStyle("skinClass", CalloutIconButtonSkin);
+                but.width = 180;
+                but.height = 42;
+                but.addEventListener(MouseEvent.CLICK, handler);
+                addElement(but);
+            }
+
+            _dataProvider = value;
+
+
+        }
+
+
+        private function handler(event:MouseEvent):void {
+
+            var index:int = getElementIndex(event.target as IVisualElement);
+
+            _dataProvider[index].handler.apply(null, _dataProvider[index].args);
+
+            close();
+
+        }
+
+
+        override public function close(commit:Boolean = false, data:* = null):void {
+            super.close(commit, data);
+            host && host.selected && (host.selected = false);
+        }
+        ]]>
+	</fx:Script>
+
+</callouts:TempCallout>

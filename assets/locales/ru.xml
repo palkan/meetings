@@ -43,6 +43,9 @@
                 <element name="user_private_chat">Начать личный чат</element>
                 <element name="user_change_name">Изменить имя</element>
                 <element name="user_kick_off">Удалить из комнаты</element>
+                <element name="l_presentation">Презентация</element>
+                <element name="l_video">Видеоконференция</element>
+                <element name="l_share">Совместный экран</element>
             </elements>
 		</component>
 		<component name="chat">
@@ -152,15 +155,17 @@
         <component name="file_upload">
             <elements>
                 <element name="title"><![CDATA[Добавление документа]]></element>
-                <element name="upload_files"><![CDATA[Добавить файлы]]></element>
+                <element name="upload_files"><![CDATA[Добавить файл]]></element>
                 <element name="recent_empty"><![CDATA[Нет ранее открытых документов]]></element>
                 <element name="menu_from_pc"><![CDATA[Из компьютера]]></element>
                 <element name="menu_google"><![CDATA[Поиск Google Images]]></element>
                 <element name="menu_youtube"><![CDATA[Поиск Youtube]]></element>
-                <element name="menu_recent"><![CDATA[Недавно загруженные]]></element>
+                <element name="menu_recent"><![CDATA[Загруженные]]></element>
                 <element name="upload_progress"><![CDATA[Файл загружается... ${1}%]]></element>
                 <element name="upload_complete"><![CDATA[Файл готов к совместному использованию: ${1}]]></element>
                 <element name="upload_processing"><![CDATA[Файл обрабатывается]]></element>
+                <element name="upload_desc"><![CDATA[Выберите файл на вашем компьютере,]]></element>
+                <element name="upload_desc_2"><![CDATA[нажав на эту кнопку]]></element>
             </elements>
         </component>
 		<component name="settings">

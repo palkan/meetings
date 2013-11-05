@@ -197,8 +197,12 @@
 				<element name="buttonbarButtonMiddleHover" src="buttonbar_button_middle_hover.png"></element>				
 				
 				<element name="buttonbarButtonLast" src="buttonbar_button_last.png"></element>			
-				<element name="buttonbarButtonLastHover" src="buttonbar_button_last_hover.png"></element>				
-				
+				<element name="buttonbarButtonLastHover" src="buttonbar_button_last_hover.png"></element>
+
+                <element name="img-document" src="img-document.png"></element>
+                <element name="img-image" src="img-image.png"></element>
+                <element name="img-presentation" src="img-presentation.png"></element>
+
 				<element name="img-avi" src="img-avi.png"></element>				
 				<element name="img-bmp" src="img-bmp.png"></element>				
 				<element name="img-doc" src="img-doc.png"></element>				
@@ -220,7 +224,10 @@
 				<element name="img-pptx" src="img-pptx.png"></element>				
 				<element name="img-wav" src="img-wav.png"></element>				
 				<element name="img-xls" src="img-xls.png"></element>				
-				<element name="img-xlsx" src="img-xlsx.png"></element>				
+				<element name="img-xlsx" src="img-xlsx.png"></element>
+
+                <element name="icon_close" src="icon-close.png"/>
+                <element name="icon_document" src="icon-document.png"/>
 				
 				<element name="google" src="google.png"></element>
 				<element name="youTube" src="youTube.png"></element>
@@ -371,11 +378,7 @@
 				<element name="reccordIcoOver" src="actionbar_rec_ico_over.png"></element>
 				<element name="reccordIcoSelected" src="actionbar_rec_ico_selected.png"></element>
 
-                <element name="layoutLockIcon" src="layout_locked_button.png"></element>
-                <element name="layoutLockIconOver" src="layout_locked_button_over.png"></element>
-                <element name="layoutLockIconSelected" src="layout_locked_button_selected.png"></element>
-				
-				<element name="playIco" src="actionbar_play_ico.png"></element>
+                <element name="playIco" src="actionbar_play_ico.png"></element>
 				<element name="playIcoOver" src="actionbar_play_ico_over.png"></element>
 				
 				<element name="pauseIco" src="actionbar_pause_ico.png"></element>
@@ -404,7 +407,17 @@
 				
 				<element name="layoutButton" src="actionbar_layout_button.png"></element>
 				<element name="layoutButtonHover" src="actionbar_layout_button_hover.png"></element>
-				
+
+                <element name="layout_unlock" src="layout_unlock.png"></element>
+                <element name="layout_lock" src="layout_lock.png"></element>
+
+                <element name="layout_list_open" src="layout_list_open.png"></element>
+                <element name="layout_list" src="layout_list.png"></element>
+
+                <element name="layout_1" src="layout_1.png"/>
+                <element name="layout_2" src="layout_2.png"/>
+                <element name="layout_3" src="layout_3.png"/>
+
 				<element name="audioSliderThumb" src="audio_slider_thumb.png"></element>
 				<element name="audioSliderTrack" src="audio_slider_track.png"></element>
 				

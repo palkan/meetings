@@ -71,10 +71,14 @@
     </s:states>
 
     <s:Label id="labelDisplay"
-             color="0x5d5d5d"
+             color="0x4f4f4f"
              color.selectedStates="0x000000"
              fontSize="13"
 			 fontWeight="normal"
+             buttonMode="true"
+             useHandCursor="true"
+             useHandCursor.selectedStates="false"
+             fontWeight.selectedStates="bold"
              textDecoration.up="underline"
              textAlign="left"
              verticalAlign="middle"

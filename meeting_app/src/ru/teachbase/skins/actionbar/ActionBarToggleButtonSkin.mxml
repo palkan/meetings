@@ -50,7 +50,7 @@
         <s:State name="offAndOver"/>
     </s:states>
     
-	<s:BitmapImage id="icon" source="{hostComponent.icon}" />
+	<s:BitmapImage id="icon" source="{hostComponent.icon}" excludeFrom="selectedStates"/>
 	<s:BitmapImage id="iconOver" source="{hostComponent.iconOver}" includeIn="over"/>
 	<s:BitmapImage id="iconSelected" source="{hostComponent.iconSelected}" includeIn="selectedStates"/>
 	

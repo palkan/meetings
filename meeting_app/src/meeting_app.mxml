@@ -4,7 +4,7 @@
                             xmlns:components="ru.teachbase.components.*"
         >
     <fx:Metadata>
-        [SWF(width="1000", height="600")]
+        [SWF(width="1000", height="700")]
     </fx:Metadata>
     <fx:Style source="defaults.css"/>
 

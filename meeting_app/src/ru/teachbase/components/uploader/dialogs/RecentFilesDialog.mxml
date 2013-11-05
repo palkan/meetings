@@ -89,12 +89,12 @@
     </uploader:states>
     <s:Group id="main" width="100%" height="100%">
         <tbui:ScrollList id="fileList"
-                width="100%" height="100%"
+                left="0" right="0" height="100%"
                 includeIn="normal"
                 itemRenderer="ru.teachbase.module.documents.renderers.FileItemRenderer"
                 contentBackgroundAlpha="0" dataProvider="{_dp}" change="itemSelected()">
             <tbui:layout>
-                <s:TileLayout id="listLayout" requestedColumnCount="4" columnWidth="126" paddingLeft="8" paddingRight="8" paddingTop="8" paddingBottom="8"/>
+                <s:TileLayout id="listLayout" requestedColumnCount="4" columnWidth="140" paddingLeft="0" paddingRight="0" paddingTop="5" paddingBottom="5"/>
             </tbui:layout>
        </tbui:ScrollList>
         <s:Group id="emptyGroup" width="100%" height="100%" verticalCenter="0" includeIn="empty">

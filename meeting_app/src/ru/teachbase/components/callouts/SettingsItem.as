@@ -1,6 +1,8 @@
 package ru.teachbase.components.callouts
 {
-	public class SettingsItem
+import flash.display.DisplayObject;
+
+public class SettingsItem
 	{
 		
 		public static const FUN:String = "function";
@@ -11,6 +13,7 @@ package ru.teachbase.components.callouts
 		public var handler:Function;
 		public var label:String;
 		public var args:Array;
+        public var icon:DisplayObject;
 		
 		public function SettingsItem(label:String, type:String, handler:Function, ...args)
 		{

@@ -42,7 +42,7 @@
                     return;
 
                 if (_expanded) {
-                    Tweener.addTween(usersList, {height: usersList.dataProvider.length * 32, time: .3});
+                    Tweener.addTween(usersList, {height: usersList.dataProvider.length * 27, time: .3});
                 } else {
                     Tweener.addTween(usersList, {height: 0, time: .3});
                 }
