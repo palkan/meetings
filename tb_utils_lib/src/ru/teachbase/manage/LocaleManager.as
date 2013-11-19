@@ -44,7 +44,7 @@ public class LocaleManager extends Manager
 
                 _locale = item.code;
 
-                load(item.url);
+                load(item.url+(config('version') ? "?v="+config('version') : ''));
 
             }else{
                 sendError('No locale provided');
@@ -142,7 +142,7 @@ public class LocaleManager extends Manager
 				return;
 
             _locale = lang;
-			load(_availableLocales[lang].url);
+			load(_availableLocales[lang].url+(config('version') ? "?v="+config('version') : ''));
 			
 		}
 		

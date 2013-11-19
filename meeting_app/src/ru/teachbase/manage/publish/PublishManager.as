@@ -100,6 +100,12 @@ public class PublishManager extends Manager {
         _connection = App.rtmpMedia.connection;
         _model = App.user.sharing;
 
+
+        if(reinit && _stream){
+            _streaming = videoSharing = audioSharing = false;
+            _stream = null;
+        }
+
         setQuality(App.user.settings.publishQuality);
 
 

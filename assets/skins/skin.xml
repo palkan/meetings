@@ -405,9 +405,6 @@
 				<element name="slidedButtonRight" src="actionbar_slided_menu_button_right.png"></element>
 				<element name="slidedButtonRightHover" src="actionbar_slided_menu_button_right_hover.png"></element>
 				
-				<element name="layoutButton" src="actionbar_layout_button.png"></element>
-				<element name="layoutButtonHover" src="actionbar_layout_button_hover.png"></element>
-
                 <element name="layout_unlock" src="layout_unlock.png"></element>
                 <element name="layout_lock" src="layout_lock.png"></element>
 

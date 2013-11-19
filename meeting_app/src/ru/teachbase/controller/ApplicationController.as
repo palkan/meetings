@@ -235,6 +235,7 @@ public class ApplicationController extends EventDispatcher {
         config('net/monitor/out') && OutStreamSup.run(30000);
         config('net/monitor/in') && InStreamSup.run();
 
+        App.streams.loadStreams();
         App.session.userReady();
 
         GlobalEvent.dispatch(GlobalEvent.RECONNECT);

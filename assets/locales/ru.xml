@@ -131,7 +131,8 @@
 				<element name="install_app"><![CDATA[Установить]]></element>
 				<element name="chrome_alert"><![CDATA[К сожалению, Ваш браузер не поддерживается приложением для трансляции рабочего стола. Используйте Internet Explorer или Mozilla Firefox]]></element>
 				<element name="no_win_alert"><![CDATA[К сожалению, функция демонстрации рабочего стола доступна только для операционной системы Windows]]></element>
-				<element name="no_java_alert"><![CDATA[На Вашем компьютере не установлена Java RE. Установите Java RE для использования функции демонстарции рабочего стола]]></element>
+				<element name="no_java_alert"><![CDATA[На Вашем компьютере не установлено Java RE.
+Установите Java RE для использования функции демонстрации рабочего стола]]></element>
 			</elements>
 		</component>
 		<component name="docs">

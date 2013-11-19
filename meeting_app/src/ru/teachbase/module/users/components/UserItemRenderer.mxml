@@ -211,7 +211,7 @@
                        includeIn="hovered"/>
     </s:Group>
     <s:Group id="calloutGroup" width="100" mouseChildren="false" mouseEnabled="false">
-        <s:Label text="{_name}" id="nameLabel" fontSize="13" mouseEnabled="false" left="28" top="5"/>
+        <s:Label text="{_name}" id="nameLabel" fontSize="13" mouseEnabled="false" left="28" top="7"/>
     </s:Group>
     <s:HGroup right="12" top="0" bottom="0" height="100%">
         <s:Group height="100%">

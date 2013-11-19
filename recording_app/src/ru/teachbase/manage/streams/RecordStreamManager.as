@@ -23,6 +23,8 @@ public class RecordStreamManager extends StreamManager {
 
     private const streamsByUserId:Dictionary = new Dictionary(true);
 
+    private const _to_start_ns:Vector.<NetStream> = new <NetStream>[];
+
     public function RecordStreamManager(registered:Boolean = false) {
         super(registered);
     }
@@ -47,8 +49,18 @@ public class RecordStreamManager extends StreamManager {
     override public function clear():void{
         _initialized = false;
         _failed = false;
+        _started = false;
     }
 
+
+    override public function loadStreams():void{
+        while(_to_start_ns.length){
+            const ns:NetStream = _to_start_ns.pop();
+            bindUserStream(ns);
+            _model.streamList.addItem(ns);
+        }
+        _started = true;
+    }
 
     public function addHLSStream(ns:NetStream):void {
 
@@ -56,7 +68,8 @@ public class RecordStreamManager extends StreamManager {
 
         _model.streamsByName[(ns.client as NetStreamClient).data.name] = ns;
 
-        _model.streamList.addItem(ns);
+        _started && _model.streamList.addItem(ns);
+        !_started && _to_start_ns.push(ns);
 
     }
 

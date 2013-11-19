@@ -126,7 +126,7 @@ public final class SessionManager extends Manager {
 
     public function loginByHash(hash:String, meeting_id:uint):void {
         _onAfterLogin = loadMeetingModel;
-
+        App.meeting.id = meeting_id;
         App.rtmp.callServer("tb_login_by_hash", new Responder(loginSuccess, loginError), hash, meeting_id);
     }
 

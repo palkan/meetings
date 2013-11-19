@@ -271,7 +271,11 @@ public class StreamPlayer extends EventDispatcher{
         }
 
         if(e.state == HLSStates.IDLE){
-            warning('stopping?');
+            warning('stream stopped');
+            if(hls.client.buffering){
+                hls.client.buffering = false;
+                _bufferingCount--;
+            }
         }
 
         if(hls.client.buffering && (e.state == HLSStates.PLAYING || e.state == HLSStates.PAUSED)){
@@ -311,6 +315,7 @@ public class StreamPlayer extends EventDispatcher{
 
         __initialized = value;
         seek(0);
+        registerActiveStreams();
         dispatchEvent(new Event(Event.COMPLETE));
     }
 

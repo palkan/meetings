@@ -586,7 +586,7 @@ public class RecordingPlayer extends EventDispatcher{
         debug("stream player state: "+ e.value);
 
         if(e.value == PlayerStates.BUFFERING){
-            _state_before = (_state == PlayerStates.SEEK) ? _state_before : _state;
+            _state_before = (_state == PlayerStates.SEEK || _state == PlayerStates.BUFFERING) ? _state_before : _state;
             pause();
             state = PlayerStates.BUFFERING;
             _wait_stream_buffer = true;

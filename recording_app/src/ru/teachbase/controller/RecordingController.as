@@ -83,6 +83,8 @@ public class RecordingController extends ApplicationController {
 
         removeInitializerListeners(reinitializationComplete, reinitializationFailed);
 
+        App.streams.loadStreams();
+
         GlobalEvent.dispatch(GlobalEvent.RECONNECT);
 
     }

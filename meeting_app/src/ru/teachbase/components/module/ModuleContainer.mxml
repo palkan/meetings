@@ -109,6 +109,11 @@
 
             GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE, onPermissionsChanged);
 
+            /**
+             * Finalize managers
+             */
+
+            App.streams.loadStreams();
             App.session.userReady();
         }
 

@@ -5,7 +5,9 @@
     },
     "net":{
         "rtmp2":"rtmp://test2013.teachbase.ru:443/",
-        "rtmp":"127.0.0.1",
+        "rtmp":"127.0.0.1/teachbase",
+        "rtmp_media":"127.0.0.1/tblive",
+        "rtmp_share":"127.0.0.1",
         "rtmp_port":"443",
         "http":"http://test2013.teachbase.ru/"
     },
@@ -20,11 +22,14 @@
     ],
     "recording":{
         "url_":"../../../assets/record/record_23/",
-        "url":"http://devtbupload.s3.amazonaws.com/recordings/37039/record_2/"
+        "url":"http://devtbupload.s3.amazonaws.com/recordings/37276/record_1/"
     },
     "hls":{
       "debug":false
     },
-    "user_id": 12,
+    "java_download":"http://java.com/ru/download/",
+    "user_id": 5461,
+    "guest_id":13,
+    "auth_hash":"m36975wpwits386905",
     "meeting_id":36975
 }

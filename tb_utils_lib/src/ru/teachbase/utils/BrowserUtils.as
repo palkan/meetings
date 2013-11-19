@@ -8,7 +8,7 @@ public class BrowserUtils {
     private static const BROWSER_INFO:String =
             '(function( ) {' +
                     'return { appName: navigator.appName, version:navigator.appVersion, userAgent:navigator.userAgent };' +
-                    '})()';
+                    '})';
 
 
     private static const CLOSE_WINDOW:String = "window.close()";
@@ -63,13 +63,16 @@ public class BrowserUtils {
 
         if (!ExternalInterface.available) return false;
 
-        const callString:String = method+"(["+args.map(function(arg:*){
-
+        const callString:String = '(function( ) { return ' +method+".apply(null,["+args.map(function(arg:*){
             return arg is String ? '\''+arg+'\'' : arg;
+        }).join(",")+"]);"+
+                '})';
 
-        }).join(",")+"])";
+        var result:* =  ExternalInterface.call(callString);
 
-        return ExternalInterface.call(callString);
+        debug(callString,result);
+
+        return result;
 
     }
 

@@ -28,6 +28,7 @@ import ru.teachbase.net.stats.RTMPWatch;
 import ru.teachbase.utils.CameraQuality;
 import ru.teachbase.utils.CameraUtils;
 import ru.teachbase.utils.CameraUtils;
+import ru.teachbase.utils.shortcuts.$null;
 import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.notify;
@@ -55,6 +56,24 @@ public dynamic class StreamManager extends Manager {
 
     private var _bandwidth:Number = 0;
     private var _bw_per_stream:Number = 0;
+
+    /**
+     * Temporary storage for <i>probably</i> dead streams
+     */
+
+    private var _to_remove:Object = {};
+
+    /**
+     * List of initial streams to start after load complete
+     */
+
+    private var _to_start:Vector.<StreamData>;
+
+    /**
+     * Define whether all streams from  <i>_to_start</i> list was started.
+     */
+
+    protected var _started:Boolean = false;
 
     //------------ constructor ------------//
 
@@ -85,6 +104,7 @@ public dynamic class StreamManager extends Manager {
 
     override public function clear():void{
         super.clear();
+        _started = false;
         listener.dispose();
         removeAllStreams();
         listener.removeEventListener(RTMPEvent.DATA, handleMessage);
@@ -93,6 +113,20 @@ public dynamic class StreamManager extends Manager {
 
 
     //------------ API -------------------//
+
+
+    /**
+     * Call this function when all managers are ready to subscribe to streams.
+     */
+
+    public function loadStreams():void{
+
+        if(!_to_start || !_to_start.length)
+            _started = true;
+        else
+            addStream(_to_start.pop());
+    }
+
 
     public function closeRemoteStream(uid:Number, type:uint = 0):void{
 
@@ -126,8 +160,12 @@ public dynamic class StreamManager extends Manager {
 
     protected function handleHistory(v:Array):void {
         if (v && v.length) {
+
+            _to_start = new Vector.<StreamData>();
+
             for each (var str:StreamData in v) {
-                addStream(str);
+                _to_start.push(str);
+                //addStream(str);
             }
         }
 
@@ -143,7 +181,12 @@ public dynamic class StreamManager extends Manager {
         if (!stream) return;
 
         if (_model.usersByID[stream.user_id] && !_model.streamsByName[stream.name]) {
-            addStream(stream);
+            if(_started)
+                addStream(stream);
+            else{
+                !_to_start && (_to_start = new <StreamData>[]);
+                _to_start.push(stream);
+            }
         }
     }
 
@@ -193,6 +236,12 @@ public dynamic class StreamManager extends Manager {
                 removeStreamByName(data.name);
                 break;
             case NetStreamStatusCodes.PLAY_START:{
+
+                if(_to_remove[data.name]){
+                    removeFromList(_to_remove[data.name]);
+                    delete _to_remove[data.name];
+                }
+
                 var ns:NetStream = e.target as NetStream;
                 _model.streamList.addItem(ns);
 
@@ -203,6 +252,12 @@ public dynamic class StreamManager extends Manager {
 
                 _watcher.watch();
                 (ns.client as NetStreamClient).watcher = _watcher;
+
+
+                if(!_started && !_to_start.length){
+                    _to_start = null;
+                    _started = true;
+                }else if(!_started) addStream(_to_start.pop());
 
                 break;
             }
@@ -238,11 +293,20 @@ public dynamic class StreamManager extends Manager {
 
     private function removeStreamsByUser(uid:Number):void{
 
-
-
     }
 
-    private function removeStreamByName(name:String):void{
+    /**
+     *
+     * @param name
+     * @param commit  If <i>true</i> then call <i>removeFromList</i>; else add stream to <i>_toRemove</i> hash.
+     */
+
+    private function removeStreamByName(name:String, commit:Boolean = true):void{
+
+        if(_to_remove[name]){
+            removeFromList(_to_remove[name]);
+            delete _to_remove[name];
+        }
 
         if(!_model.streamsByName[name]) return;
 
@@ -262,11 +326,18 @@ public dynamic class StreamManager extends Manager {
 
         delete _model.streamsByName[name];
 
+        if(!commit)
+            _to_remove[name] = ns;
+        else
+            removeFromList(ns);
+    }
+
+    private function removeFromList(ns:NetStream):void{
         const ind:int = _model.streamList.source.indexOf(ns);
 
         (ind > -1) && _model.streamList.removeItemAt(ind);
-
     }
+
 
     protected function removeAllStreams():void{
 
@@ -281,7 +352,7 @@ public dynamic class StreamManager extends Manager {
 
         debug("Stream failed; try again: "+data.name);
 
-        removeStreamByName(data.name);
+        removeStreamByName(data.name, false);
         addStream(data);
     }
 

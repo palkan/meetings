@@ -44,7 +44,7 @@ public class RTMPMediaManager extends Manager {
 
     override protected function initialize(reinit:Boolean = false):void{
 
-        var _url = config('net/rtmp');
+        var _url = config('net/rtmp_media');
 
         if(!_url){
             error("Missing RTMP stream options");
@@ -54,7 +54,7 @@ public class RTMPMediaManager extends Manager {
 
         _factory.ng.addEventListener(ErrorEvent.ERROR, connectionErrorHandler);
         _factory.ng.addEventListener(Event.COMPLETE, connectionCreatedHandler);
-        _factory.createConnection(_url);
+        _factory.createConnection(_url+"/"+config('meeting_id'));
     }
 
 

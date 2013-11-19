@@ -35,7 +35,7 @@ public dynamic class SkinManager extends Manager
 		}
 
 		override protected function initialize(reinit:Boolean = false):void{
-			load(config("skin"));	
+			load(config("skin")+(config('version') ? "?v="+config('version') : ''));
 		}
 		
 		private function load(url:String=null):void {

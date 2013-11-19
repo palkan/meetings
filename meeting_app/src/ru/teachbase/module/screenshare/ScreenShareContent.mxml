@@ -49,6 +49,9 @@
         [Bindable]
         private var _p_enabled:Boolean = false;
 
+        [Bindable]
+        private var _app_available:Boolean = true;
+
 
         override public function init():void{
             listener.initialize();
@@ -72,9 +75,9 @@
             GlobalEvent.addEventListener(GlobalEvent.RESET, handleReset);
             GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, handleUserLeave);
 
-            start && (start.enabled = start.visible = _p_enabled);
-
             var share_streams:Array = App.meeting.streamList.toArray().filter(filter);
+
+            _app_available = Boolean(BrowserUtils.sendCall("exCall","available"));
 
             if (share_streams.length) {
 
@@ -229,9 +232,9 @@
 
         private function startShare():void {
 
-            BrowserUtils.sendCall("exCall","run",config("net/rtmp"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
+            BrowserUtils.sendCall("exCall","run",config("net/rtmp_share"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
 
-            debug("Share:",config("net/rtmp"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
+            debug("Share:",config("net/rtmp_share"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
 
             rtmp_send(PacketType.SCREEN_SHARING, {type: "prepare", uid: App.user.sid});
 
@@ -330,6 +333,8 @@
             start && (start.label = translate('start', 'screenshare'));
             stopshareBtn && (stopshareBtn.label = translate('stop_share', 'screenshare'));
             descTxt && (descTxt.text = translate('desc', 'screenshare'));
+            gotoJava && (gotoJava.label=translate('install_app','screenshare'));
+            noAppText && (noAppText.text = translate('no_java_alert','screenshare'));
         }
 
 
@@ -362,21 +367,30 @@
         <s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
     </s:VGroup>
 
-    <s:Group id="idleGroup" width="400" height="260" horizontalCenter="0" verticalCenter="0" includeIn="idle"
+    <s:Group id="idleGroup" width="100%" height="260" horizontalCenter="0" verticalCenter="0" includeIn="idle"
              visible="{_p_enabled}">
-        <s:VGroup horizontalCenter="0" top="50" id="appGroup">
+        <s:VGroup horizontalCenter="0" top="50" id="appGroup" visible="{_app_available}">
             <s:Group horizontalCenter="0" width="320">
 
                 <components:CustomSkinableButton id="start" width="270" click="startShare()"
                                                  horizontalCenter="0"
                                                  skinClass="ru.teachbase.skins.StandartButtonWithIcon"
-                                                 initialize="with(start){label=translate('start','screenshare');iconUp=style('screenshare','buttonIcon');iconDown=style('screenshare','buttonIcon');iconOver=style('screenshare','buttonIcon');visible = _p_enabled; enabled = _p_enabled;}"
+                                                 initialize="with(start){label=translate('start','screenshare');iconUp=style('screenshare','buttonIcon');iconDown=style('screenshare','buttonIcon');iconOver=style('screenshare','buttonIcon');}"
                         />
                 <s:RichText id="descTxt" initialize="with(descTxt){text = translate('desc','screenshare')}" width="100%"
                             y="{start.y + start.height + 22}" textAlign="center" fontSize="13"/>
 
             </s:Group>
         </s:VGroup>
+        <s:Group id="noJavaGroup"  width="100%" horizontalCenter="0" verticalCenter="0" visible="{!_app_available}">
+            <s:Label id="noAppText" width="100%" horizontalCenter="0" verticalCenter="-60" fontSize="13" textAlign="center" initialize="noAppText.text = translate('no_java_alert','screenshare');"/>
+            <components:CustomSkinableButton id="gotoJava" width="176" click="BrowserUtils.sendCall('window.open',config('java_download'),'_blank');"
+                                             horizontalCenter="0"
+                                             verticalCenter="0"
+                                             skinClass="ru.teachbase.skins.StandartButton"
+                                             initialize="gotoJava.label=translate('install_app','screenshare');"
+                    />
+        </s:Group>
     </s:Group>
     <s:Image source="{style('modulecontainer','bottomBackground')}" left="0" bottom="0" scaleMode="stretch" height="46"
              includeIn="iamsharing,iampreparing" width="100%"/>
