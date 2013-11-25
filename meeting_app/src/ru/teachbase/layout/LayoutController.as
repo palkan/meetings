@@ -1,5 +1,6 @@
 package ru.teachbase.layout {
 import flash.display.DisplayObjectContainer;
+import flash.errors.IllegalOperationError;
 import flash.events.EventDispatcher;
 import flash.geom.Point;
 import flash.geom.Rectangle;
@@ -264,19 +265,19 @@ public class LayoutController extends EventDispatcher {
 
     /**
      *
-     * @return
+     * @return Always returns <code>null</code> (we add resizer only after it's created)
+     * @throws IllegalOperationError If <code>_resizersFun</code> is undefined.
      */
 
 
     protected function createResizer():ILayoutResizer{
 
-        if(!(_resizersFun is Function)) return null;
+        if(!(_resizersFun is Function)) throw IllegalOperationError("Resizer generator is not a Function");
 
         _waitForRes++;
-        var r:ILayoutResizer = _resizersFun(resizerCreated);
+        _resizersFun(resizerCreated);
 
-        return r;
-
+        return null;
     }
 
 

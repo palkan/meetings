@@ -21,8 +21,9 @@
         }
     ],
     "recording":{
+        "url":"../../../assets/record/record_9/",
         "url_":"../../../assets/record/record_23/",
-        "url":"http://devtbupload.s3.amazonaws.com/recordings/37276/record_1/"
+        "url__":"http://devtbupload.s3.amazonaws.com/recordings/37276/record_1/"
     },
     "hls":{
       "debug":false
@@ -31,5 +32,5 @@
     "user_id": 5461,
     "guest_id":13,
     "auth_hash":"m36975wpwits386905",
-    "meeting_id":36975
+    "meeting_id":37281
 }

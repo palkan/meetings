@@ -421,7 +421,7 @@
 
         public function addMessage(m:ChatMessage):void {
 
-            if (m.uid == user.sid)
+            if (m.uid && m.uid == user.sid)
                 m.name = translate('me', 'chat');
 
             if (!_roomsById[m.roomId]) addRoom(m.roomId, m.name, m.uid);   // create private chat with user (so message name == user.extName)

@@ -65,7 +65,7 @@ public class ChatRoom {
         par.paragraphEndIndent = 2;
 
         var span:SpanElement = new SpanElement();
-        span.color = message.color;
+        span.color = message.color || "0x3E83B9";   // backward compatibility
         span.text = message.name+' (' + Strings.zero(timer.hours) + ':' + Strings.zero(timer.minutes) + '): ';
 
         par.addChild(span);

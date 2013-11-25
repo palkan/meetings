@@ -81,7 +81,10 @@
 
         private function dragEndHandler(e:DragEvent):void {
             completeDrag(stage.mouseX, stage.mouseY);
-            dispatchEvent(new ModuleEvent(ModuleEvent.RESIZE, _delta));
+            _delta && dispatchEvent(new ModuleEvent(ModuleEvent.RESIZE, _delta));
+
+            !_delta && setLayoutBoundsPosition(_model.position.x, _model.position.y);
+
             currentState = normal.name;
             CursorManager.removeAllCursors();
         }

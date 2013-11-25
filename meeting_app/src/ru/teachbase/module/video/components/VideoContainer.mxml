@@ -16,6 +16,7 @@
         import ru.teachbase.model.App;
         import ru.teachbase.model.User;
         import ru.teachbase.utils.Strings;
+        import ru.teachbase.utils.shortcuts.config;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.translate;
 
@@ -128,7 +129,7 @@
             uic.addChild(video);
 
 CONFIG::RECORDING{
-            position_txt.visible = true;
+            (config('log/level') == 'debug') && (position_txt.visible = true);
 }
 
         }
