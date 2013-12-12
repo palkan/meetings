@@ -37,7 +37,7 @@
 
         private function init():void {
 
-            if(_initialized) return;
+            if (_initialized) return;
 
             _video = new Video();
             Localizer.addItem(this);
@@ -82,7 +82,7 @@
 
                     qualityList.enabled = App.publisher.cameraEnabled;
 
-                    qualityList.selectedIndex = CameraUtils.AVAILABLE_QUALITIES_ID.indexOf(App.user.settings.publishQuality);
+                    qualityList.selectedIndex = CameraUtils.AVAILABLE_QUALITIES_ID.indexOf(App.user.settings.publishquality);
 
                     _enabled = true;
                 }
@@ -102,12 +102,12 @@
 
         override public function dispose():void {
 
-            if(_disposed) return;
+            if (_disposed) return;
 
             _video.attachCamera(null);
             _video.clear();
 
-            while(videoContainer.numChildren > 0) videoContainer.removeChildAt(0);
+            while (videoContainer.numChildren > 0) videoContainer.removeChildAt(0);
 
             _enabled = false;
 
@@ -115,15 +115,15 @@
         }
 
 
-        private function qualities():ArrayList{
+        private function qualities():ArrayList {
 
             const list:ArrayList = new ArrayList();
 
-            for each(var q:CameraQuality in CameraUtils.AVAILABLE_QUALITIES){
+            for each(var q:CameraQuality in CameraUtils.AVAILABLE_QUALITIES) {
 
                 list.addItem(
                         {
-                            label: translate(q.id,'settings'),
+                            label: translate(q.id, 'settings'),
                             quality: q,
                             enabled: App.publisher.cameraEnabled && App.publisher.maxQuality >= q.id
                         }
@@ -147,7 +147,7 @@
 
             if (camList.selectedIndex == currentIndex) return;
 
-            App.user.settings.camID = Camera.names[camList.selectedIndex];
+            App.user.settings.camid = Camera.names[camList.selectedIndex];
 
             App.publisher.updateCamera();
 
@@ -160,7 +160,7 @@
             translationLabel && (translationLabel.text = translate('translation', 'settings'));
             no_translation && (no_translation.text = translate('no_translation', 'settings'));
             qualityLabel && (qualityLabel.text = translate('quality_choose', 'settings'));
-            camNotFound && (camNotFound.text=translate('if_no_cam','settings'));
+            camNotFound && (camNotFound.text = translate('if_no_cam', 'settings'));
         }
 
 

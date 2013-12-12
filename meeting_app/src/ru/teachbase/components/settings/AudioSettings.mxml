@@ -40,14 +40,14 @@
 
         private function init():void {
 
-            if(_initialized) return;
+            if (_initialized) return;
 
             _volumeSaver = new DelayedWriter(1000, function (value:Number):void {
-                App.user.settings.volumeLevel = value;
+                App.user.settings.volumelevel = value;
             });
 
             _micLevelSaver = new DelayedWriter(1000, function (value:Number):void {
-                App.user.settings.micLevel = value;
+                App.user.settings.miclevel = value;
 
             });
 
@@ -59,14 +59,14 @@
 
             !_initialized && init();
 
-           _disposed = false;
+            _disposed = false;
 
-            audioVolume.value = App.user.settings.volumeLevel;
-            micVolume.value = App.user.settings.micLevel;
+            audioVolume.value = App.user.settings.volumelevel;
+            micVolume.value = App.user.settings.miclevel;
 
             scanHardware();
 
-            debug('mics',Microphone.names);
+            debug('mics', Microphone.names);
 
             micSelector.dataProvider = new ArrayList(Microphone.names);
 
@@ -136,7 +136,7 @@
 
             _loopbacked && micToggleLoopback();
 
-            App.user.settings.micID = micSelector.selectedIndex;
+            App.user.settings.micid = micSelector.selectedIndex;
 
             App.publisher.updateMicrophone();
 
@@ -177,7 +177,7 @@
 
         override public function dispose():void {
 
-            if(_disposed) return;
+            if (_disposed) return;
 
             if (_chanel) {
                 _chanel.stop();
@@ -201,7 +201,7 @@
             micChooseLabel && (micChooseLabel.text = translate('mic_choose', 'settings'));
             micLevelSetter && micLevelSetter && (micLevelSetter.text = translate('mic_level_setter', 'settings'));
             micCheckLabel1 && (micCheckLabel1.text = translate('mic_check', 'settings'));
-            micNotFound && (micNotFound.text=translate('if_no_mic','settings'));
+            micNotFound && (micNotFound.text = translate('if_no_mic', 'settings'));
         }
 
 

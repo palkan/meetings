@@ -70,6 +70,8 @@ CONFIG::LIVE{
 
             _p_enabled = Permissions.camAvailable(App.user.permissions);
 
+            _camVideoContainerInstance = null;
+
             for each(var ns:NetStream in App.meeting.streamList.toArray().filter(filter))
                 addVideo(ns);
 
@@ -174,7 +176,7 @@ CONFIG::RECORDING{
         }
 
         private function removeVideo(vc:IVideoContainer):void {
-            if(!vc) return;
+            if(!vc || vc.camera) return;
 
             _elements.splice(_elements.indexOf(vc), 1);
 

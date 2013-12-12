@@ -153,12 +153,12 @@ public class OutStreamSup extends Supervisor {
             App.publisher.cameraEnabled = true;
             App.publisher.setQuality(quality.id);
         }
-        else if(App.user.settings.publishQuality > quality.id){
-            _lastQuality = App.user.settings.publishQuality;
+        else if(App.user.settings.publishquality > quality.id){
+            _lastQuality = App.user.settings.publishquality;
             App.publisher.setQuality(quality.id);
             notify(new Notification(translate('bw_video_quality_decreased','notifications')),true);
         }
-        else if(_lastQuality && App.user.settings.publishQuality < quality.id && _lastQuality >= quality.id){
+        else if(_lastQuality && App.user.settings.publishquality < quality.id && _lastQuality >= quality.id){
             App.publisher.setQuality(quality.id);
         }
     }

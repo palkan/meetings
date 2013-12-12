@@ -12,17 +12,19 @@ import ru.teachbase.utils.shortcuts.debug;
  *
  * User local settings (stored in Local SharedObjects or during Runtime)
  *
+ * All properties are lower case because of local shared objects.
+ *
  */
 
 public class UserLocalSettings {
 
-    private var _volumeLevel:int = 80;
-    private var _micID:int = -1;
-    private var _micLevel:int = 80;
-    private var _camID:String = null;
+    private var _volumelevel:int = 80;
+    private var _micid:int = -1;
+    private var _miclevel:int = 80;
+    private var _camid:String = null;
     private var _lang:String = "ru";
-    private var _publishQuality:String = PublishQuality.HIGH;
-    private var _showNotifications:Boolean = true;
+    private var _publishquality:String = PublishQuality.HIGH;
+    private var _shownotifications:Boolean = true;
 
 
     /**
@@ -47,12 +49,12 @@ public class UserLocalSettings {
      * @default 80
      */
 
-    public function get micLevel():int {
-        return _micLevel;
+    public function get miclevel():int {
+        return _miclevel;
     }
 
-    public function set micLevel(value:int):void {
-        _micLevel = value;
+    public function set miclevel(value:int):void {
+        _miclevel = value;
         cookie('micLevel',value);
     }
 
@@ -60,12 +62,12 @@ public class UserLocalSettings {
      * @default null
      */
 
-    public function get camID():String {
-        return _camID;
+    public function get camid():String {
+        return _camid;
     }
 
-    public function set camID(value:String):void {
-        _camID = value;
+    public function set camid(value:String):void {
+        _camid = value;
         cookie('camID',value);
     }
 
@@ -75,12 +77,12 @@ public class UserLocalSettings {
      * @see ru.teachbase.utils.CameraQuality
      */
 
-    public function get publishQuality():String {
-        return _publishQuality;
+    public function get publishquality():String {
+        return _publishquality;
     }
 
-    public function set publishQuality(value:String):void {
-        _publishQuality = value;
+    public function set publishquality(value:String):void {
+        _publishquality = value;
         cookie('publishQuality',value);
     }
 
@@ -101,12 +103,12 @@ public class UserLocalSettings {
      * @default 80
      */
 
-    public function get volumeLevel():int {
-        return _volumeLevel;
+    public function get volumelevel():int {
+        return _volumelevel;
     }
 
-    public function set volumeLevel(value:int):void {
-        _volumeLevel = value;
+    public function set volumelevel(value:int):void {
+        _volumelevel = value;
         cookie('volumeLevel',value);
     }
 
@@ -114,12 +116,12 @@ public class UserLocalSettings {
      * @default -1
      */
 
-    public function get micID():int {
-        return _micID;
+    public function get micid():int {
+        return _micid;
     }
 
-    public function set micID(value:int):void {
-        _micID = value;
+    public function set micid(value:int):void {
+        _micid = value;
         cookie('micID',value);
     }
 
@@ -127,12 +129,12 @@ public class UserLocalSettings {
      *  @default true
      */
 
-    public function get showNotifications():Boolean {
-        return _showNotifications;
+    public function get shownotifications():Boolean {
+        return _shownotifications;
     }
 
-    public function set showNotifications(value:Boolean):void {
-        _showNotifications = value;
+    public function set shownotifications(value:Boolean):void {
+        _shownotifications = value;
         cookie('showNotifications',value);
     }
 }

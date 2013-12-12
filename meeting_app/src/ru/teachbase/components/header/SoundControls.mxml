@@ -60,15 +60,15 @@
             _volumeSaver.write(volumeSlider.value);
 
             clearInterval(_volumeID);
-            _volumeID = setTimeout(onVolumeClose,VOLUME_HIDE_TIME);
+            _volumeID = setTimeout(onVolumeClose, VOLUME_HIDE_TIME);
         }
 
 
         private function onVolumeOpen(evt:Event):void {
             volumeButton.selected = true;
-            volumeSlider.value = App.user.settings.volumeLevel;
+            volumeSlider.value = App.user.settings.volumelevel;
 
-            _volumeID = setTimeout(onVolumeClose,VOLUME_HIDE_TIME);
+            _volumeID = setTimeout(onVolumeClose, VOLUME_HIDE_TIME);
 
         }
 
@@ -91,7 +91,7 @@
             _req_available = App.meeting.settings & MeetingSettings.MAKE_REQUEST;
 
             _volumeSaver = new DelayedWriter(1000, function (value:Number):void {
-                user.settings.volumeLevel = value;
+                user.settings.volumelevel = value;
             });
 
             user.addEventListener(ChangeEvent.CHANGED, handleUserChanged);
@@ -105,7 +105,6 @@
 
             recordButton.visible = recordButton.includeInLayout = user.isAdmin() && (App.meeting.settings & MeetingSettings.RECORD);
             recordButton.selected = App.meeting.state == MeetingState.RECORD;
-
 
 
             GlobalEvent.addEventListener(GlobalEvent.MEETING_SETTINGS_UPDATE, meetingSettingsHandler);

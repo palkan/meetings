@@ -15,6 +15,7 @@
         import ru.teachbase.components.module.ModuleContainer;
         import ru.teachbase.components.notifications.Notification;
         import ru.teachbase.components.notifications.NotificationContainer;
+        import ru.teachbase.controller.ApiClient;
         import ru.teachbase.controller.ApplicationController;
         import ru.teachbase.model.App;
         import ru.teachbase.utils.shortcuts.style;
@@ -24,6 +25,7 @@
         import spark.primitives.BitmapImage;
 
         private const _controller:ApplicationController = new ApplicationController();
+        private const _api:ApiClient = new ApiClient();
 
         private var _container:ModuleContainer;
         private var _header:Header;
@@ -71,7 +73,7 @@
             _monitor.right = 14;
             _monitor.visible = false;
 
-            _monitor.source = App.rtmpMedia.stats;
+         //   _monitor.source = App.rtmpMedia.stats;
 
             addElement(_monitor);
 

@@ -18,6 +18,8 @@
         import mx.events.FlexEvent;
         import mx.rpc.Responder;
 
+        import ru.teachbase.components.callouts.SettingsItem;
+
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.rtmp.RTMPListener;
@@ -37,6 +39,8 @@
         private var _activeUser:User;
 
         private const user:User = App.user;
+
+        private var _settings:Vector.<SettingsItem> = new Vector.<SettingsItem>();
 
         private var _netStream:NetStream;
 
@@ -62,6 +66,8 @@
         private function creationCompleteHandler(event:FlexEvent):void {
 
             currentState = idle.name;
+
+            _settings.push(new SettingsItem("clear_screen_share", SettingsItem.FUN, stopShare));
 
             label = translate('label', 'screenshare');
 
@@ -305,6 +311,8 @@
 
         public function dispose():void {
 
+            BrowserUtils.sendCall("exCall","stop");
+
             _netStream = null;
 
             if (_vc) {
@@ -359,6 +367,14 @@
             if(!_p_enabled && _activeUser && (_activeUser.sid === user.sid)) dispose();
 
         }
+
+
+        override public function get settings():Vector.<SettingsItem> {
+
+            return _settings;
+
+        }
+
         ]]>
 	</fx:Script>
     <s:Label id="statusText" horizontalCenter="0" excludeFrom="idle,sharing" verticalCenter="-60"/>

@@ -71,6 +71,8 @@ public class PublishManager extends Manager {
 
     private var _cameraEnabled:Boolean = true;
 
+    private var _was_sharing:uint = 0;
+
     /**
      *  Reference to CurrentUser sharing model
      */
@@ -91,13 +93,14 @@ public class PublishManager extends Manager {
 
     override protected function initialize(reinit:Boolean = false):void {
 
-        if (!App.rtmpMedia || !App.rtmpMedia.connected) {
+        //if (!App.rtmpMedia || !App.rtmpMedia.connected) {
+        if (!App.rtmp || !App.rtmp.connected) {
             error("Can not find RTMPManager or RTMPManager is disconnected");
             _failed = true;
             return;
         }
 
-        _connection = App.rtmpMedia.connection;
+        _connection = App.rtmp.connection;//App.rtmpMedia.connection;
         _model = App.user.sharing;
 
 
@@ -106,11 +109,10 @@ public class PublishManager extends Manager {
             _stream = null;
         }
 
-        setQuality(App.user.settings.publishQuality);
+        setQuality(App.user.settings.publishquality);
 
 
         GlobalEvent.addEventListener(GlobalEvent.PERMISSIONS_UPDATE, permissionsHandler);
-
 
         listener.addEventListener(RTMPEvent.DATA, handleMessage);
         listener.initialize();
@@ -122,11 +124,18 @@ public class PublishManager extends Manager {
 
 
     override public function clear():void{
+
+        if(videoSharing) _was_sharing+=Permissions.CAMERA;
+
+        if(audioSharing) _was_sharing+=Permissions.MIC;
+
         closeCamera(false);
         closeAudio(false);
         super.clear();
 
         GlobalEvent.removeEventListener(GlobalEvent.PERMISSIONS_UPDATE, permissionsHandler);
+
+        GlobalEvent.addEventListener(GlobalEvent.RECONNECT, handleReconnect);
 
         listener.dispose();
         listener.removeEventListener(RTMPEvent.DATA, handleMessage);
@@ -271,7 +280,7 @@ public class PublishManager extends Manager {
                 break;
         }
 
-        App.user.settings.publishQuality = _qualityId;
+        App.user.settings.publishquality = _qualityId;
 
         _streaming && _stream.send('@setDataFrame','onMetaData',{quality:_qualityId});
 
@@ -344,9 +353,9 @@ public class PublishManager extends Manager {
         }
 
 
-        const index:String = (Camera.names.indexOf(App.user.settings.camID)).toString();
+        const index:String = (Camera.names.indexOf(App.user.settings.camid)).toString();
 
-        debug("Switch to camera: "+ App.user.settings.camID+", index: "+index);
+        debug("Switch to camera: "+ App.user.settings.camid+", index: "+index);
 
         _camera = CameraUtils.getCamera(index);
 
@@ -369,14 +378,14 @@ public class PublishManager extends Manager {
     private function setMicrophone(force:Boolean = false):void{
         if(_microphone && !force) return;
 
-        debug("Switch to microphone: "+ App.user.settings.micID);
+        debug("Switch to microphone: "+ App.user.settings.micid);
 
-        _microphone = MicrophoneUtils.getMicrophone(App.user.settings.micID,true);
+        _microphone = MicrophoneUtils.getMicrophone(App.user.settings.micid,true);
 
         debug("Switched to microphone: " + (_microphone ? _microphone.name : "none"));
 
         MicrophoneUtils.configure(_microphone);
-        _microphone.gain = App.user.settings.micLevel;
+        _microphone.gain = App.user.settings.miclevel;
     }
 
     /**
@@ -419,7 +428,7 @@ public class PublishManager extends Manager {
 
         if (!_microphone) return false;
 
-        _microphone.gain = App.user.settings.volumeLevel;
+        _microphone.gain = App.user.settings.volumelevel;
 
         audioSharing = true;
 
@@ -522,8 +531,8 @@ public class PublishManager extends Manager {
 
     protected function initStream():void {
         if (!_stream) {
-            _stream = new NetStream(App.rtmpMedia.connection);
-            var ns_client:Object = new Object();
+            _stream = new NetStream(App.rtmp.connection);//App.rtmpMedia.connection);
+            var ns_client:Object = {};
             ns_client.onMetaData = function (metadata:Object):void {
                 //nothing to do
             };
@@ -588,6 +597,17 @@ public class PublishManager extends Manager {
     }
 
 
+    protected function handleReconnect(e:GlobalEvent):void{
+
+        if(_was_sharing){
+            start(Permissions.micAvailable(_was_sharing),Permissions.camAvailable(_was_sharing));
+            _was_sharing = 0;
+        }
+
+        GlobalEvent.removeEventListener(GlobalEvent.RECONNECT,handleReconnect);
+    }
+
+
     protected function handleMessage(e:RTMPEvent):void{
 
         e.packet.data && e.packet.data['action'] && (this['remote'+Strings.capitalize(e.packet.data.action)] is Function) && this['remote'+Strings.capitalize(e.packet.data.action)](e.packet);
@@ -621,9 +641,11 @@ public class PublishManager extends Manager {
                 statusUpdate();
                 _stream.send('@setDataFrame','onMetaData',{quality:_qualityId, fps:CameraUtils.DEFAULT_FPS});
 
-                var _watcher:RTMPWatch = new RTMPWatch(_stream);
+               /*var _watcher:RTMPWatch = new RTMPWatch(_stream);
                 _watcher.addEventListener(Event.CLEAR, streamLooksDeadHandler);
+                _watcher.watch();
                 App.rtmpMedia.stats.registerOutput(_watcher);
+                */
                 break;
             }
             case NetStreamStatusCodes.UNPUBLISH_SUCCESS:{
@@ -632,7 +654,7 @@ public class PublishManager extends Manager {
                 _streaming  = false;
                 statusUpdate();
 
-                App.rtmpMedia.stats.unregisterOutput();
+               // App.rtmpMedia.stats.unregisterOutput();
                 break;
             }
             case NetStreamStatusCodes.FAILED:{
@@ -640,7 +662,7 @@ public class PublishManager extends Manager {
                 _streaming = false;
                 closeAll();
 
-                App.rtmpMedia.stats.unregisterOutput();
+               // App.rtmpMedia.stats.unregisterOutput();
                 break;
             }
         }

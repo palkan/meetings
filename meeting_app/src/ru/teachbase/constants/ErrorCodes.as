@@ -32,5 +32,6 @@ public class ErrorCodes {
     public static const HLS_STREAM_FAILED:uint = RECORDING + (1 << 15);
 
     public static const MEETING_FAILED:uint = APPLICATION + (1 << 16);
+    public static const PING_TIMEOUT:uint = APPLICATION + (1 << 17);
 }
 }

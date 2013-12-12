@@ -41,23 +41,23 @@
         }
 
 
-        private function added():void{
+        private function added():void {
             _created && updateHandler();
         }
 
 
-        private function updateHandler(e:GlobalEvent = null):void{
+        private function updateHandler(e:GlobalEvent = null):void {
 
-            notify_cb.selected = App.user.settings.showNotifications;
+            notify_cb.selected = App.user.settings.shownotifications;
             make_req_cb.selected = App.meeting.settings & MeetingSettings.MAKE_REQUEST;
             private_chat_cb.selected = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
 
         }
 
 
-        private function permissionsHandler(e:GlobalEvent = null):void{
+        private function permissionsHandler(e:GlobalEvent = null):void {
 
-            if(!_created) return;
+            if (!_created) return;
 
             adminsBlock.visible = adminsBlock.includeInLayout = App.user.isAdmin();
 
@@ -73,7 +73,7 @@
 
         }
 
-        protected function makeRequestHandler():void{
+        protected function makeRequestHandler():void {
 
             App.session.updateMeetingSettings(MeetingSettings.MAKE_REQUEST, make_req_cb.selected);
 
@@ -87,7 +87,7 @@
 
         protected function notificationsHandler():void {
 
-            App.user.settings.showNotifications = notify_cb.selected;
+            App.user.settings.shownotifications = notify_cb.selected;
 
         }
 

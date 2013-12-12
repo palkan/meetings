@@ -4,9 +4,10 @@
         "jre":"http://home.teachbase.ru/app/jre-7u9-windows-i586.exe"
     },
     "net":{
-        "rtmp2":"rtmp://test2013.teachbase.ru:443/",
+        "rtmp/":"rtmp://test2013.teachbase.ru:443/teachbase",
         "rtmp":"127.0.0.1/teachbase",
-        "rtmp_media":"127.0.0.1/tblive",
+        "rtmp_media2":"127.0.0.1/tblive",
+        "rtmp_media":"rtmp://test2013.teachbase.ru:443/tblive",
         "rtmp_share":"127.0.0.1",
         "rtmp_port":"443",
         "http":"http://test2013.teachbase.ru/"
@@ -29,8 +30,8 @@
       "debug":false
     },
     "java_download":"http://java.com/ru/download/",
-    "user_id": 5461,
+    "user_id": 5556,
     "guest_id":13,
     "auth_hash":"m36975wpwits386905",
-    "meeting_id":37281
+    "meeting_id":37619
 }

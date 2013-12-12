@@ -56,7 +56,7 @@
 			<s:SolidColor color="0x353535" alpha="0.8"/>
 		</s:fill>
 	</s:Rect>
-	<s:BitmapImage id="icon" top="4" left="4" source="{_notification.icon}"/>
+	<!--s:BitmapImage id="icon" top="4" left="4" source="{_notification.icon}"/-->
 	<s:BitmapImage left="0" right="0" bottom="0" fillMode="repeat" source="{style('notification','break')}"/>
 	<s:RichEditableText editable="false"  selectable="false" color="0xE8E8E8" fontSize="11" text="{_notification.text}" left="22" top="8" width="210" textAlign="center"/>
 	<s:HGroup left="43" bottom="4" id="requestGroup" visible="{_hasControls}">

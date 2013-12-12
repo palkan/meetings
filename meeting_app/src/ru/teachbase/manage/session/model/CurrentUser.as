@@ -38,7 +38,6 @@ public class CurrentUser extends User {
 
     public function CurrentUser() {
         super();
-        settings = new UserLocalSettings(config(Configger.COOKIE_NS));
     }
 
     /**
@@ -69,7 +68,7 @@ public class CurrentUser extends User {
             requestStatus = 0;
             permissions = _permissions;
 
-        }
+        }else settings = new UserLocalSettings(config(Configger.COOKIE_NS));
 
         _initialized = true;
     }

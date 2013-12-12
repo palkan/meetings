@@ -64,7 +64,7 @@ public class LayoutController extends EventDispatcher {
 
     protected var _active:Boolean = false;
 
-    protected var _expanded:Boolean = false;
+    private var _expanded:Boolean = false;
 
     protected var _expandedTarget:ITreeLayoutElement;
 
@@ -921,6 +921,10 @@ public class LayoutController extends EventDispatcher {
         _locked = value;
         updateDisplayList();
         dispatchEvent(new LayoutEvent(LayoutEvent.LOCK));
+    }
+
+    public function get expanded():Boolean {
+        return _expanded;
     }
 }
 }

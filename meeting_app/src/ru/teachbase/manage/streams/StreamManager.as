@@ -12,7 +12,6 @@ import mx.events.CollectionEventKind;
 import mx.rpc.Responder;
 
 import ru.teachbase.components.notifications.Notification;
-
 import ru.teachbase.constants.NetStreamStatusCodes;
 import ru.teachbase.constants.PacketType;
 import ru.teachbase.constants.QualityFPSBitrate;
@@ -25,14 +24,10 @@ import ru.teachbase.manage.streams.model.NetStreamClient;
 import ru.teachbase.manage.streams.model.StreamData;
 import ru.teachbase.model.App;
 import ru.teachbase.net.stats.RTMPWatch;
-import ru.teachbase.utils.CameraQuality;
 import ru.teachbase.utils.CameraUtils;
-import ru.teachbase.utils.CameraUtils;
-import ru.teachbase.utils.shortcuts.$null;
 import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
 import ru.teachbase.utils.shortcuts.notify;
-import ru.teachbase.utils.shortcuts.rtmp_call;
 import ru.teachbase.utils.shortcuts.rtmp_history;
 import ru.teachbase.utils.shortcuts.rtmp_send;
 import ru.teachbase.utils.shortcuts.translate;
@@ -158,14 +153,27 @@ public dynamic class StreamManager extends Manager {
     //------------ handlers --------------//
 
 
-    protected function handleHistory(v:Array):void {
-        if (v && v.length) {
+    protected function playTimeout(netstream:NetStream):void{
+       const data:StreamData = netstream.client.data;
+        if(!data) return;
+        removeStreamByName(data.name);
+        disposeNetStream(netstream);
+        addStream(data);
+    }
 
-            _to_start = new Vector.<StreamData>();
+
+    protected function playStopTimeout(netstream:NetStream):void{
+        disposeNetStream(netstream);
+        _to_start.length && addStream(_to_start.pop());
+    }
+
+
+    protected function handleHistory(v:Array):void {
+        _to_start = new Vector.<StreamData>();
+        if (v && v.length) {
 
             for each (var str:StreamData in v) {
                 _to_start.push(str);
-                //addStream(str);
             }
         }
 
@@ -209,11 +217,11 @@ public dynamic class StreamManager extends Manager {
     }
 
     private function streamLooksDeadHandler(e:Event):void{
-
         const watcher:RTMPWatch = e.target as RTMPWatch;
-
-        checkFailedStream(watcher.client.data);
-
+        warning("Stream looks dead", watcher.client.data);
+        watcher.unwatch();
+        watcher.watch();
+       // checkFailedStream(watcher.client.data);
     }
 
     private function streamErrorHandler(e:ErrorEvent):void {
@@ -222,18 +230,41 @@ public dynamic class StreamManager extends Manager {
 
     private function streamPlayOnStatusHandler(e:NetStatusEvent):void {
 
-        debug("Stream status:", (e.target as NetStream).info.resourceName, e.info.code);
+        const client:NetStreamClient = (e.target as NetStream).client as NetStreamClient;
+        const data:StreamData = client.data as StreamData;
 
-        const data:StreamData = ((e.target as NetStream).client as NetStreamClient).data as StreamData;
+        debug("Stream status:", e.info.code, data);
 
         switch (e.info.code) {
+            case NetStreamStatusCodes.BUFFER_EMPTY:
+                client.__buffer_empty_ts = (new Date()).getTime();
+                break;
+            case NetStreamStatusCodes.BUFFER_FULL:
+                var __now:Number = (new Date().getTime());
+                client.__buffer_lag = client.__buffer_lag||0;
+
+                if(client.__buffer_empty_ts) client.__buffer_lag += (__now-client.__buffer_empty_ts);
+
+                debug("Stream buffer lag:"+client.__buffer_lag);
+
+                if(client.__stream_start_ts){
+                    debug("Stream time: " + (e.target as NetStream).time+"; real time: " + (__now - client.__stream_start_ts));
+                }
+                break;
             case NetStreamStatusCodes.PLAY_FAILED:
                 warning("Failed to subscribe to stream", data.name);
-                checkFailedStream(data);
+                disposeNetStream(e.target as NetStream);
+                //!client.metadata.killed && checkFailedStream(data);
+                removeStreamByName(data.name);
+                _to_start.length && addStream(_to_start.pop());
                 break;
             case NetStreamStatusCodes.NOT_FOUND:
                 warning("Stream not found", data.name);
+                disposeNetStream(e.target as NetStream);
                 removeStreamByName(data.name);
+                if(!_started && !_to_start.length)
+                    _started = true;
+                else if(!_started || _to_start.length) addStream(_to_start.pop());
                 break;
             case NetStreamStatusCodes.PLAY_START:{
 
@@ -242,27 +273,31 @@ public dynamic class StreamManager extends Manager {
                     delete _to_remove[data.name];
                 }
 
+           //     client.tid && clearTimeout(client.tid);
+
                 var ns:NetStream = e.target as NetStream;
                 _model.streamList.addItem(ns);
 
-                var _watcher:RTMPWatch = new RTMPWatch(ns);
+                /*var _watcher:RTMPWatch = new RTMPWatch(ns);
                 App.rtmpMedia.stats.registerInput(_watcher);
 
                 _watcher.addEventListener(Event.CLEAR, streamLooksDeadHandler);
 
                 _watcher.watch();
                 (ns.client as NetStreamClient).watcher = _watcher;
+                */
 
+                client.__stream_start_ts = (new Date()).getTime();
 
-                if(!_started && !_to_start.length){
-                    _to_start = null;
+                if(!_started && !_to_start.length)
                     _started = true;
-                }else if(!_started) addStream(_to_start.pop());
+                else if(!_started || _to_start.length) addStream(_to_start.pop());
 
                 break;
             }
             case NetStreamStatusCodes.PLAY_STOP:
-                removeStreamByName(data.name);
+                disposeNetStream(e.target as NetStream);
+                _to_start.length && addStream(_to_start.pop());
                 break;
         }
     }
@@ -270,7 +305,7 @@ public dynamic class StreamManager extends Manager {
     //--------------- ctrl ---------------//
 
     protected function addStream(stream:StreamData):void {
-        var ns:NetStream = new NetStream(App.rtmpMedia.connection);
+        var ns:NetStream = new NetStream(App.rtmp.connection);//App.rtmpMedia.connection);
 
         ns.addEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler, false, EventPriority.DEFAULT_HANDLER);
 
@@ -284,14 +319,25 @@ public dynamic class StreamManager extends Manager {
         ns.addEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
 
         ns.bufferTime = 0;
+        ns.bufferTimeMax = 1;
+
         ns.backBufferTime = 0;
 
         debug("Stream play: "+stream.name);
 
+  //      ns.client.tid = setTimeout(lambda(playTimeout,ns),10000);
         ns.play(stream.name,0,false,App.user.sid.toString());
     }
 
     private function removeStreamsByUser(uid:Number):void{
+
+        for each(var ns:NetStream in _model.streamsByName){
+
+            var client:NetStreamClient = ns.client as NetStreamClient;
+
+            if(client.data.user_id == uid) removeStreamByName(client.data.name);
+
+        }
 
     }
 
@@ -312,17 +358,17 @@ public dynamic class StreamManager extends Manager {
 
         var ns:NetStream = _model.streamsByName[name] as NetStream;
 
-        const watcher:RTMPWatch = (ns.client as NetStreamClient).watcher;
+        /*const watcher:RTMPWatch = (ns.client as NetStreamClient).watcher;
         watcher && watcher.unwatch();
         watcher && watcher.removeEventListener(Event.CLEAR, streamLooksDeadHandler);
 
         App.rtmpMedia.stats.unregisterInput(watcher);
+        */
 
-        //ns.dispose();
-        ns.removeEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
-        ns.removeEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
-        ns.removeEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler);
-
+        if(!commit){
+          //  ns.client.tid = setTimeout(lambda(playStopTimeout,ns),10000);   // if !commit then we want to restart lagging but playing stream, so stop first
+            ns.play(false);
+        }
 
         delete _model.streamsByName[name];
 
@@ -331,6 +377,16 @@ public dynamic class StreamManager extends Manager {
         else
             removeFromList(ns);
     }
+
+
+    private function disposeNetStream(ns:NetStream):void{
+     //   ns.client.tid && clearTimeout(ns.client.tid);
+        ns.removeEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
+        ns.removeEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
+        ns.removeEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler);
+        ns.dispose();
+    }
+
 
     private function removeFromList(ns:NetStream):void{
         const ind:int = _model.streamList.source.indexOf(ns);
@@ -353,7 +409,7 @@ public dynamic class StreamManager extends Manager {
         debug("Stream failed; try again: "+data.name);
 
         removeStreamByName(data.name, false);
-        addStream(data);
+        _to_start.push(data);
     }
 
 

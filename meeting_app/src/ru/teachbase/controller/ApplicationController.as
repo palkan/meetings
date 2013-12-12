@@ -109,6 +109,12 @@ public class ApplicationController extends EventDispatcher {
                     setTimeout(reinitialize, REINITIALIZE_INTERVAL);
                 }
                 break;
+            case ErrorCodes.PING_TIMEOUT:
+                if(App.view){
+                    _reiniting = true;
+                    reinitialize();
+                }
+                break;
             case ErrorCodes.CONNECTION_DROPPED:
                 if(!_initializing){
                     _reiniting = true;
@@ -121,13 +127,14 @@ public class ApplicationController extends EventDispatcher {
                 break;
         }
 
-        hasEventListener(AppEvent.CORE_LOAD_ERROR) && dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
+        if(errorMessage){
+            hasEventListener(AppEvent.CORE_LOAD_ERROR) && dispatchEvent(new AppEvent(AppEvent.CORE_LOAD_ERROR, false, false, errorMessage, true));
 
-        App.view && App.view.lightbox && App.view.lightbox.show();
-        App.view && notify(new Notification(errorMessage), true);
+            App.view && App.view.lightbox && App.view.lightbox.show();
+            App.view && notify(new Notification(errorMessage), true);
 
-        App.view && !_reiniting && App.view.failed(errorMessage);
-
+            App.view && !_reiniting && App.view.failed(errorMessage);
+        }
     }
 
 
@@ -147,7 +154,15 @@ public class ApplicationController extends EventDispatcher {
 
 
     public function dispose():void {
-        const managers:Array = [App.rtmp, App.rtmpMedia, App.session, App.modules, App.layout, App.streams, App.docs, App.publisher];
+        const managers:Array = [
+            App.rtmp,
+            //App.rtmpMedia,
+            App.session,
+            App.modules,
+            App.layout,
+            App.streams,
+            App.docs,
+            App.publisher];
 
         managers.forEach(function (mgr:Manager, ind:int, arr:Array):void {
             mgr && mgr.clear();
@@ -179,7 +194,7 @@ public class ApplicationController extends EventDispatcher {
                 LocaleManager.instance,  // loading locales
                 SkinManager.instance,    // loading skin
                 new RTMPManager(true),    // connecting to rtmp server
-                new RTMPMediaManager(true), // connecting for rtmp server again (stream connection),
+                //new RTMPMediaManager(true), // connecting for rtmp server again (stream connection),
                 new SessionManager(true), // login, get user info (profile, role, permissions), get room info (id, settings, users etc) --> Session Model
                 new ModulesManager(true),  // loading modules models, initialize active modules
                 new LayoutManager(true),  // loading layout, positioning modules
@@ -199,7 +214,15 @@ public class ApplicationController extends EventDispatcher {
 
         notify(new Notification(translate("connection_failed", "notifications")), true);
 
-        const managers:Array = [App.rtmp, App.rtmpMedia, App.session, App.modules, App.layout, App.streams, App.docs, App.publisher];
+        const managers:Array = [
+            App.rtmp,
+            //App.rtmpMedia,
+            App.session,
+            App.modules,
+            App.layout,
+            App.streams,
+            App.docs,
+            App.publisher];
 
         managers.forEach(function (mgr:Manager, ind:int, arr:Array):void {
             mgr && mgr.clear();

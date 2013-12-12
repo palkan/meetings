@@ -35,6 +35,7 @@
                 <element name="save_chat"><![CDATA[Save Chat]]></element>
 				<element name="minimize"><![CDATA[Minimize]]></element>
 				<element name="clear_workplace"><![CDATA[Clear Workplace]]></element>
+                <element name="clear_screen_share"><![CDATA[Stop Sharing]]></element>
                 <element name="open_document"><![CDATA[Open Document]]></element>
 				<element name="save_screenshot"><![CDATA[Save Screenshot]]></element>
                 <element name="export_user_list"><![CDATA[Save Users List]]></element>

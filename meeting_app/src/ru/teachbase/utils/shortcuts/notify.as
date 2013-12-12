@@ -9,7 +9,7 @@ import ru.teachbase.model.App;
  *
  */
 public function notify(notification:Notification, allowForUsers:Boolean = false):void {
-    if (!App.user.settings.showNotifications || (!App.user.isAdmin() && !allowForUsers)) {
+    if (!App.user.settings || !App.user.settings.shownotifications || (!App.user.isAdmin() && !allowForUsers)) {
         return;
     }
 

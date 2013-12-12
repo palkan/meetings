@@ -110,6 +110,8 @@ public class RTMPWatch extends EventDispatcher{
 
         _values = new LimitArray(_counter);
 
+        _empty_since = 0;
+
         _lastFramesDropped = (_netstream.info as NetStreamInfo).droppedFrames;
 
         _updateID = setInterval(updateProps,delay);
@@ -159,6 +161,8 @@ public class RTMPWatch extends EventDispatcher{
             _avg_kbs = Arrays.average(Arrays.key('kbs',_values));
 
             _fps = Arrays.average(Arrays.key('fps',_values));
+
+            debug("Stream buffer length: "+_netstream.bufferLength);
 
         }else
             _counter--;

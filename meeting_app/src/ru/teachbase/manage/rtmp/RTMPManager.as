@@ -29,6 +29,8 @@ public class RTMPManager extends Manager {
 
     private var _factory:ConnectionFactory = new ConnectionFactory();
 
+    private var _pinger:Pinger;
+
     private static const listeners:FuncObject = new FuncObject();
 
     public function RTMPManager(register:Boolean = false){
@@ -45,6 +47,8 @@ public class RTMPManager extends Manager {
             return;
         }
 
+        _pinger = new Pinger(this);
+
         _factory.ng.addEventListener(ErrorEvent.ERROR, connectionErrorHandler);
         _factory.ng.addEventListener(Event.COMPLETE, connectionCreatedHandler);
         _factory.createConnection(_url);
@@ -57,7 +61,11 @@ public class RTMPManager extends Manager {
 
     override public function clear():void{
         super.clear();
-        connected && _connection.close();
+        _pinger.stop();
+        if(connected){
+            _connection.removeEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
+            _connection.close();
+        }
         listeners.clear();
         _connection = null;
     }
@@ -123,6 +131,13 @@ public class RTMPManager extends Manager {
         (listeners[name] is Function) && listeners[name].apply(null,args);
     }
 
+
+
+    public function __timeout(){
+        error('Timeout', ErrorCodes.PING_TIMEOUT);
+    }
+
+
    // ---------- API (End) ---------- //
 
 
@@ -156,6 +171,7 @@ public class RTMPManager extends Manager {
     private function setupConnection():void{
         _connection.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
         _connection.client = new RTMPClient(this);
+        _pinger.start();
     }
 
 
@@ -196,6 +212,56 @@ public class RTMPManager extends Manager {
         }
 
     }
+}
 
 }
+
+import flash.net.Responder;
+import flash.utils.clearTimeout;
+import flash.utils.setTimeout;
+
+import ru.teachbase.manage.rtmp.RTMPManager;
+import ru.teachbase.utils.shortcuts.$null;
+
+
+internal class Pinger{
+
+    private const PING_TIMEOUT:int = 5000;
+    private const WAIT_TIMEOUT:int = 5000;
+
+
+    private var _rtmp:RTMPManager;
+    private var _tid:uint;
+
+    function Pinger(rtmp:RTMPManager){
+
+        _rtmp = rtmp;
+        start();
+    }
+
+
+    public function start(){
+        if(!_rtmp.connection || !_rtmp.connection.connected) return;
+
+        _tid = setTimeout(failed,WAIT_TIMEOUT);
+
+        (_rtmp.connection).call('ping', new Responder(success,$null));
+    }
+
+
+    private function success(...args){
+        clearTimeout(_tid);
+        _tid = setTimeout(start,PING_TIMEOUT);
+    }
+
+    private function failed(){
+        _rtmp.__timeout();
+    }
+
+
+    public function stop(){
+        clearTimeout(_tid);
+    }
+
+
 }
