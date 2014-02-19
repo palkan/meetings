@@ -35,7 +35,6 @@
 
         private var _currentDoc:DocumentData;
 
-
         //-------------------------- initialize -------------------------------//
 
         override public function init():void {

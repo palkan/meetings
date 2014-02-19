@@ -1,6 +1,5 @@
-package ru.teachbase.skins
+package ru.teachbase.skins.callouts
 {
-
 import spark.skins.mobile.CalloutSkin;
 
 public class CalloutSkinAS extends CalloutSkin

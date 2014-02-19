@@ -18,6 +18,10 @@ import ru.teachbase.utils.shortcuts.debug;
 
 public class UserLocalSettings {
 
+    public static const COLORS:Array = [0xCC3D33, 0x7220A3, 0x347B4D, 0xD67400];
+
+
+    private var _color:uint = 0xCC3D33;
     private var _volumelevel:int = 80;
     private var _micid:int = -1;
     private var _miclevel:int = 80;
@@ -25,6 +29,7 @@ public class UserLocalSettings {
     private var _lang:String = "ru";
     private var _publishquality:String = PublishQuality.HIGH;
     private var _shownotifications:Boolean = true;
+    private var _showcursor:Boolean = true;
 
 
     /**
@@ -136,6 +141,24 @@ public class UserLocalSettings {
     public function set shownotifications(value:Boolean):void {
         _shownotifications = value;
         cookie('showNotifications',value);
+    }
+
+    public function get color():uint {
+        return _color;
+    }
+
+    public function set color(value:uint):void {
+        _color = value;
+        cookie('color',value);
+    }
+
+    public function get showcursor():Boolean {
+        return _showcursor;
+    }
+
+    public function set showcursor(value:Boolean):void {
+        _showcursor = value;
+        cookie('showcursor',value);
     }
 }
 }

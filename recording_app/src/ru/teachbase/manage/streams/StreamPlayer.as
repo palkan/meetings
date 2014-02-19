@@ -101,11 +101,11 @@ public class StreamPlayer extends EventDispatcher{
 
     }
 
-    public function pause():void{
+    public function pause(not_buferring:Boolean = false):void{
 
         if(_state == PlayerStates.UNAVAILABLE) return;
 
-        for each(var h:HLS in _activeHLS) h.pause();
+        for each(var h:HLS in _activeHLS) !(not_buferring && h.client.buffering) && h.pause();
         _state = PlayerStates.PAUSED;
     }
 
@@ -265,7 +265,7 @@ public class StreamPlayer extends EventDispatcher{
             hls.client.buffering = true;
             _bufferingCount++;
 
-            if(_state == PlayerStates.PLAYING) pause();
+            if(_state == PlayerStates.PLAYING) pause(true);
 
             _state = PlayerStates.BUFFERING;
         }

@@ -79,8 +79,8 @@
             if (evt.keyCode == 13) {
                 var num:int = int(toSlide.text);
                 toSlide.text = "";
-                if (num != 0) {
-                    this.dispatchEvent(new ChangeSlideEvent("onChangeSlide", ChangeSlideEvent.DIRECTION_DIRECT, num));
+                if (num > 0) {
+                    dispatchEvent(new ControlEvent(ControlEvent.CHANGE, WorkplaceMethod.CHANGE_SLIDE, [num-1], true, ControlHost.BOTH, true));
                 }
             }
         }

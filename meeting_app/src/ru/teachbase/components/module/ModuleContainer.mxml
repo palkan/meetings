@@ -100,6 +100,7 @@
             addEventListener(ModuleEvent.SETTINGS, onSettingsHandler, true);
             addEventListener(ModuleEvent.RESIZE, onResizerHandler, true);
 
+
             // setup default panels
 
             for each(var panel:ModuleInstanceData in App.layout.panels_to_init) {

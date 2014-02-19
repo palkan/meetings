@@ -20,6 +20,7 @@
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
         import ru.teachbase.manage.rtmp.model.Recipients;
+        import ru.teachbase.model.App;
         import ru.teachbase.module.documents.events.ControlEvent;
         import ru.teachbase.module.documents.events.RendererEvent;
         import ru.teachbase.module.documents.model.DocumentData;
@@ -107,6 +108,8 @@
 
             this.removeEventListener(ControlEvent.CHANGE, changeHandler);
             _listener && _listener.removeEventListener(RTMPEvent.DATA, handleMessage);
+
+            App.liveCursor.remove(_documentId);
 
         }
 
@@ -281,6 +284,8 @@
 
             controls.addElement(_board.controlbar);
             content.addElement(_board);
+
+            App.liveCursor.add(_board.canvas,_documentId);
         }
 
 

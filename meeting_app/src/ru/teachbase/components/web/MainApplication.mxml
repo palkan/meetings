@@ -107,6 +107,16 @@
 
         }
 
+        /**
+         * Disable or enable mouse events on header and modules container (when lightbox is on)
+         * @param value
+         */
+
+        public function mouseEvents(value:Boolean):void{
+            _container.mouseEnabled = _header.mouseEnabled = value;
+        }
+
+
         public function get lightbox():LightboxContainer {
             return _lightbox;
         }

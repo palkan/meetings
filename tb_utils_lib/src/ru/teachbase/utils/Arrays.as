@@ -14,6 +14,27 @@ package ru.teachbase.utils {
 
 public class Arrays {
 
+
+    /**
+     * Return random element from Array
+     * @param arr
+     * @return
+     */
+
+
+    public static function sample(arr:Array):*{
+
+        if(!arr || !arr.length) return null;
+
+        var buf:Array = arr.slice();
+
+        buf.sort(function (...args){ return (Math.random() - .5);});
+
+        return buf[0];
+
+    }
+
+
     /**
      * Return sum of elements of numbers array.
      * @param arr
@@ -64,6 +85,8 @@ public class Arrays {
         return function(obj:Object,...args):*{ return obj[name];};
 
     }
+
+
 
 }
 

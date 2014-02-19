@@ -1,9 +1,10 @@
 package ru.teachbase.module.documents.model {
+import ru.teachbase.utils.extensions.FromObject;
 import ru.teachbase.utils.system.registerClazzAlias;
 
 registerClazzAlias(WorkplaceData);
 
-public dynamic class WorkplaceData {
+public dynamic class WorkplaceData extends FromObject{
 
 
     /**
@@ -18,20 +19,10 @@ public dynamic class WorkplaceData {
 
     public function WorkplaceData(object:Object = null) {
 
-        if (object) fromObject(object);
+        super(object);
 
     }
 
-
-    public function fromObject(obj:Object):void {
-
-        for (var key:String in obj) {
-
-            this[key] = obj[key];
-
-        }
-
-    }
 
 }
 }

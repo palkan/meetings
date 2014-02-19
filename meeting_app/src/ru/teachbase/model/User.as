@@ -24,6 +24,7 @@ registerClazzAlias(User);
 
 public class User extends EventDispatcher{
 
+
     /**
      * Teachbase user id
      *

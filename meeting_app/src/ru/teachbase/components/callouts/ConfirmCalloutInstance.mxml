@@ -7,7 +7,7 @@
            horizontalPosition="end"
            mouseDownOutside="this.close()"
            creationComplete="onCreationComplete(event)"
-           skinClass="ru.teachbase.skins.CalloutSkinAS"
+           skinClass="ru.teachbase.skins.callouts.CalloutSkinAS"
            backgroundColor="0x000000"
            backgroundAlpha="0.7"
            contentBackgroundAlpha="0">

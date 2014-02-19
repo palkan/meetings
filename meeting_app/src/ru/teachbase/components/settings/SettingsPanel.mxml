@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
-               xmlns:s="library://ns.adobe.com/flex/spark"
-               width="566"
-               height="575"
-               implements="ru.teachbase.utils.interfaces.ILocalable"
-               initialize="init()"
-               removedFromStage="close()"
-               creationComplete="creationComplete()"
-               backgroundColor="0xE3E3E3"
-               skinClass="ru.teachbase.skins.TitleWindowSkin">
+                      xmlns:s="library://ns.adobe.com/flex/spark" xmlns:tbcomp="ru.teachbase.components.*"
+                      width="566"
+                      height="575"
+                      implements="ru.teachbase.utils.interfaces.ILocalable"
+                      initialize="init()"
+                      removedFromStage="dispose()"
+                      creationComplete="creationComplete()"
+                      backgroundColor="0xE3E3E3"
+                      skinClass="ru.teachbase.skins.TitleWindowSkin">
 
     <fx:Script>
 	<![CDATA[
@@ -39,8 +39,11 @@
 
         }
 
+        public function close():void{
+            App.settings.close();
+        }
 
-        private function close():void {
+        private function dispose():void {
 
             _currentElement && _currentElement.dispose();
 
@@ -139,4 +142,5 @@
             </s:VGroup>
         </s:HGroup>
     </s:VGroup>
+    <tbcomp:CloseButton right="20" top="16" click="close()"/>
 </s:SkinnableContainer>

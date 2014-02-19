@@ -17,14 +17,11 @@
         import mx.events.FlexEvent;
 
         import ru.teachbase.components.NavigatorWindow;
-
         import ru.teachbase.events.ChangeEvent;
-        import ru.teachbase.features.live.mouse.SimpleLiveCursorManager;
-        import ru.teachbase.model.App;
+        import ru.teachbase.manage.livecursor.SimpleCursorManager;
         import ru.teachbase.module.screenshare.ShareVideoModes;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.shortcuts.style;
-        import ru.teachbase.utils.shortcuts.translate;
 
         private const SNAP_TIME:int = 2000;
 
@@ -61,12 +58,12 @@
         private var modes:ArrayCollection = new ArrayCollection(['scale', 'crop']);
 
         public function set from(userId:Number):void {
-         //   titleName = translate("user_share_title", "screenshare", App.meeting.getUserNameById(userId));
+            //   titleName = translate("user_share_title", "screenshare", App.meeting.getUserNameById(userId));
             this.userId = userId;
         }
 
         public function localize():void {
-           // titleName = translate("user_share_title", "screenshare", App.meeting.getUserNameById(userId));
+            // titleName = translate("user_share_title", "screenshare", App.meeting.getUserNameById(userId));
         }
 
         public function get from():Number {
@@ -195,12 +192,13 @@
 
         private function createSnapshot(e:TimerEvent = null):void {
 
-            try{
+            try {
                 var _bmp:BitmapData = new BitmapData(video.width, video.height);
                 _bmp.draw(video, video.transform.matrix);
 
                 _navigator.snapshotSource = _bmp;
-            }catch(e:Error){}
+            } catch (e:Error) {
+            }
         }
 
         public function get videoWidth():Number {
@@ -255,11 +253,11 @@
             return _disposed;
         }
 
-        private var _liveCursorManager:SimpleLiveCursorManager;
+        private var _liveCursorManager:SimpleCursorManager;
 
         private function curInit():void {
             CONFIG::LIVE{
-                _liveCursorManager = new SimpleLiveCursorManager(uic);
+                _liveCursorManager = new SimpleCursorManager(uic);
             }
         }
         ]]>

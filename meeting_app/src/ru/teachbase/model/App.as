@@ -15,6 +15,7 @@ import ru.teachbase.manage.file.FileManager;
 import ru.teachbase.manage.layout.LayoutManager;
 
 import ru.teachbase.manage.Manager;
+import ru.teachbase.manage.livecursor.LiveCursorManager;
 import ru.teachbase.manage.modules.ModulesManager;
 import ru.teachbase.manage.publish.PublishManager;
 import ru.teachbase.manage.rtmp.RTMPMediaManager;
@@ -44,6 +45,7 @@ public class App {
 
     private static var _fileManager:FileManager;
 
+    private static var _liveCursor:LiveCursorManager;
 
     //------------ constructor ------------//
 
@@ -121,6 +123,13 @@ public class App {
             _fileManager = new FileManager();
 
         return _fileManager;
+    }
+
+
+    public static function get liveCursor():LiveCursorManager{
+        if(!_liveCursor)
+            _liveCursor = new LiveCursorManager();
+        return _liveCursor;
     }
 
     public static function get stage():Stage {

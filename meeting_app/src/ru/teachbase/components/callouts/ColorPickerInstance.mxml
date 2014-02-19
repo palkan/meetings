@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<callouts:TempCallout xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:callouts="ru.teachbase.components.callouts.*"
+                      backgroundColor="0x000000" backgroundAlpha="0.9" contentBackgroundAlpha="0"
+                      skinClass="ru.teachbase.skins.callouts.CalloutSkinAS"
+                      horizontalPosition="before"
+                      xmlns:s="library://ns.adobe.com/flex/spark">
+    <callouts:layout>
+        <s:VerticalLayout gap="0"/>
+    </callouts:layout>
+    <fx:Script><![CDATA[
+        import mx.core.IVisualElement;
+
+        import ru.teachbase.skins.callouts.ColorButtonSkin;
+
+        import spark.components.Button;
+
+        private var _dataProvider:Array;
+        private var _callbackFunction:Function;
+
+        public function set dataProvider(value:Array):void {
+
+            removeAllElements();
+
+            var but:Button;
+
+            var i, size;
+
+            for (i = 0, size = value.length; i < size; i++) {
+
+                but = new Button();
+                but.setStyle("skinClass", ColorButtonSkin);
+                but.setStyle("color", value[i]);
+                but.addEventListener(MouseEvent.CLICK, handler);
+                addElement(but);
+            }
+
+            _dataProvider = value;
+        }
+
+
+        private function handler(event:MouseEvent):void {
+            var index:int = getElementIndex(event.target as IVisualElement);
+            _callbackFunction && _callbackFunction(_dataProvider[index]);
+            close();
+        }
+
+        public function get callbackFunction():Function {
+            return _callbackFunction;
+        }
+
+        public function set callbackFunction(value:Function):void {
+            _callbackFunction = value;
+        }
+        ]]></fx:Script>
+
+</callouts:TempCallout>

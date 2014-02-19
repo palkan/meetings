@@ -329,7 +329,7 @@ public class PublishManager extends Manager {
     }
 
     public function disable():void {
-        closeAll();
+        closeCamera();
         _model.enabled = false;
     }
 

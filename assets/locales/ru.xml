@@ -99,6 +99,7 @@
 				<element name="request_cam"><![CDATA[Запрос на подключение веб камеры]]></element>
                 <element name="request_docs"><![CDATA[Запрос на управление документами]]></element>
 				<element name="request_mic"><![CDATA[Запрос на подключение микрофона]]></element>
+                <element name="set_color">Ваш цвет</element>
 				<element name="set_label">Модуль участники</element>
 				<element name="set_requests_off"><![CDATA[Запрос камеры и микрофона
 участниками]]></element>
@@ -152,6 +153,7 @@
 				<element name="select_desc"><![CDATA[<p>Вы можете загружать документы и картинки:</p> <list><li>из Вашего компьютера;</li> <li>из Библиотеки материалов;</li> <li>из интернет-ресурсов;</li></list>]]></element>
 				<element name="only_users"><![CDATA[Данная возможность доступна только авторизованным пользователям]]></element>
 				<element name="drop"><![CDATA[Вы можете перенести и «бросить» файлы прямо сюда]]></element>
+                <element name="show_cursor">Показывать мой курсор</element>
 			</elements>
 		</component>
         <component name="file_upload">
@@ -258,6 +260,7 @@ ${2}]]></element>
 				<element name="YT_policy"><![CDATA[Политика безопастности YouTube
 запрещает просмотр данного видео]]></element>
 				<element name="YT_removed"><![CDATA[Данное видео удалено с YouTube]]></element>
+                <element name="weak_channel"><![CDATA[Слишком слабая пропускная способность канала]]></element>
 			</elements>
 		</component>		
 	</components>

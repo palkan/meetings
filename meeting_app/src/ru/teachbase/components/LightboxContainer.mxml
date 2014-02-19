@@ -2,14 +2,14 @@
 <s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark">
     <fx:Script><![CDATA[
         import mx.core.IVisualElement;
-        import mx.core.IVisualElementContainer;
-        import mx.events.FlexMouseEvent;
+
+        import ru.teachbase.components.web.MainApplication;
 
         /**
          *  Parent component of lightbox
          */
 
-        public var container:IVisualElementContainer;
+        public var container:MainApplication;
 
         /**
          * Lightbox index within container;
@@ -33,7 +33,7 @@
         public function close():void {
 
             container && (this.parentDocument == container) && container.removeElement(this) && (_source && this.removeElement(_source));
-
+            container && container.mouseEvents(true);
         }
 
 
@@ -43,10 +43,10 @@
          * @param canClose
          */
 
-        public function show(element:IVisualElement = null, canClose:Boolean = true):void{
+        public function show(element:IVisualElement = null, canClose:Boolean = true):void {
             _canClose = canClose;
 
-            if(element){
+            if (element) {
                 element.verticalCenter = 0;
                 element.horizontalCenter = 0;
 
@@ -55,13 +55,14 @@
                 _source = element;
             }
 
-            if(index == int.MAX_VALUE || index > container.numElements-1)
+            if (index == int.MAX_VALUE || index > container.numElements - 1)
                 container.addElement(this);
-            else if(index>=0)
-                container.addElementAt(this,index);
+            else if (index >= 0)
+                container.addElementAt(this, index);
             else
-                container.addElementAt(this,Math.max(container.numElements-1+index,0));
+                container.addElementAt(this, Math.max(container.numElements - 1 + index, 0));
 
+            container.mouseEvents(false);
         }
 
 
@@ -72,8 +73,6 @@
         public function get canClose():Boolean {
             return _canClose;
         }
-
-
         ]]></fx:Script>
 
     <s:Group id="clickArea" height="100%" width="100%" click="_canClose &amp;&amp; close()"></s:Group>

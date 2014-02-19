@@ -176,7 +176,12 @@ CONFIG::RECORDING{
         }
 
         private function removeVideo(vc:IVideoContainer):void {
-            if(!vc || vc.camera) return;
+            if(!vc) return;
+
+            if(vc.camera){
+                removeCamera();
+                return;
+            }
 
             _elements.splice(_elements.indexOf(vc), 1);
 

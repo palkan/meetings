@@ -72,7 +72,7 @@ public final class UsersModule extends Module {
 
         const _s:Vector.<SettingsItem> = new <SettingsItem>[];
 
-        (App.user.isAdmin() || user.iam) && _s.push(new SettingsItem('user_change_name',SettingsItem.FUN, $null));
+       // (App.user.isAdmin() || user.iam) && _s.push(new SettingsItem('user_change_name',SettingsItem.FUN, $null));
 
         if(user.iam) return _s;
 

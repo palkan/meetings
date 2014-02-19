@@ -10,9 +10,11 @@
                           creationComplete="created()">
     <fx:Script>
 		<![CDATA[
+        import ru.teachbase.components.callouts.ColorPickerCallout;
         import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.LocaleManager;
         import ru.teachbase.manage.session.model.MeetingSettings;
+        import ru.teachbase.manage.session.model.UserLocalSettings;
         import ru.teachbase.model.App;
         import ru.teachbase.utils.Localizer;
         import ru.teachbase.utils.shortcuts.style;
@@ -51,6 +53,7 @@
             notify_cb.selected = App.user.settings.shownotifications;
             make_req_cb.selected = App.meeting.settings & MeetingSettings.MAKE_REQUEST;
             private_chat_cb.selected = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
+            show_cursor_cb.selected = App.user.settings.showcursor;
 
         }
 
@@ -70,8 +73,21 @@
             if (!data) return;
 
             LocaleManager.instance.changeLocale(data.value);
-
         }
+
+
+        private function colorHandler(color:uint):void{
+            App.user.settings.color = color;
+            user_clr.setStyle('color',App.user.settings.color);
+        }
+
+
+        private function showCursorHandler():void{
+            App.user.settings.showcursor = show_cursor_cb.selected;
+
+            App.user.settings.showcursor ? App.liveCursor.enable() : App.liveCursor.disable();
+        }
+
 
         protected function makeRequestHandler():void {
 
@@ -145,6 +161,13 @@
             <s:Label id="users_lb" initialize="users_lb.text=translate('label','users')" color="0x6892B5" fontSize="13"
                      paddingLeft="22"
                     />
+            <s:HGroup paddingLeft="21">
+                <s:Button width="20" height="20" id="user_clr" label="" skinClass="ru.teachbase.skins.callouts.ColorButtonSkin"
+                            initialize="user_clr.setStyle('color',App.user.settings.color);"
+                            click="ColorPickerCallout.open(user_clr,UserLocalSettings.COLORS,colorHandler);"/>
+                <s:Label id="color_lb" initialize="color_lb.text=translate('set_color','users');" color="0x515151"
+                         fontSize="13" paddingLeft="4" paddingTop="4"/>
+            </s:HGroup>
             <s:HGroup paddingLeft="22">
                 <s:CheckBox id="make_req_cb" label="" skinClass="ru.teachbase.skins.CheckBoxSkin"
                             change="makeRequestHandler()"/>
@@ -166,6 +189,13 @@
                 <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
                                source="{style('globalsettings','break')}"/>
             </s:Group>
+
+            <s:Label id="docs_lb" initialize="docs_lb.text = translate('label','docs')" color="0x6892B5" fontSize="13"
+                     paddingLeft="22"/>
+            <s:VGroup paddingLeft="22">
+                <s:CheckBox id="show_cursor_cb" initialize="show_cursor_cb.label = translate('show_cursor','docs');"
+                            skinClass="ru.teachbase.skins.CheckBoxSkin" change="showCursorHandler()"/>
+            </s:VGroup>
         </s:VGroup>
     </s:VGroup>
 </settings:SettingsElement>

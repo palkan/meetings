@@ -77,10 +77,16 @@
         }
 
         override public function set slideItem(value:int):void {
+
+            if (value < 0) return;        //tip: value < 0 occurs in converted recordings (don't know why)
+
             super.slideItem = value;
-            var asset:SlideAsset = _assetsList.getItemAt(value) as SlideAsset;
-            documentMap.pageSnapshot = asset.thumbURL;
-            bottomPanel.curentSlide = value;
+
+            if (_assetsList.source.length > value){
+                var asset:SlideAsset = _assetsList.getItemAt(value) as SlideAsset;
+                documentMap.pageSnapshot = asset.thumbURL;
+                bottomPanel.curentSlide = value;
+            }
         }
 
         override public function onLoaded():void {

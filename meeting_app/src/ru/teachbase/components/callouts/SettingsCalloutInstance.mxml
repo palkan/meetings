@@ -3,7 +3,7 @@
                       xmlns:s="library://ns.adobe.com/flex/spark"
                       xmlns:callouts="ru.teachbase.components.callouts.*"
                       backgroundColor="0x000000" backgroundAlpha="0.9" contentBackgroundAlpha="0"
-                      skinClass="ru.teachbase.skins.CalloutSkinAS"
+                      skinClass="ru.teachbase.skins.callouts.CalloutSkinAS"
         >
     <callouts:layout>
         <s:VerticalLayout gap="0"/>
@@ -16,12 +16,11 @@
 		<![CDATA[
         import mx.core.IVisualElement;
 
-        import ru.teachbase.components.callouts.SettingsItem;
-        import ru.teachbase.skins.CalloutButtonSkin;
+        import ru.teachbase.skins.callouts.CalloutButtonSkin;
+
         import ru.teachbase.utils.shortcuts.translate;
 
         import spark.components.Button;
-
 
         private var _dataProvider:Vector.<SettingsItem>;
 

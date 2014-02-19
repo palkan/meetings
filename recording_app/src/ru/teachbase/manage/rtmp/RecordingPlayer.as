@@ -583,11 +583,16 @@ public class RecordingPlayer extends EventDispatcher{
 
         if(e.property != 'state') return;
 
-        debug("stream player state: "+ e.value);
+        debug("stream player state: "+ e.value+"; wait buffer: " + _wait_stream_buffer);
 
         if(e.value == PlayerStates.BUFFERING){
             _state_before = (_state == PlayerStates.SEEK || _state == PlayerStates.BUFFERING) ? _state_before : _state;
-            pause();
+
+            // stop player timer
+            stopTimer();
+            _tid && clearTimeout(_tid);
+
+            //set state
             state = PlayerStates.BUFFERING;
             _wait_stream_buffer = true;
             return;
@@ -740,6 +745,9 @@ public class RecordingPlayer extends EventDispatcher{
 
 
     public function set state(value:String):void{
+
+        debug("player state:"+value);
+
         var _old:String = _state;
         _state = value;
 

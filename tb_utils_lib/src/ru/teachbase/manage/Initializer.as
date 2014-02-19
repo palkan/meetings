@@ -64,6 +64,7 @@ public final class Initializer extends EventDispatcher {
 
     public function clear():void{
         managersToDo.length = 0;
+        _reinitializeMode = false;
         Shared.DISPATCHER.removeEventListener(ManagerEvent.INITIALIZED, managerInited);
         Shared.DISPATCHER.removeEventListener(ManagerEvent.ERROR, managerFailed);
     }
@@ -88,8 +89,7 @@ public final class Initializer extends EventDispatcher {
             managersToDo[0].preinitialize(_reinitializeMode);
         }else{
             _complete = true;
-            Shared.DISPATCHER.removeEventListener(ManagerEvent.INITIALIZED, managerInited);
-            Shared.DISPATCHER.removeEventListener(ManagerEvent.ERROR, managerFailed);
+            clear();
             dispatchEvent(new Event(Event.COMPLETE));
         }
     }
@@ -124,10 +124,8 @@ public final class Initializer extends EventDispatcher {
     }
 
     private function managerFailed(e:ManagerEvent):void {
-        Shared.DISPATCHER.removeEventListener(ManagerEvent.INITIALIZED, managerInited);
-        Shared.DISPATCHER.removeEventListener(ManagerEvent.ERROR, managerFailed);
-        _reinitializeMode = false;
-        dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, "Manager failed: " + e.manager.toString()));
+       clear();
+       dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, "Manager failed: " + e.manager.toString()));
     }
 
 }

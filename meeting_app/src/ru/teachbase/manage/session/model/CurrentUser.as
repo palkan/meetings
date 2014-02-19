@@ -8,6 +8,7 @@ import ru.teachbase.components.notifications.Notification;
 import ru.teachbase.events.GlobalEvent;
 import ru.teachbase.model.*;
 import ru.teachbase.tb_internal;
+import ru.teachbase.utils.Arrays;
 import ru.teachbase.utils.Configger;
 import ru.teachbase.utils.shortcuts.config;
 import ru.teachbase.utils.shortcuts.notify;
@@ -23,7 +24,6 @@ import ru.teachbase.utils.shortcuts.translate;
  */
 
 public class CurrentUser extends User {
-
 
     public var sharing:SharingModel = new SharingModel();
     public var settings:UserLocalSettings;
@@ -68,7 +68,9 @@ public class CurrentUser extends User {
             requestStatus = 0;
             permissions = _permissions;
 
-        }else settings = new UserLocalSettings(config(Configger.COOKIE_NS));
+        }else{
+            settings = new UserLocalSettings(config(Configger.COOKIE_NS));
+        }
 
         _initialized = true;
     }
@@ -113,8 +115,6 @@ public class CurrentUser extends User {
     public function get initialized():Boolean {
         return _initialized;
     }
-
-
 
 }
 }

@@ -47,6 +47,8 @@ public class RTMPManager extends Manager {
             return;
         }
 
+        debug("[rtmp] init",arguments.callee);
+
         _pinger = new Pinger(this);
 
         _factory.ng.addEventListener(ErrorEvent.ERROR, connectionErrorHandler);
@@ -61,8 +63,8 @@ public class RTMPManager extends Manager {
 
     override public function clear():void{
         super.clear();
-        _pinger.stop();
-        if(connected){
+        _pinger && _pinger.stop();
+        if(_connection){
             _connection.removeEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
             _connection.close();
         }
@@ -112,7 +114,7 @@ public class RTMPManager extends Manager {
     public function callServer(method:*, responder:IResponder, ...rest):void
     {
         rest.unshift(method, (responder ? new Responder(sendResult, sendError) : null));
-        _connection.call.apply(null, rest);
+        _connection && _connection.call.apply(null, rest);
 
         function sendResult(result:*):void
         {
@@ -133,8 +135,11 @@ public class RTMPManager extends Manager {
 
 
 
-    public function __timeout(){
-        error('Timeout', ErrorCodes.PING_TIMEOUT);
+    public function __timeout(hard:Boolean = false){
+        if(!hard)
+            error('Timeout', ErrorCodes.PING_TIMEOUT);
+        else
+            error('Hard timeout', ErrorCodes.HARD_TIMEOUT);
     }
 
 
@@ -142,6 +147,7 @@ public class RTMPManager extends Manager {
 
 
     protected function connectionErrorHandler(e:ErrorCodeEvent):void {
+        _failed = true;
         switch(e.code){
             case FactoryErrorCodes.FAILED:
                 error('Connection failed',ErrorCodes.CONNECTION_FAILED);
@@ -156,7 +162,6 @@ public class RTMPManager extends Manager {
                     error(e.text, ErrorCodes.CONNECTION_FAILED);
                 break;
         }
-        _failed = true;
         removeFactoryListeners();
     }
 
@@ -222,19 +227,28 @@ import flash.utils.setTimeout;
 
 import ru.teachbase.manage.rtmp.RTMPManager;
 import ru.teachbase.utils.shortcuts.$null;
+import ru.teachbase.utils.shortcuts.config;
+import ru.teachbase.utils.shortcuts.debug;
+import ru.teachbase.utils.shortcuts.warning;
 
 
 internal class Pinger{
 
-    private const PING_TIMEOUT:int = 5000;
-    private const WAIT_TIMEOUT:int = 5000;
-
-
     private var _rtmp:RTMPManager;
     private var _tid:uint;
 
-    function Pinger(rtmp:RTMPManager){
+    private var _ping_timeout:int;
+    private var _wait_timeout:int;
+    private var _wait_max:int;
 
+    private var _latency:Number;
+
+    private var _last_ts:Number;
+
+    function Pinger(rtmp:RTMPManager){
+        _wait_max = config('ping/wait_max',0);
+        _wait_timeout = config('ping/wait');
+        _ping_timeout = config('ping/interval');
         _rtmp = rtmp;
         start();
     }
@@ -243,7 +257,9 @@ internal class Pinger{
     public function start(){
         if(!_rtmp.connection || !_rtmp.connection.connected) return;
 
-        _tid = setTimeout(failed,WAIT_TIMEOUT);
+        _tid = setTimeout(failed,_wait_timeout);
+
+        _last_ts = (new Date()).getTime();
 
         (_rtmp.connection).call('ping', new Responder(success,$null));
     }
@@ -251,11 +267,21 @@ internal class Pinger{
 
     private function success(...args){
         clearTimeout(_tid);
-        _tid = setTimeout(start,PING_TIMEOUT);
+        _latency = (new Date()).getTime() - _last_ts;
+        _latency > 1000 && warning('[rtmp] Latency is high: '+_latency);
+        _tid = setTimeout(start,_ping_timeout);
     }
 
     private function failed(){
-        _rtmp.__timeout();
+
+        // increase wait timeout after each fail
+
+        _wait_timeout *= _wait_timeout;
+
+        if(_wait_max && _wait_timeout > _wait_max)
+            _rtmp.__timeout(true);
+        else
+            _rtmp.__timeout();
     }
 
 

@@ -47,7 +47,6 @@
         private const MESSAGE_MAX_SIZE:int = 256;
 
         private const USER_DEFAULT_COLOR:String = "0x3E83B9";
-        private const ADMIN_DEFAULT_COLOR:String = "0xFF0359";
 
         private const listener:RTMPListener = new RTMPListener(PacketType.CHAT);
         private const user:User = App.user;
@@ -61,8 +60,6 @@
         private var _currentRoom:ChatRoom;
 
         private var _adminsRoom:ChatRoom;
-
-        private var _myColor:String = USER_DEFAULT_COLOR;
 
         [Bindable]
         private var _unreadCount:int = 0;
@@ -108,8 +105,6 @@
             if (App.user.isAdmin()) {
                 _roomsById[Recipients.ADMINS] = _adminsRoom;
                 _rooms.addItem(_adminsRoom);
-
-                _myColor = ADMIN_DEFAULT_COLOR;
             }
 
             _currentRoom = publicRoom;
@@ -402,7 +397,7 @@
 
             if (!_currentRoom) return;
 
-            var m:ChatMessage = new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.MESSAGE, user.extName, body, _myColor);
+            var m:ChatMessage = new ChatMessage(user.sid, _currentRoom.roomId, ChatMessage.MESSAGE, user.extName, body, App.user.isAdmin() ? "0x"+App.user.settings.color.toString(16) : USER_DEFAULT_COLOR);
 
             rtmp_send(PacketType.CHAT, m, _currentRoom.roomId);   // roomId is equal to Recipients code or user's sid
         }
@@ -548,8 +543,6 @@
                 _unreadCount -= _adminsRoom.unreadMessages;
                 _adminsRoom.clear();
 
-                _myColor = USER_DEFAULT_COLOR;
-
             } else {
 
                 if (_roomsById[_adminsRoom.roomId]) return;
@@ -557,8 +550,6 @@
                 _roomsById[_adminsRoom.roomId] = _adminsRoom;
 
                 _rooms.addItem(_adminsRoom);
-
-                _myColor = ADMIN_DEFAULT_COLOR;
 
             }
 

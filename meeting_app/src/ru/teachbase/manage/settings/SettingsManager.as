@@ -32,6 +32,14 @@ public class SettingsManager {
 
     /**
      *
+     */
+
+    public function close():void{
+        App.view.lightbox.close();
+    }
+
+    /**
+     *
      * @param element
      */
 

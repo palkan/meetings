@@ -33,5 +33,6 @@ public class ErrorCodes {
 
     public static const MEETING_FAILED:uint = APPLICATION + (1 << 16);
     public static const PING_TIMEOUT:uint = APPLICATION + (1 << 17);
+    public static const HARD_TIMEOUT:uint = APPLICATION + (1 << 18);
 }
 }

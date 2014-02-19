@@ -4,13 +4,13 @@
         "jre":"http://home.teachbase.ru/app/jre-7u9-windows-i586.exe"
     },
     "net":{
-        "rtmp/":"rtmp://test2013.teachbase.ru:443/teachbase",
+        "rtmp2":"rtmp://test2013.teachbase.ru:443/teachbase",
         "rtmp":"127.0.0.1/teachbase",
-        "rtmp_media2":"127.0.0.1/tblive",
-        "rtmp_media":"rtmp://test2013.teachbase.ru:443/tblive",
+        "rtmp_media":"127.0.0.1/tblive",
+        "rtmp_media2":"rtmp://test2013.teachbase.ru:443/tblive",
         "rtmp_share":"127.0.0.1",
         "rtmp_port":"443",
-        "http":"http://test2013.teachbase.ru/"
+        "http":"http://base.teachbase.ru/"
     },
     "lang":"ru",
     "skin":"../../../assets/skins/skin.xml",
@@ -22,16 +22,21 @@
         }
     ],
     "recording":{
-        "url":"../../../assets/record/record_9/",
+        "url":"../../../../erly/content/99563/record_2/",
         "url_":"../../../assets/record/record_23/",
         "url__":"http://devtbupload.s3.amazonaws.com/recordings/37276/record_1/"
     },
     "hls":{
       "debug":false
     },
+    "ping":{
+      "wait_max":60000,
+      "wait":20000,
+      "interval":20000
+    },
     "java_download":"http://java.com/ru/download/",
-    "user_id": 5556,
+    "user_id": 96,
     "guest_id":13,
     "auth_hash":"m36975wpwits386905",
-    "meeting_id":37619
+    "meeting_id":160628
 }

@@ -100,6 +100,7 @@
                 <element name="request_docs"><![CDATA[Documents Share Request]]></element>
 				<element name="request_mic"><![CDATA[Microphone Share Request]]></element>
 				<element name="set_label">Attendees Panel</element>
+                <element name="set_color">Your Color</element>
 				<element name="set_requests_off"><![CDATA[Camera and microphone
 requests]]></element>
 			</elements>
@@ -151,6 +152,7 @@ requests]]></element>
 				<element name="select_desc"><![CDATA[You can upload documents and images from your computer, from the Material Library or from the Internet]]></element>
 				<element name="only_users"><![CDATA[Only for authorized users]]></element>
 				<element name="drop"><![CDATA[You can drop files here]]></element>
+                <element name="show_cursor">Show My Cursor</element>
 			</elements>
 		</component>
         <component name="file_upload">
@@ -239,6 +241,7 @@ ${2}]]></element>
                 <element name="bw_video_quality_decreased"><![CDATA[Video quality have been decreased due to low network bandwidth]]></element>
                 <element name="bw_cam_not_allowed"><![CDATA[Camera sharing not allowed due to low network bandwidth]]></element>
                 <element name="bw_instream_low_fps"><![CDATA[Incoming video quality have been decreased due to low network bandwidth]]></element>
+                <element name="weak_channel"><![CDATA[Network bandwidth is too low]]></element>
 			</elements>
 		</component>		
 		<component name="error">

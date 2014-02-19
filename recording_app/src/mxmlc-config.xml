@@ -26,7 +26,7 @@
       
       <define>
       	<name>CONFIG::VERSION</name>
-      	<value>"v1.6.6R"</value>
+      	<value>"v1.7.1R"</value>
       </define>
       
       <define>

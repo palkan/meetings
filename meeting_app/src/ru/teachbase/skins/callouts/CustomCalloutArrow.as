@@ -1,4 +1,4 @@
-package ru.teachbase.skins
+package ru.teachbase.skins.callouts
 {
 import spark.skins.mobile.supportClasses.CalloutArrow;
 

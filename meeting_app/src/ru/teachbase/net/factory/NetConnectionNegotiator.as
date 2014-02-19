@@ -14,6 +14,7 @@ import flash.utils.Timer;
 
 import ru.teachbase.events.ErrorCodeEvent;
 import ru.teachbase.constants.NetConnectionStatusCodes;
+import ru.teachbase.utils.shortcuts.debug;
 import ru.teachbase.utils.shortcuts.error;
 
 [Event(name="complete", type="flash.events.Event")]
@@ -87,6 +88,7 @@ internal class NetConnectionNegotiator extends EventDispatcher {
         _netConnections.push(_nc);
         try {
 
+            debug("Connect to: "+_pnp[_attemptIndex][0] + "://" + _host + ":" + _pnp[_attemptIndex][1] + _path, _nc);
             _nc.connect(_pnp[_attemptIndex][0] + "://" + _host + ":" + _pnp[_attemptIndex][1] + _path);
 
             _attemptIndex++;
@@ -124,6 +126,7 @@ internal class NetConnectionNegotiator extends EventDispatcher {
                 handleFailed();
                 break;
             case NetConnectionStatusCodes.SUCCESS:
+                debug("Connected", _nc);
                 shutDownUnsuccessfulConnections();
                 removeNCListeners(_nc);
                 dispatchEvent(new Event(Event.COMPLETE));

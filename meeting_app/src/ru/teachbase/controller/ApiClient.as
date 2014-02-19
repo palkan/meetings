@@ -32,6 +32,8 @@ public class ApiClient {
 
             var obj:* = App[path_list[0]];
 
+
+
             for(var i:int = 1, size:int = path_list.length-1; i < size; i++){
                 if(obj.hasOwnProperty(path_list[i])) obj = obj[path_list[i]];
                 else return;

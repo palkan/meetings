@@ -66,7 +66,7 @@ public class RecordingController extends ApplicationController {
     }
 
 
-    override protected function reinitializationFailed(e:Event):void {
+    override protected function reinitializationFailed(e:Event=null):void {
 
         _initializing = false;
 

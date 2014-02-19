@@ -84,40 +84,56 @@ public class ApplicationController extends EventDispatcher {
 
         dispose();
 
-        _reiniting = false;
-
         switch (e.code) {
             case ErrorCodes.KICKEDOFF:
+                _initializing = _reiniting = false;
                 errorMessage = translate("kickedoff", "error");
                 break;
             case ErrorCodes.LIMIT:
+                _initializing = _reiniting = false;
                 errorMessage = translate("limit", "error");
                 break;
             case ErrorCodes.TIMEOUT:
+                _initializing = _reiniting = false;
                 errorMessage = translate("connection_timeout", "error");
                 break;
             case ErrorCodes.MEETING_FINISHED:
+                _initializing = _reiniting = false;
                 errorMessage = translate("meeting_finished", "error");
                 break;
             case ErrorCodes.AUTHORIZATION_FAILED:
+                _initializing = _reiniting = false;
                 errorMessage = translate("authorization_failed", "error");
                 break;
             case ErrorCodes.CONNECTION_FAILED:
                 errorMessage = translate("main_server", "error");
-                if(App.view){
+                if(App.view && !_initializing && !_reiniting){
                     _reiniting = true;
+                    debug('reinitialize on timeout');
                     setTimeout(reinitialize, REINITIALIZE_INTERVAL);
                 }
                 break;
             case ErrorCodes.PING_TIMEOUT:
-                if(App.view){
+                if(App.view && !_initializing && !_reiniting){
                     _reiniting = true;
+                    debug('reinitialize now (ping)!');
                     reinitialize();
+                }else{
+                    Initializer.instance.clear();
+                    reinitializationFailed();
+                    debug('reinitialize on timeout; failed before reinit');
+                    setTimeout(reinitialize, REINITIALIZE_INTERVAL);
                 }
                 break;
+            case ErrorCodes.HARD_TIMEOUT:
+                _initializing = _reiniting = false;
+                debug('Really weak channel. Failed...');
+                errorMessage = translate("weak_channel","error");
+                break;
             case ErrorCodes.CONNECTION_DROPPED:
-                if(!_initializing){
+                if(!_initializing && !_reiniting){
                     _reiniting = true;
+                    debug('reinitialize now!');
                     reinitialize();
                 }
                 errorMessage = translate("main_server", "error");
@@ -210,6 +226,8 @@ public class ApplicationController extends EventDispatcher {
 
     protected function reinitialize():void {
 
+        debug("[main] init",arguments.callee);
+
         _initializing = true;
 
         notify(new Notification(translate("connection_failed", "notifications")), true);
@@ -235,9 +253,9 @@ public class ApplicationController extends EventDispatcher {
     }
 
 
-    protected function reinitializationFailed(e:Event):void {
+    protected function reinitializationFailed(e:Event = null):void {
 
-        _initializing = false;
+        _initializing = _reiniting = false;
 
         removeInitializerListeners(reinitializationComplete, reinitializationFailed);
 
@@ -248,7 +266,7 @@ public class ApplicationController extends EventDispatcher {
 
     protected function reinitializationComplete(e:Event):void {
 
-        _initializing = false;
+        _initializing = _reiniting = false;
 
         notify(new Notification(translate("connection_restored", "notifications")), true);
 

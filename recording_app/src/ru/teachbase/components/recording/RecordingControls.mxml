@@ -65,7 +65,7 @@
 
         private function onVolumeOpen(evt:Event):void {
             volumeButton.selected = true;
-            volumeSlider.value = App.user.settings.volumeLevel;
+            volumeSlider.value = App.user.settings.volumelevel;
 
             _volumeID = setTimeout(onVolumeClose, VOLUME_HIDE_TIME);
 
@@ -85,7 +85,7 @@
         private function creationCompleteHandler(e:FlexEvent):void {
 
             _volumeSaver = new DelayedWriter(1000, function (value:Number):void {
-                user.settings.volumeLevel = value;
+                user.settings.volumelevel = value;
             });
 
             duration_txt.text = Strings.digits(int(manager.player.duration / 1000));

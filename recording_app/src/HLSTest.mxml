@@ -148,7 +148,7 @@
 
         <s:HGroup width="100%" height="40">
             <s:Label text="url"/>
-            <s:RichEditableText id="url_txt" text="../../../assets/record/stream_1/stream_1.m3u8" width="400"/>
+            <s:RichEditableText id="url_txt" text="http://192.168.1.18:8082/hls/hls_test.m3u8" width="400"/>
         </s:HGroup>
 
         <s:Group id="videoGroup" width="400" height="300" top="40">
