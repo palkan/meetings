@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               backgroundColor="#cecece"
+               width="100%"
+               height="100%"
+               addedToStage="init()">
+    <fx:Metadata>
+        [SWF(backgroundColor="0x393939", width="400", height="300")]
+    </fx:Metadata>
+    <fx:Script><![CDATA[
+        import org.osmf.events.NetConnectionFactoryEvent;
+        import org.osmf.media.URLResource;
+        import org.osmf.net.NetConnectionFactory;
+
+        import ru.teachbase.utils.Arrays;
+
+        import ru.teachbase.utils.Configger;
+        import ru.teachbase.utils.JSClient;
+        import ru.teachbase.utils.helpers.dummyBytes;
+        import ru.teachbase.utils.helpers.lambda;
+        import ru.teachbase.utils.shortcuts.$null;
+        import ru.teachbase.utils.shortcuts.config;
+        import ru.teachbase.utils.shortcuts.debug;
+
+        private const BW_CHECK_TIMEOUT:int = 60000;
+
+        private var TEST_SIZE:int;
+
+        private var _nc:NetConnection;
+
+        private var _outStream:NetStream;
+        private var _inStream:NetStream;
+
+        private const _checkers:Vector.<Function> = new <Function>[];
+
+        private var _finished:Boolean = true;
+
+        private var _ts:Number;
+
+        private var _client:*;
+
+        protected function init():void{
+
+            stage.scaleMode = StageScaleMode.NO_SCALE;
+            stage.align = StageAlign.TOP_LEFT;
+
+            Configger.loadConfig();
+
+            //config('host','rtmp://test2013.teachbase.ru:443/fmle');
+
+            TEST_SIZE = config('test_size') || 10;
+
+            if(ExternalInterface.available){
+                ExternalInterface.addCallback('check_connection',check_connection);
+                ExternalInterface.addCallback('check_latency',check_latency);
+                ExternalInterface.addCallback('check_inbw',check_inbw);
+                ExternalInterface.addCallback('check_outbw',check_outbw);
+
+
+                _client = new JSClient(config('client'));
+
+            }else{
+
+                controls.visible = true;
+                _client = {
+                    as3_event: function(data){
+                        result_txt.text+= data.level+": "+(data.type)+"\n";
+                    }
+                }
+
+            }
+
+            status("info",{type: "initialized"});
+        }
+
+
+        //------------- checkers ---------------//
+
+
+        public function check_connection():void{
+
+            var factory:NetConnectionFactory = new NetConnectionFactory();
+            factory.addEventListener(NetConnectionFactoryEvent.CREATION_COMPLETE, success);
+            factory.addEventListener(NetConnectionFactoryEvent.CREATION_ERROR, failure);
+
+            if(!config('host')){
+                reject('rtmp.undefined');
+                return;
+            }
+
+            factory.create(new URLResource(config('host')));
+
+            function failure(e:Event):void{
+                reject('rtmp.connection');
+            }
+
+            function success(e:NetConnectionFactoryEvent):void{
+                _nc = e.netConnection;
+                resolve('rtmp.connection');
+            }
+
+        }
+
+
+        public function check_latency():void{
+
+            var times: int = TEST_SIZE;
+            var total: int = times;
+            var sum: Number = 0;
+            var max: Number = 0;
+            var min: Number = Number.POSITIVE_INFINITY;
+            var start:Number;
+
+            loop();
+
+            function loop():void{
+
+                times--;
+
+                if(!_nc || !_nc.connected){
+                   reject('rtmp.disconnected');
+                   return;
+                }
+
+                start = (new Date()).getTime();
+
+                _nc.call('ping', new Responder(success,failure));
+
+            }
+
+            function success(...args):void{
+
+                const finish:Number = (new Date()).getTime();
+
+                var latency = (finish - start);
+
+
+                sum+=latency;
+
+                min = Math.min(min,latency);
+                max = Math.max(max,latency);
+
+                if(times>0) loop();
+                else
+                    resolve('rtmp.ping',{avg: ((sum/total)/1000).toFixed(3),max: max/1000, min: min/1000});
+            }
+
+            function failure(...args):void{
+                reject("rtmp.ping");
+            }
+
+
+        }
+
+
+        public function check_inbw():void{
+
+            if(!_nc || !_nc.connected){
+                reject('rtmp.disconnected');
+                return;
+            }
+
+            var tid:uint;
+
+            var times: int = TEST_SIZE;
+            var total: int = times;
+            var sum: Number = 0;
+            var max: Number = 0;
+            var min: Number = Number.POSITIVE_INFINITY;
+
+            _nc.client = {
+                onBWCheck: function (...args):int{
+                    args.length && _nc.call('checkBandwidth', null, args[0], 1024*Arrays.sample([1,1.5,2,1.5,1]));
+                    return 0;
+                },
+                onBWDone: function(data):void{
+
+                    debug(data);
+
+                    const bytes:Number = data.bytes;
+                    const latency:Number = data.latency;
+                    const time:Number = data.time - 2*latency;
+
+                    tid && clearTimeout(tid);
+                    var bw:Number = (((bytes * 8) / 1024) / (time / 1000));
+
+                    sum+=bw;
+                    min = Math.min(min,bw);
+                    max = Math.max(max,bw);
+
+                    if(times>0) loop();
+                    else
+                        resolve("rtmp.bw_in",{avg: (sum/total).toFixed(2),max: max.toFixed(2), min: min.toFixed(2)});
+                }
+            };
+
+            loop();
+
+            function loop(){
+                times--;
+
+                tid = setTimeout(lambda(reject,"rtmp.bw_in"),BW_CHECK_TIMEOUT);
+
+                _nc.call('checkBandwidth',null);
+            }
+        }
+
+
+        public function check_outbw():void{
+
+            var times: int = TEST_SIZE;
+            var total: int = times;
+            var sum: Number = 0;
+            var max: Number = 0;
+            var min: Number = Number.POSITIVE_INFINITY;
+            var start:Number;
+            var payload:Number;
+            var latency:Number=0;
+
+
+            start = (new Date()).getTime();
+
+            _nc.call('ping', new Responder(function (...args){
+                latency = Math.max(10,Math.min((new Date()).getTime() - start,1000));
+                loop();
+            }, $null));
+
+            function loop():void{
+
+                times--;
+
+                if(!_nc || !_nc.connected){
+                    reject('rtmp.disconnected');
+                    return;
+                }
+
+                payload = 1024*1024*Arrays.sample([1,1.5,2,1.5,1]);
+                start = (new Date()).getTime();
+
+                _nc.call('ping', new Responder(success,failure), dummyBytes(payload));
+
+            }
+
+            function success(...args):void{
+
+                const finish:Number = (new Date()).getTime();
+
+                const delta = (finish - start) - latency;
+                const bw:Number = (((payload * 8) / 1024) / (delta / 1000));
+
+
+                sum+=bw;
+
+                min = Math.min(min,bw);
+                max = Math.max(max,bw);
+
+                if(times>0) loop();
+                else
+                    resolve("rtmp.bw_out",{avg: (sum/total).toFixed(2), max: max.toFixed(2), min: min.toFixed(2)});
+
+            }
+
+            function failure(...args):void{
+                reject("rtmp.bw_out");
+            }
+
+
+        }
+
+
+        //------------- private ----------------//
+
+        private function resolve(mes:String=null, data:Object = null):void{
+            data = data || {};
+            data.type = mes;
+            mes && status("success",data);
+        }
+
+
+        private function reject(mes:String):void{
+            status("error",{type:mes});
+        }
+
+
+        private function status(level:String,data:Object):void{
+            debug(level,data);
+
+            data.level = level;
+
+            _client.as3_event(data);
+        }
+
+        ]]></fx:Script>
+
+
+    <s:VGroup width="100%" id="controls" visible="false">
+        <s:HGroup >
+            <s:Button label="connection" click="check_connection()"/>
+            <s:Button label="latency" click="check_latency()"/>
+            <s:Button label="in" click="check_inbw()"/>
+            <s:Button label="out" click="check_outbw()"/>
+        </s:HGroup>
+        <s:RichText id="result_txt" width="100%" height="300"/>
+    </s:VGroup>
+
+</s:Application>
