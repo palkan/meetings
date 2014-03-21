@@ -132,6 +132,27 @@ public dynamic class StreamManager extends Manager {
 
     /**
      *
+     * Call receiveVideo on all streams at once
+     *
+     * @param flag
+     */
+
+
+    public function receiveVideo(flag:Boolean):void{
+
+        const videoStreams:Array = _model.streamList.source;
+
+        videoStreams.forEach(
+              function(ns:NetStream,...args):void{
+                   ns.receiveVideo(flag);
+              }
+        );
+
+    }
+
+
+    /**
+     *
      * Setup available incoming bandwidth and recalculate per stream bandwidth.
      *
      * @param bw   bw = 0 assumes unlimited bandwidth.
@@ -322,6 +343,8 @@ public dynamic class StreamManager extends Manager {
         ns.bufferTimeMax = 1;
 
         ns.backBufferTime = 0;
+
+        ns.receiveVideo(App.user.settings.receivevideo);
 
         debug("Stream play: "+stream.name);
 

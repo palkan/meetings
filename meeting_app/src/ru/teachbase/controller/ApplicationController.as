@@ -54,11 +54,26 @@ public class ApplicationController extends EventDispatcher {
 
     private static const REINITIALIZE_INTERVAL:int = 5000;
 
+    /**
+     * Amount of time between connection drops which is OK
+     *
+     * If a period between drops is smaller than this value - set receiveVideo to false
+     *
+     * Equal to 5 minutes.
+     *
+     */
+
+    private static const MIN_DROP_PERIOD:int = 5*60*1000;
+
     protected var _initializing:Boolean = false;
 
     private var _view:MainApplication;
 
     private var _reiniting:Boolean = false;
+
+    private var _reinitCount:int = 0;
+
+    private var _last_drop:Number=0;
 
     public function ApplicationController() {
 
@@ -272,9 +287,17 @@ public class ApplicationController extends EventDispatcher {
 
         removeInitializerListeners(reinitializationComplete, reinitializationFailed);
 
-
         config('net/monitor/out') && OutStreamSup.run(30000);
         config('net/monitor/in') && InStreamSup.run();
+
+        const now:Number = (new Date()).getTime();
+
+        if((++_reinitCount) > 1 && (now - _last_drop) < MIN_DROP_PERIOD){
+            App.user.settings.receivevideo = false;
+            notify(new Notification(translate("video_turned_off", "notifications")), true);
+        }
+
+        _last_drop = now;
 
         App.streams.loadStreams();
         App.session.userReady();

@@ -115,6 +115,7 @@ requests]]></element>
                 <element name="play_stream"><![CDATA[Play video]]></element>
                 <element name="close_sharing"><![CDATA[Stop Sharing]]></element>
                 <element name="close_user_stream"><![CDATA[Stop User Stream]]></element>
+                <element name="receive_video"><![CDATA[Receive Users Video]]></element>
 			</elements>
 		</component>
 		<component name="screenshare">
@@ -242,6 +243,7 @@ ${2}]]></element>
                 <element name="bw_cam_not_allowed"><![CDATA[Camera sharing not allowed due to low network bandwidth]]></element>
                 <element name="bw_instream_low_fps"><![CDATA[Incoming video quality have been decreased due to low network bandwidth]]></element>
                 <element name="weak_channel"><![CDATA[Network bandwidth is too low]]></element>
+                <element name="video_turned_off"><![CDATA[Incoming video is paused due to network problems]]></element>
 			</elements>
 		</component>		
 		<component name="error">

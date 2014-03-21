@@ -64,7 +64,7 @@
             audioVolume.value = App.user.settings.volumelevel;
             micVolume.value = App.user.settings.miclevel;
 
-            scanHardware();
+         //   scanHardware();
 
             debug('mics', Microphone.names);
 

@@ -50,7 +50,7 @@
 
             _disposed = false;
 
-            scanHardware();
+        //    scanHardware();
 
             _video.width = VIDEO_CONTAINER_WIDTH;
             _video.height = VIDEO_CONTAINER_HEIGHT;

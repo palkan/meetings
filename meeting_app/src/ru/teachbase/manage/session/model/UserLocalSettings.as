@@ -30,6 +30,7 @@ public class UserLocalSettings {
     private var _publishquality:String = PublishQuality.HIGH;
     private var _shownotifications:Boolean = true;
     private var _showcursor:Boolean = true;
+    private var _receivevideo:Boolean = true;
 
 
     /**
@@ -159,6 +160,15 @@ public class UserLocalSettings {
     public function set showcursor(value:Boolean):void {
         _showcursor = value;
         cookie('showcursor',value);
+    }
+
+    public function get receivevideo():Boolean {
+        return _receivevideo;
+    }
+
+    public function set receivevideo(value:Boolean):void {
+        _receivevideo = value;
+        cookie('receivevideo',value);
     }
 }
 }

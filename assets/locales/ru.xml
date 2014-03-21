@@ -115,6 +115,7 @@
                 <element name="play_stream"><![CDATA[Возобновить]]></element>
                 <element name="close_sharing"><![CDATA[Закрыть трансляцию]]></element>
                 <element name="close_user_stream"><![CDATA[Закрыть трансляцию]]></element>
+                <element name="receive_video"><![CDATA[Принимать видеосигнал]]></element>
 			</elements>
 		</component>
 		<component name="screenshare">
@@ -244,6 +245,7 @@ ${2}]]></element>
                 <element name="bw_video_quality_decreased"><![CDATA[Качество видео снижено из-за недостаточной пропускной способности сети]]></element>
                 <element name="bw_cam_not_allowed"><![CDATA[Трансляция видео недоступна из-за недостаточной пропускной способности сети]]></element>
                 <element name="bw_instream_low_fps"><![CDATA[Качество входящего видео снижено из-за недостаточной пропускной способности сети]]></element>
+                <element name="video_turned_off"><![CDATA[Прием входящего видео остановлен из-за проблем с сетью]]></element>
 			</elements>
 		</component>		
 		<component name="error">
