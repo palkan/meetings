@@ -59,6 +59,10 @@
         override public function get controller():ApplicationController {
             return _controller;
         }
+
+        override public function mouseEvents(value:Boolean):void{
+            _container.mouseEnabled = _controls.mouseEnabled = value;
+        }
         ]]>
 	</fx:Script>
 </web:MainApplication>

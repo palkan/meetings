@@ -340,6 +340,7 @@
         }
 
         private function rendererInitializedHandler(e:RendererEvent):void {
+            if(!_renderer) return;
 
             _renderer.data.rotation && callHostFunction(this, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));
             _renderer.data.rotation && callHostFunction(_renderer, WorkplaceMethod.ROTATE, [_renderer.data.rotation > 0], Math.abs(_renderer.data.rotation));

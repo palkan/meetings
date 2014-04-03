@@ -4,7 +4,7 @@
  * Time: 11:56 AM
  */
 package ru.teachbase.manage.streams.model {
-import com.mangui.HLS.HLS;
+import org.mangui.HLS.HLS;
 
 public class StreamMapData extends StreamData {
 

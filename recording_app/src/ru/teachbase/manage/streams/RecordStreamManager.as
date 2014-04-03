@@ -4,12 +4,13 @@
  * Time: 11:24 AM
  */
 package ru.teachbase.manage.streams {
-import com.mangui.HLS.HLS;
 
 import flash.net.NetStream;
 import flash.utils.Dictionary;
 import flash.utils.clearInterval;
 import flash.utils.setInterval;
+
+import org.mangui.HLS.HLS;
 
 import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.events.GlobalEvent;

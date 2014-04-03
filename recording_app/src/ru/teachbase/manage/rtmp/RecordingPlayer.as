@@ -375,6 +375,8 @@ public class RecordingPlayer extends EventDispatcher{
             _state_reseted = false;
             clearBuffer();
             _chunks_to_load =  findChunks(_history_position,time);
+        }else if(messages[messages.length-1].ts < time && !_allMessagesLoaded){
+            _chunks_to_load =  findChunks(messages[messages.length-1].ts+1,time);
         }
     }
 
@@ -400,7 +402,7 @@ public class RecordingPlayer extends EventDispatcher{
         for(;i<size;i++){
 
             if(
-                    (_chunk_list[i].ts <= from && (i<size-1) && _chunk_list[i+1].ts > from) ||
+                    (_chunk_list[i].ts < from && (i<size-1) && _chunk_list[i+1].ts >= from) ||
                             (_chunk_list[i].ts >= from && _chunk_list[i].ts <= to)
             )
                 buf.push(i);
@@ -428,7 +430,9 @@ public class RecordingPlayer extends EventDispatcher{
 
     private function addMessages(list:Vector.<TBSPacket>):void{
 
-        for each(var _p:TBSPacket in list) messages.push(_p);
+        var _threshold:Number = messages.length ? messages[messages.length-1].ts : 0;
+
+        for each(var _p:TBSPacket in list) _p.ts > _threshold && messages.push(_p);
 
         _bufferTime = messages[messages.length-1].ts;
 
@@ -446,6 +450,7 @@ public class RecordingPlayer extends EventDispatcher{
             if(!_allMessagesLoaded){
                 pause();
                 state = PlayerStates.BUFFERING;
+                loadNextChunk();
             }
 
             return;
@@ -475,7 +480,7 @@ public class RecordingPlayer extends EventDispatcher{
 
         const packet:Packet = ObjectUtil.copy(m.data) as Packet;
 
-        debug("Send message: "+packet.type);
+      //  debug("Send message: "+packet.type);
 
         _manager.tb_rtmp::incomingCall.apply(null, [packet.type,packet]);
 
@@ -507,6 +512,8 @@ public class RecordingPlayer extends EventDispatcher{
 
 
     private function loadNextChunk():void{
+
+        _cid && clearTimeout(_cid);
 
         if(_chunk_list.length <= _last_chunk+1) _allMessagesLoaded = true;
         else{
@@ -709,15 +716,17 @@ public class RecordingPlayer extends EventDispatcher{
                 _chunks_to_load.length = _chunks_to_load_position = 0;
                 _chunks_loaded && _chunks_loaded();
                 _chunks_loaded = null;
+                debug("Load next chunk in: "+timeout);
                 _cid = setTimeout(loadNextChunk,timeout);
 
             }else{
-                var next_index:int = _chunks_to_load[_chunks_to_load_position+1];
+                var next_index:int = _chunks_to_load[++_chunks_to_load_position];
                 loadChunk(next_index);
             }
-        }else
-            !_allMessagesLoaded && setTimeout(loadNextChunk,timeout);
-
+        }else{
+            debug("Load next chunk in: "+timeout);
+            !_allMessagesLoaded && (_cid = setTimeout(loadNextChunk,timeout));
+        }
     }
 
 

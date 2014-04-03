@@ -4,15 +4,15 @@
  * Time: 11:10 AM
  */
 package ru.teachbase.manage.streams {
-import com.mangui.HLS.HLS;
-import com.mangui.HLS.HLSEvent;
-import com.mangui.HLS.HLSStates;
 
 import flash.events.ErrorEvent;
 import flash.events.Event;
 import flash.events.EventDispatcher;
 import flash.net.NetConnection;
-import flash.net.NetStream;
+
+import org.mangui.HLS.HLS;
+import org.mangui.HLS.HLSEvent;
+import org.mangui.HLS.HLSStates;
 
 import ru.teachbase.events.ChangeEvent;
 import ru.teachbase.manage.rtmp.PlayerStates;
@@ -95,7 +95,7 @@ public class StreamPlayer extends EventDispatcher{
 
         if(_state == PlayerStates.BUFFERING || _state == PlayerStates.PLAYING || _state == PlayerStates.SEEK || _state == PlayerStates.UNAVAILABLE) return;
 
-        for each(var h:HLS in _activeHLS) h.resume();
+        for each(var h:HLS in _activeHLS) h.stream.resume();
 
         _state = PlayerStates.PLAYING;
 
@@ -105,7 +105,7 @@ public class StreamPlayer extends EventDispatcher{
 
         if(_state == PlayerStates.UNAVAILABLE) return;
 
-        for each(var h:HLS in _activeHLS) !(not_buferring && h.client.buffering) && h.pause();
+        for each(var h:HLS in _activeHLS) !(not_buferring && h.client.buffering) && h.stream.pause();
         _state = PlayerStates.PAUSED;
     }
 
@@ -130,7 +130,7 @@ public class StreamPlayer extends EventDispatcher{
             data.hls.client.seekTime = time - data.start_ts/1000;
             data.hls.client.completed = false;
             _activeHLS.push(data.hls);
-            data.hls.seek(time - data.start_ts/1000);
+            data.hls.stream.seek(time - data.start_ts/1000);
         }
 
         if(!_activeHLS.length) _state = PlayerStates.BUFFER_FULL;
@@ -142,7 +142,7 @@ public class StreamPlayer extends EventDispatcher{
 
         if(_state == PlayerStates.UNAVAILABLE) return;
 
-        for each(var h:HLS in _activeHLS) h.pause();
+        for each(var h:HLS in _activeHLS) h.stream.close();
         _manager && _manager.removeHLSStreams();
         _state = PlayerStates.IDLE;
     }
@@ -159,22 +159,19 @@ public class StreamPlayer extends EventDispatcher{
 
         if(_state == PlayerStates.UNAVAILABLE) return;
 
-        var ns:NetStream = new NetStream(connection);
-
-        ns.client = new NetStreamClient(stream);
        // ns.client.onMetaData({hasVideo:true,hasAudio:true});
 
-        var _hls:HLS = new HLS(ns);
+        var _hls:HLS = new HLS();
+        _hls.stream.client = new NetStreamClient(stream);
+        _hls.stream.client.hls = _hls;
 
-        ns.client.hls = _hls;
-
-        _hls.addEventListener(HLSEvent.COMPLETE,_completeHandler);
+        _hls.addEventListener(HLSEvent.PLAYBACK_COMPLETE,_completeHandler);
         _hls.addEventListener(HLSEvent.ERROR,_errorHandler);
-        _hls.addEventListener(HLSEvent.FRAGMENT,_fragmentHandler);
-        _hls.addEventListener(HLSEvent.MANIFEST,_manifestHandler);
+        _hls.addEventListener(HLSEvent.FRAGMENT_LOADED,_fragmentHandler);
+        _hls.addEventListener(HLSEvent.MANIFEST_LOADED,_manifestHandler);
         _hls.addEventListener(HLSEvent.MEDIA_TIME,_mediaTimeHandler);
         _hls.addEventListener(HLSEvent.STATE,_stateHandler);
-        _hls.addEventListener(HLSEvent.SWITCH,_switchHandler);
+        _hls.addEventListener(HLSEvent.QUALITY_SWITCH,_switchHandler);
 
         _hls.client.manifestLoaded = false;
 
@@ -182,7 +179,7 @@ public class StreamPlayer extends EventDispatcher{
 
         hlsList.push(_hls);
 
-        _hls.play(_player.root_url+stream.name+"/"+stream.name+".m3u8");
+        _hls.load(_player.root_url+stream.name+"/"+stream.name+".m3u8");
     }
 
 
@@ -193,7 +190,7 @@ public class StreamPlayer extends EventDispatcher{
 
         if(cue.kind == CuePointData.STOP){
 
-            cue.data.hls.stop();
+            cue.data.hls.stream.close();
 
             _manager && _manager.removeHLSStream(cue.data.hls);
 
@@ -203,8 +200,8 @@ public class StreamPlayer extends EventDispatcher{
 
         }else{
 
-            if(cue.data.hls.getPosition() != 0) cue.data.hls.seek(0);
-            else cue.data.hls.resume();
+            if(cue.data.hls.position != 0) cue.data.hls.stream.seek(0);
+            else cue.data.hls.stream.resume();
 
             _activeHLS.push(cue.data.hls);
 
@@ -261,12 +258,11 @@ public class StreamPlayer extends EventDispatcher{
 
         const hls:HLS = e.target as HLS;
 
-        if(!hls.client.completed && e.state == HLSStates.BUFFERING){
+        if(!hls.client.completed && e.state == HLSStates.PLAYING_BUFFERING){
             hls.client.buffering = true;
             _bufferingCount++;
 
-            if(_state == PlayerStates.PLAYING) pause(true);
-
+            pause(true);
             _state = PlayerStates.BUFFERING;
         }
 
@@ -275,18 +271,22 @@ public class StreamPlayer extends EventDispatcher{
             if(hls.client.buffering){
                 hls.client.buffering = false;
                 _bufferingCount--;
+                !_bufferingCount && (_state = PlayerStates.BUFFER_FULL);
             }
         }
 
-        if(hls.client.buffering && (e.state == HLSStates.PLAYING || e.state == HLSStates.PAUSED)){
-            debug("seek and position: "+hls.client.seekTime+" - "+hls.getPosition());
+        if(hls.client.buffering && (e.state == HLSStates.PLAYING)){
+            debug("seek and position: "+hls.client.seekTime+" - "+hls.position);
             hls.client.buffering = false;
             _bufferingCount--;
-            e.state == HLSStates.PLAYING && hls.pause();
+            hls.stream.pause();
             !_bufferingCount && (_state = PlayerStates.BUFFER_FULL);
         }
 
 
+        if(e.state == HLSStates.PAUSED_BUFFERING){
+            _state = PlayerStates.PAUSED;
+        }
 
     }
 

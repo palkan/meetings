@@ -4,9 +4,9 @@
  * Time: 11:59 AM
  */
 package ru.teachbase.controller {
-import com.mangui.HLS.utils.Log;
-
 import flash.events.Event;
+
+import org.mangui.HLS.utils.Log;
 
 import ru.teachbase.components.notifications.Notification;
 import ru.teachbase.events.GlobalEvent;
@@ -91,7 +91,7 @@ public class RecordingController extends ApplicationController {
 
     override public function initializeManagers():void{
 
-        if(!config('hls/debug')) Log.LOGGING = false;
+        if(config('hls/debug')) Log.LOG_DEBUG2_ENABLED = true;
 
         _initializing = true;
 
