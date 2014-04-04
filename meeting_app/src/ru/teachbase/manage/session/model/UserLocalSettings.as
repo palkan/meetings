@@ -30,7 +30,7 @@ public class UserLocalSettings {
     private var _publishquality:String = PublishQuality.HIGH;
     private var _shownotifications:Boolean = true;
     private var _showcursor:Boolean = true;
-    private var _receivevideo:Boolean = true;
+    private var _receive_video:Boolean = true;
 
 
     /**
@@ -162,13 +162,12 @@ public class UserLocalSettings {
         cookie('showcursor',value);
     }
 
-    public function get receivevideo():Boolean {
-        return _receivevideo;
+    public function get receive_video():Boolean {
+        return _receive_video;
     }
 
-    public function set receivevideo(value:Boolean):void {
-        _receivevideo = value;
-        cookie('receivevideo',value);
+    public function set receive_video(value:Boolean):void {
+        _receive_video = value;
     }
 }
 }

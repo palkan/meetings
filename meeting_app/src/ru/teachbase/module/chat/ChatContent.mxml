@@ -495,7 +495,7 @@
             rtmp_call("create_chat", new mx.rpc.Responder(success, $null), [App.user.sid, Number(evt.value)]);
 
             function success(room_id:Number):void {
-                addRoom(room_id, room_name);
+                addRoom(room_id, room_name, Number(evt.value));
                 switchChatRoom(room_id);
             }
 

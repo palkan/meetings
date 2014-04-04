@@ -344,7 +344,7 @@ public dynamic class StreamManager extends Manager {
 
         ns.backBufferTime = 0;
 
-        ns.receiveVideo(App.user.settings.receivevideo);
+        ns.receiveVideo(App.user.settings.receive_video);
 
         debug("Stream play: "+stream.name);
 

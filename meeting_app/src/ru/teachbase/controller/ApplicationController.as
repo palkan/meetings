@@ -293,7 +293,7 @@ public class ApplicationController extends EventDispatcher {
         const now:Number = (new Date()).getTime();
 
         if((++_reinitCount) > 1 && (now - _last_drop) < MIN_DROP_PERIOD){
-            App.user.settings.receivevideo = false;
+            App.user.settings.receive_video = false;
             notify(new Notification(translate("video_turned_off", "notifications")), true);
         }
 

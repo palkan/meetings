@@ -54,7 +54,7 @@
             make_req_cb.selected = App.meeting.settings & MeetingSettings.MAKE_REQUEST;
             private_chat_cb.selected = App.meeting.settings & MeetingSettings.PRIVATE_CHAT;
             show_cursor_cb.selected = App.user.settings.showcursor;
-            receive_video_cb.selected = App.user.settings.receivevideo;
+            receive_video_cb.selected = App.user.settings.receive_video;
 
         }
 
@@ -77,23 +77,23 @@
         }
 
 
-        private function colorHandler(color:uint):void{
+        private function colorHandler(color:uint):void {
             App.user.settings.color = color;
-            user_clr.setStyle('color',App.user.settings.color);
+            user_clr.setStyle('color', App.user.settings.color);
         }
 
 
-        private function showCursorHandler():void{
+        private function showCursorHandler():void {
             App.user.settings.showcursor = show_cursor_cb.selected;
 
             App.user.settings.showcursor ? App.liveCursor.enable() : App.liveCursor.disable();
         }
 
 
-        private function receiveVideoHandler():void{
-            App.user.settings.receivevideo = receive_video_cb.selected;
+        private function receiveVideoHandler():void {
+            App.user.settings.receive_video = receive_video_cb.selected;
 
-            App.streams.receiveVideo(App.user.settings.receivevideo);
+            App.streams.receiveVideo(App.user.settings.receive_video);
         }
 
 
@@ -123,13 +123,13 @@
             users_lb && (users_lb.text = translate('set_label', 'users'));
             req_lb && (req_lb.text = translate('set_requests_off', 'users'));
             chat_lb && (chat_lb.text = translate('label', 'chat'));
-            video_lb && (video_lb.text = translate('label','video'));
-            docs_lb && (docs_lb.text = translate('label','docs'));
-            color_lb && (color_lb.text=translate('set_color','users'));
-            receive_video_cb && (receive_video_cb.label = translate('receive_video','video'));
-            req_lb && (req_lb.text=translate('set_requests_off','users'));
-            private_chat_cb && (private_chat_cb.label = translate('private_chat','chat'));
-            show_cursor_cb && (show_cursor_cb.label = translate('show_cursor','docs'));
+            video_lb && (video_lb.text = translate('label', 'video'));
+            docs_lb && (docs_lb.text = translate('label', 'docs'));
+            color_lb && (color_lb.text = translate('set_color', 'users'));
+            receive_video_cb && (receive_video_cb.label = translate('receive_video', 'video'));
+            req_lb && (req_lb.text = translate('set_requests_off', 'users'));
+            private_chat_cb && (private_chat_cb.label = translate('private_chat', 'chat'));
+            show_cursor_cb && (show_cursor_cb.label = translate('show_cursor', 'docs'));
         }
 
         override public function get label():String {
@@ -171,6 +171,17 @@
                            source="{style('globalsettings','break')}"/>
         </s:Group>
 
+        <s:Label id="video_lb" initialize="video_lb.text = translate('label','video')" color="0x6892B5" fontSize="13"
+                 paddingLeft="22"/>
+        <s:VGroup paddingLeft="22">
+            <s:CheckBox id="receive_video_cb" initialize="receive_video_cb.label = translate('receive_video','video');"
+                        skinClass="ru.teachbase.skins.CheckBoxSkin" change="receiveVideoHandler()"/>
+        </s:VGroup>
+        <s:Group>
+            <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
+                           source="{style('globalsettings','break')}"/>
+        </s:Group>
+
         <s:VGroup  id="adminsBlock" includeInLayout="false"
                  visible="false">
             <s:Label id="users_lb" initialize="users_lb.text=translate('label','users')" color="0x6892B5" fontSize="13"
@@ -189,17 +200,6 @@
                 <s:Label id="req_lb" initialize="req_lb.text=translate('set_requests_off','users')" color="0x515151"
                          fontSize="13" paddingLeft="10"/>
             </s:HGroup>
-            <s:Group>
-                <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
-                               source="{style('globalsettings','break')}"/>
-            </s:Group>
-
-            <s:Label id="video_lb" initialize="video_lb.text = translate('label','video')" color="0x6892B5" fontSize="13"
-                     paddingLeft="22"/>
-            <s:VGroup paddingLeft="22">
-                <s:CheckBox id="receive_video_cb" initialize="receive_video_cb.label = translate('receive_video','video');"
-                            skinClass="ru.teachbase.skins.CheckBoxSkin" change="receiveVideoHandler()"/>
-            </s:VGroup>
             <s:Group>
                 <s:BitmapImage left="2" right="2" width="{this.width-4}" fillMode="repeat"
                                source="{style('globalsettings','break')}"/>
