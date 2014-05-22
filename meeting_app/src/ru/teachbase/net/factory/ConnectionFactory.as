@@ -20,7 +20,7 @@ public class ConnectionFactory extends EventDispatcher
 
 		public function createConnection(url:String):void{
 			
-			var pattern:RegExp = /^([a-z+\w\+\.\-]+:\/\/)?([^\/:?#]*)?(:\d+)?(\/[^?#]*)?(\?[^#]*)?(\#.*)?/i;
+			var pattern:RegExp = /^(?:(rtmp(?:s)?):\/\/)?([^\/:]+)(?::(\d+))?(?:\/([^\?#]+))?/i;
 			var result:Array = url.match(pattern);
 			var hostName:String;
 			var path:String;
