@@ -4,8 +4,8 @@
         "jre":"http://home.teachbase.ru/app/jre-7u9-windows-i586.exe"
     },
     "net":{
-        "rtmp2":"rtmp://test2013.teachbase.ru:443/teachbase",
-        "rtmp":"127.0.0.1/teachbase",
+        "rtmp2":"rtmp://dem.teachbase:443/teachbase",
+        "rtmp":"rtmp://dem.teachbase.ru:443/teachbase",
         "rtmp_media":"127.0.0.1/tblive",
         "rtmp_media2":"rtmp://test2013.teachbase.ru:443/tblive",
         "rtmp_share":"127.0.0.1",
@@ -36,7 +36,5 @@
     },
     "java_download":"http://java.com/ru/download/",
     "user_id": 96,
-    "guest_id":12,
-    "auth_hash":"m243021wwbnvx215438",
-    "meeting_id":243021
+    "meeting_id":5
 }

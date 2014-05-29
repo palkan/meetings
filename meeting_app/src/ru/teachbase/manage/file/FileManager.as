@@ -3,6 +3,7 @@ import flash.events.DataEvent;
 import flash.events.ErrorEvent;
 import flash.events.Event;
 import flash.events.EventDispatcher;
+import flash.events.HTTPStatusEvent;
 import flash.events.IOErrorEvent;
 import flash.events.ProgressEvent;
 import flash.net.FileReference;
@@ -157,25 +158,23 @@ public class FileManager extends EventDispatcher {
 
         var obj:Object = JSON.parse(event.data);
 
-        if (obj.status === 0) _sendError(obj.error_message);
-        else if (obj.data.file_status === 'prepare') {
-            dispatchEvent(new FileStatusEvent(FileStatusEvent.PROCESSING, obj.data.task_key));
+        if (obj.converted.status === 'converting') {
+            dispatchEvent(new FileStatusEvent(FileStatusEvent.PROCESSING, obj.converted.conversion_id));
 
             if (_uploadInfo.polling_url) {
 
                 const vars:URLVariables = new URLVariables();
-                vars.id=obj.data.task_key;
+                vars.id=obj.converted.conversion_id;
 
                 _poller = new HttpPoll(_uploadInfo.polling_url, new Responder(pollComplete, pollFailed),URLRequestMethod.GET,vars);
                 _poller.poll();
             } else
                 warning('Polling url is undefined');
 
-        } else if (obj.data.file_status === 'ok')
-            dispatchEvent(new FileStatusEvent(FileStatusEvent.COMPLETE, obj.data.file));
-        else
+        } else {
+            // It should be impossible)
             _sendError('Unknown error');
-
+        }
         _busy = false;
 
     }
@@ -184,6 +183,13 @@ public class FileManager extends EventDispatcher {
     private function ioErrorHandler(event:IOErrorEvent):void {
         removeFileListeners();
         _sendError(event.text);
+    }
+
+    private function httpHandler(event:HTTPStatusEvent):void {
+        if(event.status > 400){
+            removeFileListeners();
+            _sendError("Error: #"+ event.status);
+        }
     }
 
     private function progressHandler(event:ProgressEvent):void {
@@ -199,9 +205,7 @@ public class FileManager extends EventDispatcher {
 
         const data:Object = JSON.parse(json);
 
-        if (data.status) dispatchEvent(new FileStatusEvent(FileStatusEvent.PROCESSING_COMPLETE, data.data));
-        else _sendError(data.error_message);
-
+        dispatchEvent(new FileStatusEvent(FileStatusEvent.PROCESSING_COMPLETE, data));
         _busy = false;
 
     }
@@ -228,12 +232,12 @@ public class FileManager extends EventDispatcher {
 
         var vars:URLVariables = new URLVariables();
         vars.token = _uploadInfo.token;
-        vars.mid = App.meeting.id;
-        vars.sid = App.user.sid;
+        vars.meeting_id = App.meeting.id;
+        vars.session_id = App.user.sid;
 
         req.data = vars;
 
-        _file.upload(req);
+        _file.upload(req,'source');
     }
 
 
@@ -257,12 +261,14 @@ public class FileManager extends EventDispatcher {
 
     private function addFileListeners():void {
         _file.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+        _file.addEventListener(HTTPStatusEvent.HTTP_STATUS, httpHandler);
         _file.addEventListener(ProgressEvent.PROGRESS, progressHandler);
         _file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, dataHandler);
     }
 
     private function removeFileListeners():void {
         _file.removeEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+        _file.removeEventListener(HTTPStatusEvent.HTTP_STATUS, httpHandler);
         _file.removeEventListener(ProgressEvent.PROGRESS, progressHandler);
         _file.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, dataHandler);
     }

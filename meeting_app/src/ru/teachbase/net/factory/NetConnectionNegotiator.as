@@ -88,8 +88,8 @@ internal class NetConnectionNegotiator extends EventDispatcher {
         _netConnections.push(_nc);
         try {
 
-            debug("Connect to: "+_pnp[_attemptIndex][0] + "://" + _host + ":" + _pnp[_attemptIndex][1] + _path, _nc);
-            _nc.connect(_pnp[_attemptIndex][0] + "://" + _host + ":" + _pnp[_attemptIndex][1] + _path);
+            debug("Connect to: "+_pnp[_attemptIndex][0] + "://" + _host + ":" + _pnp[_attemptIndex][1] + "/" + _path, _nc);
+            _nc.connect(_pnp[_attemptIndex][0] + "://" + _host + ":" + _pnp[_attemptIndex][1] + "/" + _path);
 
             _attemptIndex++;
 

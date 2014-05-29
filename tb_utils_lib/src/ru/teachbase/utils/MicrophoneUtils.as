@@ -28,7 +28,7 @@ public class MicrophoneUtils {
 
     }
 
-    public static function configure(mic:Microphone,codec:String = SoundCodec.SPEEX, rate:int = 11, encodeQuality:int = 5, fpp:int = 2, gain:int = 80, silenceLevel:int = 0, loopback:Boolean = false):Microphone{
+    public static function configure(mic:Microphone,codec:String = SoundCodec.SPEEX, rate:int = 16, encodeQuality:int = 5, fpp:int = 2, gain:int = 80, silenceLevel:int = 0, loopback:Boolean = false):Microphone{
         mic.codec = codec;
         mic.rate = rate;
         mic.encodeQuality = encodeQuality;
