@@ -27,7 +27,7 @@ public class UserLocalSettings {
     private var _miclevel:int = 80;
     private var _camid:String = null;
     private var _lang:String = "ru";
-    private var _publishquality:String = PublishQuality.HIGH;
+    private var _publishquality:String = PublishQuality.MEDIUM;
     private var _shownotifications:Boolean = true;
     private var _showcursor:Boolean = true;
     private var _receive_video:Boolean = true;
@@ -45,6 +45,7 @@ public class UserLocalSettings {
             for(var key:String in defaults)
                 hasOwnProperty(key) && (this["_"+key] = defaults[key]);
 
+            publishquality = PublishQuality.MEDIUM;
         }
 
         debug("Cookies",defaults);
@@ -89,7 +90,7 @@ public class UserLocalSettings {
 
     public function set publishquality(value:String):void {
         _publishquality = value;
-        cookie('publishQuality',value);
+       //Fixme: !!! cookie('publishQuality',value);
     }
 
     /**
