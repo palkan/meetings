@@ -158,13 +158,13 @@ public class FileManager extends EventDispatcher {
 
         var obj:Object = JSON.parse(event.data);
 
-        if (obj.converted.status === 'converting') {
-            dispatchEvent(new FileStatusEvent(FileStatusEvent.PROCESSING, obj.converted.conversion_id));
+        if (obj.conversion_status === 'converting') {
+            dispatchEvent(new FileStatusEvent(FileStatusEvent.PROCESSING, obj.conversion_id));
 
             if (_uploadInfo.polling_url) {
 
                 const vars:URLVariables = new URLVariables();
-                vars.id=obj.converted.conversion_id;
+                vars.id=obj.conversion_id;
 
                 _poller = new HttpPoll(_uploadInfo.polling_url, new Responder(pollComplete, pollFailed),URLRequestMethod.GET,vars);
                 _poller.poll();
