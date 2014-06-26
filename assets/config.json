@@ -21,11 +21,7 @@
             "url":"../../../assets/locales/ru.xml"
         }
     ],
-    "recording":{
-        "url":"http://devtbupload.s3.amazonaws.com/recordings/235273/record_2/",
-        "url_":"../../../assets/record/record_23/",
-        "url__":"http://devtbupload.s3.amazonaws.com/recordings/37276/record_1/"
-    },
+    "recording_url":"http://devtbupload.s3.amazonaws.com/recordings/235273/record_2/",
     "hls":{
       "debug":false
     },

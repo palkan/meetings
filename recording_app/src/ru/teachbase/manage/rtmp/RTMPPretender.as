@@ -71,7 +71,7 @@ public class RTMPPretender extends RTMPManager {
             return;
         }
 
-        var _root_url:String = config("recording/url");
+        var _root_url:String = config("recording_url");
 
         if(!_root_url){
 
