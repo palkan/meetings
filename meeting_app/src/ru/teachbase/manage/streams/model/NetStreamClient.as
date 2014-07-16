@@ -5,11 +5,12 @@
  */
 package ru.teachbase.manage.streams.model {
 import ru.teachbase.model.App;
+import ru.teachbase.net.model.INetStreamClient;
 import ru.teachbase.net.stats.RTMPWatch;
 import ru.teachbase.utils.Strings;
 import ru.teachbase.utils.shortcuts.debug;
 
-public dynamic class NetStreamClient {
+public dynamic class NetStreamClient implements INetStreamClient{
 
     private var _data:StreamData;
 
@@ -25,7 +26,7 @@ public dynamic class NetStreamClient {
         _data = data;
     }
 
-    public function get data():StreamData {
+    public function get data(){
         return _data;
     }
 
