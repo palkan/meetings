@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
 Main-Class: org.redfire.screen.ScreenShare
-
+Permissions: all-permissions
+Codebase: *.teachbase.ru

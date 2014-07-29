@@ -184,15 +184,15 @@ class WindowlessFrame implements Serializable {
 
 		private final OffsetLocator mOffsetLocator;
 		private Boolean _isOnLeft = false;
-		
+
 		public ToolbarWindow(JWindow frame, OffsetLocator ol, JPanel content) {
 			super(frame);
 			super.setAlwaysOnTop(true);
 			mOffsetLocator = ol;
 			add(content);
 			pack();
-		}
-		
+        }
+
 		public void setcapturing(Boolean bol) {
 			_isOnLeft = bol;
 		}
@@ -203,6 +203,7 @@ class WindowlessFrame implements Serializable {
 		
 		@Override
 		public Point getLocation() {
+
 			if (_isOnLeft){
 				return new Point(mTopLeft.x + mOverallSize.width - 268, mTopLeft.y + mOffsetLocator.getTopOffset()+10);
 			}else{
@@ -553,7 +554,7 @@ class WindowlessFrame implements Serializable {
         mWindowFrame.setBackground(new Color(0,0,0,0));
 
         if(isMac){
-            mWindowFrame.getRootPane().putClientProperty("Window.alpha", new Float(0.2f));
+            mWindowFrame.getRootPane().putClientProperty("Window.alpha", new Float(0.1f));
         }
 
 		movingAdapter = createMovingMouseListener();
