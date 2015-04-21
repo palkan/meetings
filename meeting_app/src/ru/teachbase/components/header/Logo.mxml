@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Graphic xmlns:fx="http://ns.adobe.com/mxml/2009"
            xmlns:s="library://ns.adobe.com/flex/spark"
-           width="250" height="100%"
+           width="250" height="100%" verticalCenter="0"
            creationComplete="init(event)"
         >
     <fx:Script>
@@ -9,13 +9,34 @@
         import mx.events.FlexEvent;
 
         import ru.teachbase.utils.helpers.*;
+        import ru.teachbase.utils.shortcuts.config;
         import ru.teachbase.utils.shortcuts.style;
         import ru.teachbase.utils.shortcuts.style;
 
         protected function init(event:FlexEvent):void {
-            width = Math.min(width, bmp.width);
+           if (bmp.width > 0) width = Math.min(width, bmp.width);
+        }
+
+        protected function handleLoad():void{
+           if (bmp.sourceWidth > 0) {
+               var w, h;
+               const ratio = bmp.sourceHeight / bmp.sourceWidth;
+               if(ratio > height/width){
+                   h = height;
+                   w = h / ratio;
+               }else{
+                   w = width;
+                   h = ratio * w;
+               }
+               bmp.width = w;
+               bmp.height = h;
+               width = w;
+           }
         }
         ]]>
 	</fx:Script>
-	<s:BitmapImage id="bmp" source="{style('actionBar','logotype')}"/>
+	<s:BitmapImage
+            id="bmp"
+            source="{config('logo') || style('actionBar','logotype')}"
+            complete="handleLoad()"/>
 </s:Graphic>

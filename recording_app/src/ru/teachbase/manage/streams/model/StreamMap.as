@@ -33,7 +33,7 @@ public class StreamMap {
         if (!_elements.length) _elements.push(data);
         else {
 
-            var last:Boolean;
+            var last:Boolean, ind:int = 0;
 
             for each(var s:StreamMapData in _elements) {
 
@@ -44,6 +44,8 @@ public class StreamMap {
                 if (s.finish_ts > data.finish_ts) break;
 
                 last = true;
+
+                ind++;
             }
 
             if (last) _elements.push(data);
@@ -51,7 +53,7 @@ public class StreamMap {
                 _elements.unshift(data);
             } else {
                 const ind:int = _elements.indexOf(s);
-                _elements.splice(ind - 1, 0, data);
+                _elements.splice(ind, 0, data);
             }
 
         }
