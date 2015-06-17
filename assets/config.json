@@ -5,11 +5,11 @@
     },
     "net":{
         "rtmp2":"rtmp://dem.teachbase:443/teachbase",
-        "rtmp":"rtmp://192.168.50.113:443/teachbase",
+        "rtmp":"rtmp://192.168.50.113:1935/teachbase",
         "rtmp_media":"127.0.0.1/tblive",
         "rtmp_media2":"rtmp://test2013.teachbase.ru:443/tblive",
         "rtmp_share":"127.0.0.1",
-        "rtmp_port":"443",
+        "rtmp_port":"8443",
         "http":"http://base.teachbase.ru/"
     },
     "lang":"ru",

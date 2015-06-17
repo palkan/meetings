@@ -9,6 +9,8 @@
         <s:State id="iams" name="iamsharing"/>
         <s:State id="iamp" name="iampreparing"/>
         <s:State id="prepare" name="prepare"/>
+        <s:State id="prepare_ext" name="prepare_ext"/>
+        <s:State id="iamext" name="iamexternal"/>
         <s:State id="idle" name="idle"/>
     </module:states>
     <fx:Script>
@@ -19,11 +21,11 @@
         import mx.rpc.Responder;
 
         import ru.teachbase.components.callouts.SettingsItem;
-
         import ru.teachbase.constants.PacketType;
         import ru.teachbase.events.GlobalEvent;
         import ru.teachbase.manage.rtmp.RTMPListener;
         import ru.teachbase.manage.rtmp.events.RTMPEvent;
+        import ru.teachbase.manage.rtmp.model.Recipients;
         import ru.teachbase.manage.streams.model.NetStreamClient;
         import ru.teachbase.manage.streams.model.StreamType;
         import ru.teachbase.model.App;
@@ -56,8 +58,17 @@
         [Bindable]
         private var _app_available:Boolean = true;
 
+        [Bindable]
+        private var _external:Boolean = false;
 
-        override public function init():void{
+        [Bindable]
+        private var _external_path:String = '';
+
+        [Bindable]
+        private var _external_name:String = '';
+
+
+        override public function init():void {
             listener.initialize();
             listener.addEventListener(RTMPEvent.DATA, handleMessage);
         }
@@ -83,7 +94,7 @@
 
             var share_streams:Array = App.meeting.streamList.toArray().filter(filter);
 
-            _app_available = Boolean(BrowserUtils.sendCall("exCall","available"));
+            _app_available = Boolean(BrowserUtils.sendCall("exCall", "available"));
 
             if (share_streams.length) {
 
@@ -100,8 +111,8 @@
         }
 
 
-        private function handleUserLeave(e:GlobalEvent):void{
-            if(_activeUser && _activeUser.sid == e.value.sid) dispose();
+        private function handleUserLeave(e:GlobalEvent):void {
+            if (_activeUser && _activeUser.sid == e.value.sid) dispose();
         }
 
 
@@ -116,7 +127,7 @@
         }
 
 
-        private function handleReset(e:GlobalEvent):void{
+        private function handleReset(e:GlobalEvent):void {
 
             dispose();
 
@@ -189,25 +200,29 @@
 
 
         private function filter(stream:NetStream, index:int = 0, arr:Array = null):Boolean {
-            return Boolean(stream && (stream.client as NetStreamClient) && (stream.client as NetStreamClient).data.type == StreamType.SCREEN);
+            return Boolean(stream && (stream.client as NetStreamClient) && ((stream.client as NetStreamClient).data.type != StreamType.MEDIA));
         }
 
 
         private function handleMessage(e:RTMPEvent):void {
 
             const data:Object = e.packet.data;
-
             processData(data);
         }
 
         private function processData(data:Object):void {
-
-            if(data && data.type === "prepare" && data.uid) {
+            if (data && data.type === "prepare" && data.uid) {
                 prepareShare(data.uid);
             } else if (data && data.type === "stop") {
                 dispose();
-            }else if(data && data.type === "start" && data.uid == user.sid){
-                currentState = iams.name;
+            } else if (data && data.type === "start" && data.uid == user.sid) {
+                if(data.stream_type == "external"){
+                    _external = true;
+                    statusText.text = translate("external_me", "screenshare");
+                    currentState = iamext.name;
+                }else{
+                    currentState = iams.name;
+                }
             }
 
         }
@@ -238,20 +253,39 @@
 
         private function startShare():void {
 
-            BrowserUtils.sendCall("exCall","run",config("net/rtmp_share"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
+            BrowserUtils.sendCall("exCall", "run", config("net/rtmp_share"), config("net/rtmp_port"), App.meeting.id, App.user.sid);
 
-            debug("Share:",config("net/rtmp_share"),config("net/rtmp_port"),App.meeting.id,App.user.sid);
+            debug("Share:", config("net/rtmp_share"), config("net/rtmp_port"), App.meeting.id, App.user.sid);
 
             rtmp_send(PacketType.SCREEN_SHARING, {type: "prepare", uid: App.user.sid});
 
         }
 
+        private function startExternal():void {
+
+            function success(data:Object) {
+                debug(data.path, data.name);
+                _external_path = build_host_path(data.path);
+                _external_name = data.name;
+                prepareExternal();
+            }
+
+            rtmp_call("request_external", new mx.rpc.Responder(success, $null));
+        }
+
+
+        private function prepareExternal():void{
+            currentState = prepare_ext.name;
+            rtmp_send(PacketType.SCREEN_SHARING, {type: "prepare", uid: App.user.sid}, Recipients.ALL_EXCLUDE_ME);
+        }
+
         private function stopShare():void {
-
-            BrowserUtils.sendCall("exCall","stop");
-
-            rtmp_send(PacketType.SCREEN_SHARING, {type: "stop", uid: App.user.sid});
-
+            if(_external){
+                rtmp_call("close_external");
+            }else{
+                BrowserUtils.sendCall("exCall", "stop");
+                rtmp_send(PacketType.SCREEN_SHARING, {type: "stop", uid: App.user.sid});
+            }
         }
 
 
@@ -264,13 +298,13 @@
 
             _netStream = stream;
 
-            if(!_activeUser){
+            if (!_activeUser) {
 
-                if((_netStream.client as NetStreamClient) && (_netStream.client as NetStreamClient).data)
+                if ((_netStream.client as NetStreamClient) && (_netStream.client as NetStreamClient).data)
                     _activeUser = App.meeting.usersByID[(_netStream.client as NetStreamClient).data.user_id];
 
 
-                if(!_activeUser){
+                if (!_activeUser) {
                     warning("No active user!");
                     return;
                 }
@@ -278,6 +312,8 @@
 
             label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
 
+
+            _external = (_netStream.client as NetStreamClient).data.type === StreamType.EXTERNAL;
 
             _netStream.client.onMouseData = function (metadata:Object):void {
                 if (!metadata)
@@ -289,7 +325,7 @@
 
             };
 
-            _sizeId = setInterval(setVideoSize,100);
+            _sizeId = setInterval(setVideoSize, 100);
 
             currentState = sharing.name;
 
@@ -304,6 +340,12 @@
             addElement(_vc);
         }
 
+        protected function build_host_path(path:String):String{
+            var rxp:RegExp = /^rtmps?\:\/\/[^\/]+/;
+            var host:String = rxp.exec(config("net/rtmp"));
+            return host + "/" + path;
+        }
+
         override public function hide():void {
             super.hide();
             dispose();
@@ -311,7 +353,7 @@
 
         public function dispose():void {
 
-            BrowserUtils.sendCall("exCall","stop");
+            BrowserUtils.sendCall("exCall", "stop");
 
             _netStream = null;
 
@@ -326,6 +368,7 @@
             statusText && (statusText.text = "");
 
             _activeUser = null;
+            _external = false;
             label = translate('label', 'screenshare');
 
             currentState = idle.name;
@@ -339,15 +382,19 @@
                 label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
 
             start && (start.label = translate('start', 'screenshare'));
+            start_ext && (start_ext.label = translate('start_ext', 'screenshare'));
             stopshareBtn && (stopshareBtn.label = translate('stop_share', 'screenshare'));
             descTxt && (descTxt.text = translate('desc', 'screenshare'));
-            gotoJava && (gotoJava.label=translate('install_app','screenshare'));
-            noAppText && (noAppText.text = translate('no_java_alert','screenshare'));
+            descExtTxt && (descExtTxt.text = translate('desc_ext', 'screenshare'));
+            gotoJava && (gotoJava.label = translate('install_app', 'screenshare'));
+            noAppText && (noAppText.text = translate('no_java_alert', 'screenshare'));
+            server_name && (server_name.text = translate('server_name', 'screenshare'));
+            stream_name && (stream_name.text = translate('stream_name', 'screenshare'));
+            cancel_ext && (cancel_ext.label = translate('Cancel'));
         }
 
 
-
-        private function setVideoSize():void{
+        private function setVideoSize():void {
 
             if (!_sizeInited && _vc && _vc.width > 0 && _vc.videoWidth > 0) {
                 _vc && _vc.setActualSize(_vc.width, _vc.height);
@@ -364,17 +411,14 @@
 
             _p_enabled = Permissions.docsAvailable(value);
 
-            if(!_p_enabled && _activeUser && (_activeUser.sid === user.sid)) dispose();
+            if (!_p_enabled && _activeUser && (_activeUser.sid === user.sid)) dispose();
 
         }
 
 
         override public function get settings():Vector.<SettingsItem> {
-
             return _settings;
-
         }
-
         ]]>
 	</fx:Script>
     <s:Label id="statusText" horizontalCenter="0" excludeFrom="idle,sharing" verticalCenter="-60"/>
@@ -383,37 +427,65 @@
         <s:BusyIndicator rotationInterval="50" symbolColor="0x71a7cd" width="60" height="60"/>
     </s:VGroup>
 
-    <s:Group id="idleGroup" width="100%" height="260" horizontalCenter="0" verticalCenter="0" includeIn="idle"
+    <s:Group id="idleGroup" horizontalCenter="0" height="100%" includeIn="idle"
              visible="{_p_enabled}">
-        <s:VGroup horizontalCenter="0" top="50" id="appGroup" visible="{_app_available}">
-            <s:Group horizontalCenter="0" width="320">
-
-                <components:CustomSkinableButton id="start" width="270" click="startShare()"
+                <s:Group id="appGroup"  width="300" height="200" verticalCenter="0" visible="{_app_available}">
+                    <components:CustomSkinableButton id="start" width="270" click="startShare()"
+                                                     horizontalCenter="0"
+                                                     skinClass="ru.teachbase.skins.StandartButtonWithIcon"
+                                                     initialize="with(start){label=translate('start','screenshare');iconUp=style('screenshare','buttonIcon');iconDown=style('screenshare','buttonIcon');iconOver=style('screenshare','buttonIcon');}"
+                            />
+                    <s:RichText y="50" id="descTxt" initialize="with(descTxt){text = translate('desc','screenshare')}"
+                                width="100%"
+                                textAlign="center" fontSize="13"/>
+                </s:Group>
+            <s:Group id="noJavaGroup"  width="300" height="200" verticalCenter="0" visible="{!_app_available}">
+                <components:CustomSkinableButton id="gotoJava" width="176" click="BrowserUtils.sendCall('window.open',config('java_download'),'_blank');"
                                                  horizontalCenter="0"
-                                                 skinClass="ru.teachbase.skins.StandartButtonWithIcon"
-                                                 initialize="with(start){label=translate('start','screenshare');iconUp=style('screenshare','buttonIcon');iconDown=style('screenshare','buttonIcon');iconOver=style('screenshare','buttonIcon');}"
+                                                 skinClass="ru.teachbase.skins.StandartButton"
+                                                 initialize="gotoJava.label=translate('install_app','screenshare');"
                         />
-                <s:RichText id="descTxt" initialize="with(descTxt){text = translate('desc','screenshare')}" width="100%"
-                            y="{start.y + start.height + 22}" textAlign="center" fontSize="13"/>
+                <s:Label y="50" id="noAppText" width="100%" horizontalCenter="0" fontSize="13" textAlign="center" initialize="noAppText.text = translate('no_java_alert','screenshare');"/>
+            </s:Group>
+            <s:Group width="300" left="320" height="200" id="extGroup" verticalCenter="0">
+               <components:CustomSkinableButton id="start_ext" width="220" click="startExternal()"
+                                                     horizontalCenter="0"
+                                                     skinClass="ru.teachbase.skins.StandartButton"
+                                                     initialize="with(start_ext){label=translate('start_ext','screenshare');}"
+                            />
+                <s:RichText  y="50" id="descExtTxt" initialize="with(descExtTxt){text = translate('desc_ext','screenshare')}" width="100%"
+                            textAlign="center" fontSize="13"/>
 
             </s:Group>
-        </s:VGroup>
-        <s:Group id="noJavaGroup"  width="100%" horizontalCenter="0" verticalCenter="0" visible="{!_app_available}">
-            <s:Label id="noAppText" width="100%" horizontalCenter="0" verticalCenter="-60" fontSize="13" textAlign="center" initialize="noAppText.text = translate('no_java_alert','screenshare');"/>
-            <components:CustomSkinableButton id="gotoJava" width="176" click="BrowserUtils.sendCall('window.open',config('java_download'),'_blank');"
-                                             horizontalCenter="0"
-                                             verticalCenter="0"
-                                             skinClass="ru.teachbase.skins.StandartButton"
-                                             initialize="gotoJava.label=translate('install_app','screenshare');"
-                    />
-        </s:Group>
     </s:Group>
+    <s:VGroup includeIn="prepare_ext" horizontalCenter="0" verticalCenter="0" width="350" height="200">
+        <s:Label id="server_name" fontSize="13" textAlign="left" initialize="server_name.text=translate('server_name','screenshare');"/>
+        <s:TextInput id="server_txt" height="31" width="100%" selectionHighlighting="whenFocused" selectable="true" textAlign="left" text="{ _external_path }">
+             <s:click><![CDATA[
+                 server_txt.selectAll();
+                 System.setClipboard(server_txt.text);
+                 ]]></s:click>
+        </s:TextInput>
+        <s:Label id="stream_name" fontSize="13" textAlign="left" initialize="stream_name.text=translate('stream_name','screenshare');"/>
+        <s:TextInput id="stream_name_txt" height="31" width="100%" selectionHighlighting="whenFocused" selectable="true" textAlign="left" text="{ _external_name }">
+           <s:click><![CDATA[
+               stream_name_txt.selectAll();
+               System.setClipboard(server_txt.text);
+           ]]></s:click>
+        </s:TextInput>
+        <components:CustomSkinableButton id="cancel_ext" width="160"
+                                         left="0"
+                                         skinClass="ru.teachbase.skins.StandartButton"
+                                         initialize="with(cancel_ext){label=translate('Cancel');}">
+          <components:click><![CDATA[
+              currentState = idle.name;
+              ]]></components:click>
+          </components:CustomSkinableButton>
+    </s:VGroup>
     <s:Image source="{style('modulecontainer','bottomBackground')}" left="0" bottom="0" scaleMode="stretch" height="46"
-             includeIn="iamsharing,iampreparing" width="100%"/>
-    <s:Button includeIn="iamsharing,iampreparing" fontSize="13" id="stopshareBtn" width="214"
-              initialize="with(stopshareBtn){label = translate('stop_share','screenshare');}" fontWeight="normal"
+             includeIn="iamsharing,iampreparing,iamexternal" width="100%"/>
+    <s:Button includeIn="iamsharing,iampreparing,iamexternal" fontSize="13" id="stopshareBtn" width="214"
+              initialize="stopshareBtn.label = translate('stop_share','screenshare');" fontWeight="normal"
               left="7" bottom="7" click="stopShare()"
               skinClass="ru.teachbase.module.screenshare.skins.StopShareButtonSkin"/>
-
-
 </module:ModuleInstance>

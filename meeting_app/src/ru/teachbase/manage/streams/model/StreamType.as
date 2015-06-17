@@ -7,5 +7,6 @@ package ru.teachbase.manage.streams.model {
 public class StreamType {
     public static const MEDIA:String = "media";
     public static const SCREEN:String = "share";
+    public static const EXTERNAL:String = "external";
 }
 }

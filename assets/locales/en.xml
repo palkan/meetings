@@ -120,15 +120,20 @@ requests]]></element>
 		</component>
 		<component name="screenshare">
 			<elements>
-				<element name="label"><![CDATA[Screen sharing]]></element>
-				<element name="tooltip"><![CDATA[screen sharing]]></element>
+				<element name="label"><![CDATA[Streaming]]></element>
+				<element name="tooltip"><![CDATA[ыtreaming]]></element>
 				<element name="start"><![CDATA[Start Sharing]]></element>
+                <element name="start_ext"><![CDATA[Start Broadcast]]></element>
+                <element name="server_name"><![CDATA[Primary Server URL]]></element>
+                <element name="stream_name"><![CDATA[Stream Name]]></element>
 				<element name="prepare_me"><![CDATA[Sharing application is loading]]></element>
 				<element name="user_share_title"><![CDATA[Desktop - ${1}]]></element>
 				<element name="prepare"><![CDATA[${1} prepares screen sharing]]></element>
-				<element name="stop_share"><![CDATA[Stop Sharing]]></element>
+				<element name="stop_share"><![CDATA[Stop Streaming]]></element>
 				<element name="share_me"><![CDATA[You are sharing your screen]]></element>
+                <element name="external_me"><![CDATA[You are streaming from external device]]></element>
 				<element name="desc"><![CDATA[You can share your screen with other participants]]></element>
+                <element name="desc_ext"><![CDATA[You can use external encoder to stream video]]></element>
 				<element name="need_app"><![CDATA[You have to launch Teachbase Desktop app in order to use this feature]]></element>
 				<element name="run_app"><![CDATA[Launch]]></element>
 				<element name="install_app"><![CDATA[Install]]></element>
@@ -248,17 +253,17 @@ ${2}]]></element>
 		</component>		
 		<component name="error">
 			<elements>
-				<element name="kickedoff"><![CDATA[Вас удалили из списка участников встречи]]></element>
-				<element name="limit"><![CDATA[Превышен лимит количества пользователей на встрече]]></element>
-				<element name="main_server"><![CDATA[Ошибка при подключении к основному серверу приложения]]></element>
-				<element name="media_server"><![CDATA[Ошибка при подключении к серверу трансляции]]></element>
-				<element name="recording_not_found"><![CDATA[Не удается найти запись встречи]]></element>
-				<element name="connection_timeout"><![CDATA[Превышено время ожидания подключения]]></element>
-				<element name="meeting_finished"><![CDATA[Встреча завершена администратором]]></element>
-				<element name="authorization_failed"><![CDATA[Ошибка авторизации. Вы не допущены на вcтречу]]></element>
-				<element name="config_failed"><![CDATA[Не удается загрузить конфигурационные настройки]]></element>
-				<element name="YT_policy"><![CDATA[Политика безопастности YouTube запрещает\n просмотр данного видео]]></element>
-				<element name="YT_removed"><![CDATA[Данное видео удалено с YouTube]]></element>
+				<element name="kickedoff"><![CDATA[You were asked to leave the meeting]]></element>
+				<element name="limit"><![CDATA[Users limit for the meeting have been already reached]]></element>
+				<element name="main_server"><![CDATA[Failed to connect to primary server]]></element>
+				<element name="media_server"><![CDATA[Failed to connect to streaming server]]></element>
+				<element name="recording_not_found"><![CDATA[Recording not found]]></element>
+				<element name="connection_timeout"><![CDATA[Connection timed out]]></element>
+				<element name="meeting_finished"><![CDATA[Meeting has been finished]]></element>
+				<element name="authorization_failed"><![CDATA[You are not allowed to attend this meeting]]></element>
+				<element name="config_failed"><![CDATA[Failed to load configuration settings]]></element>
+				<element name="YT_policy"><![CDATA[YouTube access denied]]></element>
+				<element name="YT_removed"><![CDATA[Requested video was removed]]></element>
 			</elements>
 		</component>		
 	</components>

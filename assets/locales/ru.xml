@@ -120,16 +120,21 @@
 		</component>
 		<component name="screenshare">
 			<elements>
-				<element name="label"><![CDATA[Демонстрация экрана]]></element>
-				<element name="tooltip"><![CDATA[демонстрация экрана]]></element>
+				<element name="label"><![CDATA[Трансляция]]></element>
+				<element name="tooltip"><![CDATA[трансляция]]></element>
 				<element name="start"><![CDATA[Начать демонстрацию]]></element>
+                <element name="start_ext"><![CDATA[Начать трансляцию]]></element>
+                <element name="server_name"><![CDATA[Primary Server URL]]></element>
+                <element name="stream_name"><![CDATA[Stream Name]]></element>
 				<element name="prepare_me"><![CDATA[Запускается приложение для демонстрации экрана]]></element>
 				<element name="prepare"><![CDATA[${1} готовится транслировать рабочий стол]]></element>
 				<element name="user_share_title"><![CDATA[Рабочий стол - ${1}]]></element>
-				<element name="stop_share"><![CDATA[Остановить демонстрацию]]></element>
+				<element name="stop_share"><![CDATA[Остановить трансляцию]]></element>
 				<element name="share_me"><![CDATA[Сейчас вы транслируете свой рабочий стол]]></element>
+                <element name="external_me"><![CDATA[Сейчас вы транслируете видео с внешнего приложения]]></element>
 				<element name="need_app"><![CDATA[Для работы с функцией Демонстрация рабочего стола, которая позволяем демонстрировать участникам все что происходит  у Вас на экране, Вам необходимо запустить приложение]]></element>
 				<element name="desc"><![CDATA[Вы можете демонстрировать участникам то что происходит у вас на экране монитора]]></element>
+                <element name="desc_ext"><![CDATA[Транслируйте видео, используя стороннее приложение]]></element>
 				<element name="run_app"><![CDATA[Запустить]]></element>
 				<element name="install_app"><![CDATA[Установить]]></element>
 				<element name="chrome_alert"><![CDATA[К сожалению, Ваш браузер не поддерживается приложением для трансляции рабочего стола. Используйте Internet Explorer или Mozilla Firefox]]></element>
