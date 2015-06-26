@@ -2,6 +2,7 @@
 <module:ModuleInstance xmlns:fx="http://ns.adobe.com/mxml/2009"
                        xmlns:s="library://ns.adobe.com/flex/spark"
                        xmlns:components="ru.teachbase.components.*" xmlns:module="ru.teachbase.components.module.*"
+                       xmlns:mx="library://ns.adobe.com/flex/mx"
                        implements="ru.teachbase.utils.interfaces.ILocalable"
                        creationComplete="creationCompleteHandler(event)">
     <module:states>
@@ -455,6 +456,14 @@
                             />
                 <s:RichText  y="50" id="descExtTxt" initialize="with(descExtTxt){text = translate('desc_ext','screenshare')}" width="100%"
                             textAlign="center" fontSize="13"/>
+                <mx:LinkButton width="200"
+                               y="90"
+                               fontSize="14"
+                               color="#007fe3"
+                               horizontalCenter="0"
+                               id="ext_help_link"
+                               click="navigateToURL(new URLRequest(config('external_help_url')), '_blank')"
+                               initialize="with(ext_help_link){ visible = !!config('external_help_url'); label = translate('ext_link', 'screenshare')}"/>
 
             </s:Group>
     </s:Group>

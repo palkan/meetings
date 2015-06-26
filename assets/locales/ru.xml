@@ -135,6 +135,7 @@
 				<element name="need_app"><![CDATA[Для работы с функцией Демонстрация рабочего стола, которая позволяем демонстрировать участникам все что происходит  у Вас на экране, Вам необходимо запустить приложение]]></element>
 				<element name="desc"><![CDATA[Вы можете демонстрировать участникам то что происходит у вас на экране монитора]]></element>
                 <element name="desc_ext"><![CDATA[Транслируйте видео, используя стороннее приложение]]></element>
+                <element name="ext_link"><![CDATA[Инструкция]]></element>
 				<element name="run_app"><![CDATA[Запустить]]></element>
 				<element name="install_app"><![CDATA[Установить]]></element>
 				<element name="chrome_alert"><![CDATA[К сожалению, Ваш браузер не поддерживается приложением для трансляции рабочего стола. Используйте Internet Explorer или Mozilla Firefox]]></element>

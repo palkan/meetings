@@ -134,6 +134,7 @@ requests]]></element>
                 <element name="external_me"><![CDATA[You are streaming from external device]]></element>
 				<element name="desc"><![CDATA[You can share your screen with other participants]]></element>
                 <element name="desc_ext"><![CDATA[You can use external encoder to stream video]]></element>
+                <element name="ext_link"><![CDATA[How To]]></element>
 				<element name="need_app"><![CDATA[You have to launch Teachbase Desktop app in order to use this feature]]></element>
 				<element name="run_app"><![CDATA[Launch]]></element>
 				<element name="install_app"><![CDATA[Install]]></element>
