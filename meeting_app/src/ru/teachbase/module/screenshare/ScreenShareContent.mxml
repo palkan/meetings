@@ -57,7 +57,7 @@
         private var _p_enabled:Boolean = false;
 
         [Bindable]
-        private var _app_available:Boolean = true;
+        private var _app_available:Boolean = false;
 
         [Bindable]
         private var _external:Boolean = false;
@@ -94,8 +94,6 @@
             GlobalEvent.addEventListener(GlobalEvent.USER_LEAVE, handleUserLeave);
 
             var share_streams:Array = App.meeting.streamList.toArray().filter(filter);
-
-            _app_available = Boolean(BrowserUtils.sendCall("exCall", "available"));
 
             if (share_streams.length) {
 
@@ -252,16 +250,6 @@
         }
 
 
-        private function startShare():void {
-
-            BrowserUtils.sendCall("exCall", "run", config("net/rtmp_share"), config("net/rtmp_port"), App.meeting.id, App.user.sid);
-
-            debug("Share:", config("net/rtmp_share"), config("net/rtmp_port"), App.meeting.id, App.user.sid);
-
-            rtmp_send(PacketType.SCREEN_SHARING, {type: "prepare", uid: App.user.sid});
-
-        }
-
         private function startExternal():void {
 
             function success(data:Object) {
@@ -354,8 +342,6 @@
 
         public function dispose():void {
 
-            BrowserUtils.sendCall("exCall", "stop");
-
             _netStream = null;
 
             if (_vc) {
@@ -382,13 +368,9 @@
             else
                 label = translate('label', 'screenshare') + " — " + _activeUser.fullName;
 
-            start && (start.label = translate('start', 'screenshare'));
             start_ext && (start_ext.label = translate('start_ext', 'screenshare'));
             stopshareBtn && (stopshareBtn.label = translate('stop_share', 'screenshare'));
-            descTxt && (descTxt.text = translate('desc', 'screenshare'));
             descExtTxt && (descExtTxt.text = translate('desc_ext', 'screenshare'));
-            gotoJava && (gotoJava.label = translate('install_app', 'screenshare'));
-            noAppText && (noAppText.text = translate('no_java_alert', 'screenshare'));
             server_name && (server_name.text = translate('server_name', 'screenshare'));
             stream_name && (stream_name.text = translate('stream_name', 'screenshare'));
             cancel_ext && (cancel_ext.label = translate('Cancel'));
@@ -430,25 +412,7 @@
 
     <s:Group id="idleGroup" horizontalCenter="0" height="100%" includeIn="idle"
              visible="{_p_enabled}">
-                <s:Group id="appGroup"  width="300" height="200" verticalCenter="0" visible="{_app_available}">
-                    <components:CustomSkinableButton id="start" width="270" click="startShare()"
-                                                     horizontalCenter="0"
-                                                     skinClass="ru.teachbase.skins.StandartButtonWithIcon"
-                                                     initialize="with(start){label=translate('start','screenshare');iconUp=style('screenshare','buttonIcon');iconDown=style('screenshare','buttonIcon');iconOver=style('screenshare','buttonIcon');}"
-                            />
-                    <s:RichText y="50" id="descTxt" initialize="with(descTxt){text = translate('desc','screenshare')}"
-                                width="100%"
-                                textAlign="center" fontSize="13"/>
-                </s:Group>
-            <s:Group id="noJavaGroup"  width="300" height="200" verticalCenter="0" visible="{!_app_available}">
-                <components:CustomSkinableButton id="gotoJava" width="176" click="BrowserUtils.sendCall('window.open',config('java_download'),'_blank');"
-                                                 horizontalCenter="0"
-                                                 skinClass="ru.teachbase.skins.StandartButton"
-                                                 initialize="gotoJava.label=translate('install_app','screenshare');"
-                        />
-                <s:Label y="50" id="noAppText" width="100%" horizontalCenter="0" fontSize="13" textAlign="center" initialize="noAppText.text = translate('no_java_alert','screenshare');"/>
-            </s:Group>
-            <s:Group width="300" left="320" height="200" id="extGroup" verticalCenter="0">
+            <s:Group width="300" horizontalCenter="0" height="200" id="extGroup" verticalCenter="0">
                <components:CustomSkinableButton id="start_ext" width="220" click="startExternal()"
                                                      horizontalCenter="0"
                                                      skinClass="ru.teachbase.skins.StandartButton"
