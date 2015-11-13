@@ -264,12 +264,14 @@ public dynamic class StreamManager extends Manager {
                 var __now:Number = (new Date().getTime());
                 client.__buffer_lag = client.__buffer_lag||0;
 
-                if(client.__buffer_empty_ts) client.__buffer_lag += (__now-client.__buffer_empty_ts);
+                if(client.__buffer_empty_ts) client.__buffer_lag += (__now - client.__buffer_empty_ts);
 
-                debug("Stream buffer lag:"+client.__buffer_lag);
+                debug("Stream buffer lag: "+client.__buffer_lag);
+                debug("Stream buffer length: " + (e.target as NetStream).bufferLength);
 
                 if(client.__stream_start_ts){
                     debug("Stream time: " + (e.target as NetStream).time+"; real time: " + (__now - client.__stream_start_ts));
+                    (e.target as NetStream).bufferTime = 0
                 }
                 break;
             case NetStreamStatusCodes.PLAY_FAILED:
@@ -340,7 +342,10 @@ public dynamic class StreamManager extends Manager {
         ns.addEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
 
         ns.bufferTime = 0;
-        ns.bufferTimeMax = 1;
+        ns.bufferTimeMax = .1;
+        ns.inBufferSeek = false;
+        ns.maxPauseBufferTime = 0;
+        ns.useJitterBuffer = true;
 
         ns.backBufferTime = 0;
 

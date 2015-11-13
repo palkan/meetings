@@ -3,7 +3,7 @@
   <component name="FlexBuildConfigurationManager" active="tb_utils_lib">
     <configurations>
       <configuration name="tb_utils_lib" output-type="Library" output-file="tb_utils_lib.swc" output-folder="$MODULE_DIR$/../out/production/tb_utils_lib">
-        <dependencies target-player="11.1">
+        <dependencies target-player="20.0">
           <entries>
             <entry library-name="flexunit" library-level="application">
               <dependency linkage="Test" />

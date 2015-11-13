@@ -3,7 +3,7 @@
   <component name="FlexBuildConfigurationManager" active="tb_board">
     <configurations>
       <configuration name="tb_board" output-type="Library" output-file="tb_board.swc" output-folder="$MODULE_DIR$/../out/production/tb_board">
-        <dependencies target-player="11.1">
+        <dependencies target-player="20.0">
           <entries>
             <entry module-name="tb_utils_lib" build-configuration-name="tb_utils_lib">
               <dependency linkage="External" />

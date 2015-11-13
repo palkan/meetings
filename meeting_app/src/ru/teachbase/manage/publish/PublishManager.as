@@ -380,7 +380,7 @@ public class PublishManager extends Manager {
 
         debug("Switch to microphone: "+ App.user.settings.micid);
 
-        _microphone = MicrophoneUtils.getMicrophone(App.user.settings.micid,true);
+        _microphone = MicrophoneUtils.getMicrophone(App.user.settings.micid, true);
 
         debug("Switched to microphone: " + (_microphone ? _microphone.name : "none"));
 

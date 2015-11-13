@@ -3,7 +3,7 @@
   <component name="FlexBuildConfigurationManager" active="assets_lib">
     <configurations>
       <configuration name="assets_lib" output-type="Library" output-file="assets_lib.swc" output-folder="$MODULE_DIR$/../out/production/assets_lib">
-        <dependencies target-player="11.1">
+        <dependencies target-player="20.0">
           <sdk name="flex_sdk_4.6" />
         </dependencies>
         <compiler-options />

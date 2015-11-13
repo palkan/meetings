@@ -1,0 +1,28 @@
+{
+    "net":{
+        "rtmp":"rtmp://er203.teachbase.ru:443/teachbase",
+        "rtmp_media":"er203.teachbase.ru/tblive",
+        "rtmp_share":"er203.teachbase.ru",
+        "rtmp_port":"443"
+    },
+    "lang":"ru",
+    "skin":"http://cf1.teachbase.ru/v1_9/skins/skin.xml",
+    "java_download":"http://java.com/ru/download/",
+    "ping":{
+        "wait_max":60000,
+        "wait":20000,
+        "interval":20000
+    },
+    "locales":[
+        {
+            "code":"ru",
+            "label":"русский",
+            "url":"http://cf1.teachbase.ru/v1_9/locales/ru.xml"
+        },
+        {
+            "code":"en",
+            "label":"english",
+            "url":"http://cf1.teachbase.ru/v1_9/locales/en.xml"
+        }
+    ]
+}

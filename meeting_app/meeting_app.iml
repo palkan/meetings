@@ -3,7 +3,7 @@
   <component name="FlexBuildConfigurationManager" active="meeting_app">
     <configurations>
       <configuration name="meeting_app" main-class="meeting_app" output-file="meeting_app.swf" output-folder="$MODULE_DIR$/../out/production/meeting_app">
-        <dependencies target-player="11.1">
+        <dependencies target-player="20.0">
           <entries>
             <entry library-name="LogoPreloader" library-level="application">
               <dependency linkage="Merged" />
