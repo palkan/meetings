@@ -101,6 +101,7 @@
 
                 _activeUser = App.meeting.usersByID[(ns.client as NetStreamClient).data.user_id];
 
+                currentState = prepare.name;
                 addStream(ns);
 
                 listener.readyToReceive = true;
@@ -156,7 +157,7 @@
 
                 //todo: dry this!
                 const ns:NetStream = share_streams[0];
-
+                currentState = prepare.name;
                 _activeUser = App.meeting.usersByID[(ns.client as NetStreamClient).data.user_id];
 
                 addStream(ns);

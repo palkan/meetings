@@ -5,6 +5,8 @@ import flash.events.Event;
 import flash.events.IOErrorEvent;
 import flash.events.NetStatusEvent;
 import flash.net.NetStream;
+import flash.utils.clearTimeout;
+import flash.utils.setTimeout;
 
 import mx.core.EventPriority;
 import mx.events.CollectionEvent;
@@ -22,6 +24,7 @@ import ru.teachbase.manage.rtmp.events.RTMPEvent;
 import ru.teachbase.manage.session.model.Meeting;
 import ru.teachbase.manage.streams.model.NetStreamClient;
 import ru.teachbase.manage.streams.model.StreamData;
+import ru.teachbase.manage.streams.model.StreamType;
 import ru.teachbase.model.App;
 import ru.teachbase.net.stats.RTMPWatch;
 import ru.teachbase.utils.CameraUtils;
@@ -239,10 +242,10 @@ public dynamic class StreamManager extends Manager {
 
     private function streamLooksDeadHandler(e:Event):void{
         const watcher:RTMPWatch = e.target as RTMPWatch;
-        warning("Stream looks dead", watcher.client.data);
+        warning("Stream looks too slow or dead", watcher.client.data);
         watcher.unwatch();
         watcher.watch();
-       // checkFailedStream(watcher.client.data);
+        checkFailedStream(watcher.client.data);
     }
 
     private function streamErrorHandler(e:ErrorEvent):void {
@@ -271,7 +274,9 @@ public dynamic class StreamManager extends Manager {
 
                 if(client.__stream_start_ts){
                     debug("Stream time: " + (e.target as NetStream).time+"; real time: " + (__now - client.__stream_start_ts));
-                    (e.target as NetStream).bufferTime = 0
+                    if(client.data.type == StreamType.MEDIA){
+                        (e.target as NetStream).bufferTime = 0;
+                    }
                 }
                 break;
             case NetStreamStatusCodes.PLAY_FAILED:
@@ -296,19 +301,20 @@ public dynamic class StreamManager extends Manager {
                     delete _to_remove[data.name];
                 }
 
-           //     client.tid && clearTimeout(client.tid);
+                client.tid && clearTimeout(client.tid);
 
                 var ns:NetStream = e.target as NetStream;
                 _model.streamList.addItem(ns);
 
-                /*var _watcher:RTMPWatch = new RTMPWatch(ns);
-                App.rtmpMedia.stats.registerInput(_watcher);
+                if(client.data.type != StreamType.MEDIA){
+                    var _watcher:RTMPWatch = new RTMPWatch(ns);
+                    //App.rtmpMedia.stats.registerInput(_watcher);
 
-                _watcher.addEventListener(Event.CLEAR, streamLooksDeadHandler);
+                    _watcher.addEventListener(Event.CLEAR, streamLooksDeadHandler);
 
-                _watcher.watch();
-                (ns.client as NetStreamClient).watcher = _watcher;
-                */
+                    _watcher.watch();
+                    (ns.client as NetStreamClient).watcher = _watcher;
+                }
 
                 client.__stream_start_ts = (new Date()).getTime();
 
@@ -386,12 +392,13 @@ public dynamic class StreamManager extends Manager {
 
         var ns:NetStream = _model.streamsByName[name] as NetStream;
 
-        /*const watcher:RTMPWatch = (ns.client as NetStreamClient).watcher;
-        watcher && watcher.unwatch();
-        watcher && watcher.removeEventListener(Event.CLEAR, streamLooksDeadHandler);
+        if((ns.client as NetStreamClient).watcher){
+            const watcher:RTMPWatch = (ns.client as NetStreamClient).watcher;
+            watcher && watcher.unwatch();
+            watcher && watcher.removeEventListener(Event.CLEAR, streamLooksDeadHandler);
 
-        App.rtmpMedia.stats.unregisterInput(watcher);
-        */
+            //App.rtmpMedia.stats.unregisterInput(watcher);
+        }
 
         if(!commit){
           //  ns.client.tid = setTimeout(lambda(playStopTimeout,ns),10000);   // if !commit then we want to restart lagging but playing stream, so stop first
@@ -408,7 +415,7 @@ public dynamic class StreamManager extends Manager {
 
 
     private function disposeNetStream(ns:NetStream):void{
-     //   ns.client.tid && clearTimeout(ns.client.tid);
+        ns.client.tid && clearTimeout(ns.client.tid);
         ns.removeEventListener(AsyncErrorEvent.ASYNC_ERROR, streamErrorHandler);
         ns.removeEventListener(IOErrorEvent.IO_ERROR, streamErrorHandler);
         ns.removeEventListener(NetStatusEvent.NET_STATUS, streamPlayOnStatusHandler);
